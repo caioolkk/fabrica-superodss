@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Fábrica Super Odd</title>
+  <!-- Favicon -->
+  <link rel="icon" href="image/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
@@ -11,6 +13,7 @@
       padding: 0;
       box-sizing: border-box;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: all 0.2s ease;
     }
 
     :root {
@@ -20,9 +23,11 @@
       --card-bg: white;
       --border: #e0e0e0;
       --shadow: 0 2px 8px rgba(0,0,0,0.05);
-      --lay-bg: #ffe0e0;
-      --back-bg: #e0f0ff;
-      --watermark: rgba(255, 217, 102, 0.03);
+      --table-header: #212529;
+      --green-text: #28a745;
+      --hover-bg: #f8f9fa;
+      --input-border: #d4edda;
+      --input-focus: #28a745;
     }
 
     body {
@@ -38,24 +43,22 @@
       align-items: center;
       justify-content: space-between;
       background: white;
-      padding: 10px 15px;
+      padding: 12px 20px;
       border-bottom: 1px solid var(--primary);
-      flex-wrap: wrap;
       gap: 10px;
     }
 
     .logo {
-      width: 30px;
-      height: 30px;
+      width: 40px;
+      height: 40px;
       background: url('image/logo.png') no-repeat center;
       background-size: contain;
     }
 
     .nav-links {
       display: flex;
-      gap: 15px;
-      margin-left: 10px;
-      flex-wrap: wrap;
+      gap: 20px;
+      margin: 0 auto;
     }
 
     .nav-links a {
@@ -64,6 +67,7 @@
       font-weight: 500;
       padding: 5px 10px;
       border-bottom: 2px solid transparent;
+      position: relative;
     }
 
     .nav-links a.active {
@@ -71,25 +75,33 @@
       border-bottom: 2px solid var(--primary);
     }
 
+    .nav-links a:hover {
+      color: var(--primary-dark);
+    }
+
     .top-icons {
       display: flex;
       gap: 8px;
       align-items: center;
-      flex-wrap: wrap;
     }
 
     .top-icons button {
       background: var(--primary);
       color: #333;
       border: none;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       font-size: 14px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: transform 0.2s;
+    }
+
+    .top-icons button:hover {
+      transform: scale(1.1);
     }
 
     .btn-enter {
@@ -101,6 +113,11 @@
       font-weight: 600;
       cursor: pointer;
       font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .btn-enter:hover {
+      background: var(--primary-dark);
     }
 
     .container {
@@ -116,6 +133,7 @@
       padding: 20px;
       margin-bottom: 20px;
       position: relative;
+      overflow: hidden;
     }
 
     /* Marca d'água suave dentro do card */
@@ -169,6 +187,14 @@
       border-radius: 6px;
       font-size: 14px;
       background: white;
+      transition: border 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      border-color: var(--input-focus);
+      outline: none;
     }
 
     .toggle-container {
@@ -238,6 +264,7 @@
       overflow-x: auto;
       margin-top: 15px;
       border-radius: 6px;
+      background: var(--hover-bg);
     }
 
     table {
@@ -247,7 +274,7 @@
     }
 
     th {
-      background: #212529;
+      background: var(--table-header);
       color: white;
       padding: 10px;
       text-align: left;
@@ -272,6 +299,7 @@
       gap: 5px;
       min-width: 50px;
       justify-content: center;
+      transition: background 0.2s;
     }
 
     .type-btn.back {
@@ -284,8 +312,14 @@
       color: #c62828;
     }
 
+    .type-btn:hover {
+      opacity: 0.9;
+    }
+
     .comissao-input,
-    .aumento-input {
+    .aumento-input,
+    .freebet-input,
+    .cashback-input {
       width: 60px;
       text-align: center;
       font-size: 12px;
@@ -310,6 +344,11 @@
       border-radius: 3px;
       font-size: 12px;
       cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .copy-btn:hover {
+      background: #d0d0d0;
     }
 
     .result-card {
@@ -319,6 +358,7 @@
       padding: 16px;
       margin-top: 16px;
       position: relative;
+      overflow: hidden;
     }
 
     /* Marca d'água suave dentro do card de resultados */
@@ -355,7 +395,7 @@
 
     .result-value {
       font-weight: 700;
-      color: var(--primary-dark);
+      color: var(--green-text);
     }
 
     .btn-action {
@@ -373,22 +413,15 @@
       width: 100%;
       justify-content: center;
       font-size: 15px;
+      transition: background 0.2s;
+    }
+
+    .btn-action:hover {
+      background: #e0e0e0;
     }
 
     .btn-action i {
       font-size: 16px;
-    }
-
-    .add-row-btn {
-      background: var(--primary);
-      color: #333;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-weight: 500;
-      margin-top: 10px;
-      font-size: 14px;
     }
 
     .remove-row {
@@ -403,12 +436,13 @@
         flex-direction: column;
         align-items: stretch;
         gap: 10px;
+        padding: 10px;
       }
 
       .nav-links {
         justify-content: center;
-        flex-wrap: wrap;
-        gap: 10px;
+        gap: 15px;
+        margin: 0;
       }
 
       .top-icons {
@@ -428,11 +462,13 @@
 
       .table-container {
         font-size: 12px;
-        overflow-x: scroll;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
       }
 
       th, td {
         padding: 6px;
+        white-space: nowrap;
       }
 
       .section {
@@ -498,14 +534,14 @@
         <div class="toggle">
           <label>Aposta com freebet</label>
           <label class="switch">
-            <input type="checkbox" id="freebet" onchange="updateTableColumns()">
+            <input type="checkbox" id="freebet" onchange="updateFreebetField()">
             <span class="slider"></span>
           </label>
         </div>
         <div class="toggle">
           <label>Aposta com cashback</label>
           <label class="switch">
-            <input type="checkbox" id="cashback" onchange="updateTableColumns()">
+            <input type="checkbox" id="cashback" onchange="updateCashbackField()">
             <span class="slider"></span>
           </label>
         </div>
@@ -549,28 +585,7 @@
             </tr>
           </thead>
           <tbody id="apostasBody">
-            <tr>
-              <td><input type="text" value="Casa 1" class="casa-input"></td>
-              <td><div class="type-btn back" onclick="toggleType(this)">BACK</div></td>
-              <td><input type="number" value="2.000" class="odd-input" step="0.001" min="1"></td>
-              <td><input type="text" value="0.00%" class="comissao-input" readonly></td>
-              <td><span class="odd-final">2.000</span></td>
-              <td><input type="text" value="0.00%" class="aumento-input" readonly></td>
-              <td><input type="number" value="0.00" class="aposta-input" step="0.01" min="0"></td>
-              <td><input type="checkbox" class="comissao-checkbox"></td>
-              <td><span class="lucro-output">0.00</span></td>
-            </tr>
-            <tr>
-              <td><input type="text" value="Casa 2" class="casa-input"></td>
-              <td><div class="type-btn back" onclick="toggleType(this)">BACK</div></td>
-              <td><input type="number" value="2.000" class="odd-input" step="0.001" min="1"></td>
-              <td><input type="text" value="0.00%" class="comissao-input" readonly></td>
-              <td><span class="odd-final">2.000</span></td>
-              <td><input type="text" value="0.00%" class="aumento-input" readonly></td>
-              <td><input type="number" value="0.00" class="aposta-input" step="0.01" min="0"></td>
-              <td><input type="checkbox" class="comissao-checkbox"></td>
-              <td><span class="lucro-output">0.00</span></td>
-            </tr>
+            <!-- Preenchido por JS -->
           </tbody>
           <tfoot>
             <tr>
@@ -584,7 +599,6 @@
           </tfoot>
         </table>
       </div>
-      <button class="add-row-btn" onclick="addRow()">+ Adicionar Casa</button>
     </div>
 
     <!-- Resultados -->
@@ -632,24 +646,110 @@
   </div>
 
   <script>
-    // Distribui valor total entre as casas para garantir lucro em todos os cenários
+    // Gera linhas iniciais
+    function generateInitialRows() {
+      const tbody = document.getElementById('apostasBody');
+      tbody.innerHTML = '';
+      for (let i = 1; i <= 2; i++) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="text" value="Casa ${i}" class="casa-input"></td>
+          <td><div class="type-btn back" onclick="toggleType(this)">BACK</div></td>
+          <td><input type="number" value="2.000" class="odd-input" step="0.001" min="1"></td>
+          <td><input type="text" value="0.00%" class="comissao-input" readonly></td>
+          <td><span class="odd-final">2.000</span></td>
+          <td><input type="text" value="0.00%" class="aumento-input" readonly></td>
+          <td><input type="number" value="0.00" class="aposta-input" step="0.01" min="0"></td>
+          <td><input type="checkbox" class="comissao-checkbox"></td>
+          <td><span class="lucro-output">0.00</span></td>
+        `;
+        tbody.appendChild(row);
+      }
+      attachInputListeners();
+    }
+
+    // Atualiza campo Freebet
+    function updateFreebetField() {
+      const showFreebet = document.getElementById('freebet').checked;
+      const rows = document.querySelectorAll('#apostasBody tr');
+      rows.forEach(row => {
+        if (showFreebet) {
+          if (!row.querySelector('.freebet-input')) {
+            const td = row.children[6];
+            const freebetInput = document.createElement('input');
+            freebetInput.type = 'number';
+            freebetInput.className = 'freebet-input';
+            freebetInput.placeholder = 'Freebet';
+            freebetInput.step = '0.01';
+            freebetInput.value = '0.00';
+            freebetInput.style.marginTop = '5px';
+            td.appendChild(freebetInput);
+          }
+        } else {
+          const freebetInput = row.querySelector('.freebet-input');
+          if (freebetInput) freebetInput.remove();
+        }
+      });
+      updateCalculations();
+    }
+
+    // Atualiza campo Cashback
+    function updateCashbackField() {
+      const showCashback = document.getElementById('cashback').checked;
+      const rows = document.querySelectorAll('#apostasBody tr');
+      rows.forEach(row => {
+        if (showCashback) {
+          if (!row.querySelector('.cashback-input')) {
+            const td = row.children[6];
+            const cashbackInput = document.createElement('input');
+            cashbackInput.type = 'number';
+            cashbackInput.className = 'cashback-input';
+            cashbackInput.placeholder = 'Cashback %';
+            cashbackInput.step = '0.01';
+            cashbackInput.value = '0.00';
+            cashbackInput.style.marginTop = '5px';
+            td.appendChild(cashbackInput);
+          }
+        } else {
+          const cashbackInput = row.querySelector('.cashback-input');
+          if (cashbackInput) cashbackInput.remove();
+        }
+      });
+      updateCalculations();
+    }
+
+    // Distribui valor total entre as casas para garantir lucro líquido em todos os cenários
     function distributeValue() {
       const total = parseFloat(document.getElementById('apostaTotal').value) || 0;
       const rows = document.querySelectorAll('#apostasBody tr');
-      if (rows.length === 0) return;
+      if (rows.length === 0 || total <= 0) {
+        rows.forEach(row => row.querySelector('.aposta-input').value = '0.00');
+        updateCalculations();
+        return;
+      }
 
-      // Calcula a soma dos inversos das odds (para arbitragem)
+      // Calcula soma dos inversos das odds ajustadas
       let sumInverses = 0;
+      const odds = [];
       rows.forEach(row => {
-        const odd = parseFloat(row.querySelector('.odd-input').value) || 1;
+        let odd = parseFloat(row.querySelector('.odd-input').value) || 1;
+        if (document.getElementById('aumento').checked) odd *= 1.02;
+        odds.push(odd);
         sumInverses += 1 / odd;
       });
 
-      // Distribui proporcionalmente para garantir lucro igual em todas as casas
-      rows.forEach(row => {
-        const odd = parseFloat(row.querySelector('.odd-input').value) || 1;
+      // Se for arbitragem viável (sumInverses < 1), distribui para lucro positivo
+      // Caso contrário, distribui proporcionalmente (menor prejuízo)
+      rows.forEach((row, i) => {
         const apostaInput = row.querySelector('.aposta-input');
-        const aposta = total * (1 / odd) / sumInverses;
+        let aposta;
+        if (sumInverses < 1) {
+          // Garante lucro igual em todos os cenários
+          aposta = total * (1 / odds[i]) / sumInverses;
+        } else {
+          // Distribuição proporcional (menor prejuízo)
+          aposta = total * (1 / odds[i]) / sumInverses;
+        }
         apostaInput.value = aposta.toFixed(2);
       });
 
@@ -660,18 +760,15 @@
     function updateTableColumns() {
       const showComissao = document.getElementById('comissao').checked;
       const showAumento = document.getElementById('aumento').checked;
-      const showFreebet = document.getElementById('freebet').checked;
-      const showCashback = document.getElementById('cashback').checked;
 
       const headers = document.querySelectorAll('#apostasTable thead th');
       const rows = document.querySelectorAll('#apostasTable tbody tr');
 
-      // Mostra/oculta colunas
-      headers[3].style.display = showComissao ? 'table-cell' : 'none'; // Comissão
-      headers[4].style.display = 'table-cell'; // ODD Final sempre visível
-      headers[5].style.display = showAumento ? 'table-cell' : 'none'; // Aumento
-      headers[6].style.display = 'table-cell'; // Aposta sempre visível
-      headers[7].style.display = showComissao ? 'table-cell' : 'none'; // C (checkbox)
+      headers[3].style.display = showComissao ? 'table-cell' : 'none';
+      headers[4].style.display = 'table-cell';
+      headers[5].style.display = showAumento ? 'table-cell' : 'none';
+      headers[6].style.display = 'table-cell';
+      headers[7].style.display = showComissao ? 'table-cell' : 'none';
 
       rows.forEach(row => {
         row.children[3].style.display = showComissao ? 'table-cell' : 'none';
@@ -698,49 +795,29 @@
       updateCalculations();
     }
 
-    // Adicionar nova linha
-    function addRow() {
-      const tbody = document.getElementById('apostasBody');
-      const rowCount = tbody.children.length + 1;
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><input type="text" value="Casa ${rowCount}" class="casa-input"></td>
-        <td><div class="type-btn back" onclick="toggleType(this)">BACK</div></td>
-        <td><input type="number" value="2.000" class="odd-input" step="0.001" min="1"></td>
-        <td><input type="text" value="0.00%" class="comissao-input" readonly></td>
-        <td><span class="odd-final">2.000</span></td>
-        <td><input type="text" value="0.00%" class="aumento-input" readonly></td>
-        <td><input type="number" value="0.00" class="aposta-input" step="0.01" min="0"></td>
-        <td><input type="checkbox" class="comissao-checkbox"></td>
-        <td><span class="lucro-output">0.00</span></td>
-      `;
-      tbody.appendChild(row);
-      attachInputListeners();
-    }
-
-    // Remover linha
-    function removeRow(element) {
-      const row = element.closest('tr');
-      if (document.querySelectorAll('#apostasBody tr').length > 2) {
-        row.remove();
-        updateCalculations();
-      } else {
-        alert('Mínimo de 2 casas necessário para arbitragem.');
-      }
-    }
-
     // Atualizar número de casas
     function updateCasas() {
       const qtd = parseInt(document.getElementById('qtdCasas').value) || 2;
-      const currentRows = document.querySelectorAll('#apostasBody tr').length;
-      if (qtd > currentRows) {
-        for (let i = currentRows; i < qtd; i++) addRow();
-      } else if (qtd < currentRows) {
-        const rows = document.querySelectorAll('#apostasBody tr');
-        for (let i = currentRows - 1; i >= qtd; i--) {
-          if (rows[i]) rows[i].remove();
-        }
+      const tbody = document.getElementById('apostasBody');
+      tbody.innerHTML = '';
+      for (let i = 1; i <= qtd; i++) {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="text" value="Casa ${i}" class="casa-input"></td>
+          <td><div class="type-btn back" onclick="toggleType(this)">BACK</div></td>
+          <td><input type="number" value="2.000" class="odd-input" step="0.001" min="1"></td>
+          <td><input type="text" value="0.00%" class="comissao-input" readonly></td>
+          <td><span class="odd-final">2.000</span></td>
+          <td><input type="text" value="0.00%" class="aumento-input" readonly></td>
+          <td><input type="number" value="0.00" class="aposta-input" step="0.01" min="0"></td>
+          <td><input type="checkbox" class="comissao-checkbox"></td>
+          <td><span class="lucro-output">0.00</span></td>
+        `;
+        tbody.appendChild(row);
       }
+      attachInputListeners();
+      updateFreebetField();
+      updateCashbackField();
       updateCalculations();
     }
 
@@ -762,7 +839,7 @@
         navigator.share({ title: 'Resultado da Arbitragem', text: msg });
       } else {
         navigator.clipboard.writeText(msg).then(() => {
-          alert('Resultado copiado para a área de transferência!');
+          alert('Resultado copiado!');
         });
       }
     }
@@ -791,49 +868,64 @@
         const comissaoInput = row.querySelector('.comissao-input');
         const aumentoInput = row.querySelector('.aumento-input');
         const oddFinalSpan = row.querySelector('.odd-final');
+        const freebetInput = row.querySelector('.freebet-input');
+        const cashbackInput = row.querySelector('.cashback-input');
 
         let aposta = parseFloat(apostaInput.value) || 0;
         let odd = parseFloat(oddInput.value) || 0;
         let comissao = 0;
         let aumento = 0;
+        let freebet = 0;
+        let cashback = 0;
         let lucro = 0;
 
-        // Aplica comissão se marcado
         if (comissaoCheckbox.checked) {
-          comissao = 0.05; // 5%
+          comissao = 0.05;
           comissaoInput.value = '5.00%';
         } else {
           comissaoInput.value = '0.00%';
         }
 
-        // Aplica aumento se marcado
         if (document.getElementById('aumento').checked) {
-          aumento = 0.02; // 2%
+          aumento = 0.02;
           aumentoInput.value = '2.00%';
           odd = odd * (1 + aumento);
         } else {
           aumentoInput.value = '0.00%';
         }
 
-        oddFinalSpan.textContent = odd.toFixed(3);
-
-        // Calcula lucro baseado no tipo (BACK ou LAY)
-        if (typeBtn.classList.contains('back')) {
-          lucro = aposta * (odd - 1);
-        } else { // LAY
-          lucro = aposta * (1 - odd); // Negativo se odd > 1
+        if (document.getElementById('freebet').checked && freebetInput) {
+          freebet = parseFloat(freebetInput.value) || 0;
         }
 
-        // Aplica comissão
+        if (document.getElementById('cashback').checked && cashbackInput) {
+          cashback = parseFloat(cashbackInput.value) || 0;
+        }
+
+        oddFinalSpan.textContent = odd.toFixed(3);
+
+        if (typeBtn.classList.contains('back')) {
+          lucro = aposta * (odd - 1);
+        } else {
+          lucro = aposta * (1 - odd);
+        }
+
         if (comissaoCheckbox.checked) {
           lucro *= (1 - comissao);
+        }
+
+        if (freebet > 0) {
+          lucro += freebet; // Freebet é lucro adicional
+        }
+
+        if (cashback > 0) {
+          lucro += aposta * (cashback / 100); // Cashback é percentual sobre aposta
         }
 
         lucroOutput.textContent = lucro.toFixed(2);
         totalAposta += aposta;
         totalLucro += lucro;
 
-        // Adiciona à tabela de resultados
         const resultRow = document.createElement('tr');
         resultRow.innerHTML = `
           <td>${casaInput.value}</td>
@@ -845,7 +937,6 @@
         resultadosBody.appendChild(resultRow);
       });
 
-      // Atualiza valores totais
       const qtdContas = parseInt(document.getElementById('qtdContas').value) || 1;
       const stake = totalAposta * qtdContas;
       const lucro = totalLucro * qtdContas;
@@ -857,7 +948,6 @@
       document.getElementById('porcentagem').textContent = `${porcentagem.toFixed(2)} %`;
     }
 
-    // Atualiza ao digitar
     function attachInputListeners() {
       document.querySelectorAll('.aposta-input, .odd-input, .comissao-checkbox').forEach(el => {
         el.removeEventListener('input', updateCalculations);
@@ -865,38 +955,17 @@
       });
     }
 
-    // Atualiza valores totais com quantidade de contas
     function updateTotalValues() {
       updateCalculations();
     }
 
-    // Inicializa tudo zerado, exceto ODDs
+    // Inicializa
     document.addEventListener('DOMContentLoaded', () => {
-      // Zera todos os campos, exceto ODDs que já estão em 2.000
-      document.getElementById('apostaTotal').value = '0.00';
+      generateInitialRows();
       document.getElementById('qtdContas').value = '1';
-      document.getElementById('procedimento').selectedIndex = 0;
-      document.getElementById('qtdCasas').value = '2';
-
-      // Desmarca todos os toggles
-      document.getElementById('freebet').checked = false;
-      document.getElementById('cashback').checked = false;
-      document.getElementById('comissao').checked = false;
-      document.getElementById('aumento').checked = false;
-
-      // Limpa linhas de apostas (exceto ODDs)
-      const rows = document.querySelectorAll('#apostasBody tr');
-      rows.forEach(row => {
-        row.querySelector('.casa-input').value = row.querySelector('.casa-input').value.includes('1') ? 'Casa 1' : 'Casa 2';
-        row.querySelector('.aposta-input').value = '0.00';
-        row.querySelector('.comissao-checkbox').checked = false;
-        row.querySelector('.comissao-input').value = '0.00%';
-        row.querySelector('.aumento-input').value = '0.00%';
-        row.querySelector('.lucro-output').textContent = '0.00';
-      });
-
-      attachInputListeners();
-      updateTableColumns(); // Inicia com colunas corretas
+      updateTableColumns();
+      updateFreebetField();
+      updateCashbackField();
       updateCalculations();
     });
   </script>
