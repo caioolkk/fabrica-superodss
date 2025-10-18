@@ -1,513 +1,450 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Fábrica Super Odd</title>
-  <!-- Favicon -->
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Fábrica Super Odd — Calculadora</title>
   <link rel="icon" href="image/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      transition: all 0.2s ease;
+    /* -------------------------
+       Reset / tipografia
+       ------------------------- */
+    :root{
+      --primary: #1f2b3a;
+      --accent: #f3e5a6;
+      --accent-strong: #e9d984;
+      --muted: #6b7280;
+      --card: #ffffff;
+      --soft: #f5f7fa;
+      --shadow: 0 6px 20px rgba(18,24,36,0.06);
+      --glass: rgba(255,255,255,0.6);
+      --watermark-opacity: 0.04;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif}
+    html,body{height:100%;background:#f6f7fb;color:#111;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+    a{color:inherit;text-decoration:none}
+    html,body{overflow:auto}
+    * { scrollbar-width: none; -ms-overflow-style: none; }
+    *::-webkit-scrollbar { display: none; width:0; height:0; }
+
+    .wrap{max-width:1150px;margin:28px auto;padding:18px}
+    .navbar{display:flex;align-items:center;justify-content:space-between;background:var(--card);padding:14px 18px;border-radius:10px;box-shadow:var(--shadow);gap:12px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:44px;height:44px;border-radius:8px;background:url('image/logo.png') center/contain no-repeat}
+    .brand h1{font-size:16px;font-weight:700;color:#0f1724}
+    .nav-actions{display:flex;align-items:center;gap:10px}
+    .nav-actions button{background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer}
+    .nav-actions .icon-btn{background:transparent;color:var(--muted);width:40px;height:40px;display:flex;align-items:center;justify-content:center;border-radius:8px;border:1px solid #e6e9ee}
+
+    .section{
+      background:var(--card);
+      border-radius:12px;
+      padding:18px;
+      margin-top:18px;
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
     }
 
-    :root {
-      --primary: #FFD966; /* Amarelo pastel suave */
-      --primary-dark: #F1C232;
-      --light-bg: #fafafa;
-      --card-bg: white;
-      --border: #e0e0e0;
-      --shadow: 0 2px 8px rgba(0,0,0,0.05);
-      --table-header: #212529;
-      --green-text: #28a745;
-      --hover-bg: #f8f9fa;
-      --input-border: #d4edda;
-      --input-focus: #28a745;
+    /* Watermark ONLY inside cards/tables/summary */
+    .section::before,
+    .table-wrap::before,
+    .results-left::before,
+    .summary-card::before {
+      content:'';
+      position:absolute;
+      right:12px;
+      bottom:6px;
+      width:140px;
+      height:140px;
+      background-image:url('image/logo.png');
+      background-size:contain;
+      background-repeat:no-repeat;
+      background-position:center;
+      opacity:var(--watermark-opacity);
+      pointer-events:none;
+      filter:grayscale(1);
+      mix-blend-mode: lighten;
+    }
+    .table-wrap::before,
+    .results-left::before {
+      inset:0;
+      background-size:200px;
+      background-repeat:repeat;
     }
 
-    body {
-      background-color: var(--light-bg);
-      color: #333;
-      line-height: 1.6;
-      position: relative;
-      font-size: 14px;
+    h2{
+      font-size:20px;
+      margin-bottom:12px;
+      color:#0b1720;
+      background:var(--card);
+      padding:12px;
+      border-radius:10px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.03);
+      margin-top:-6px;
+      margin-left:-18px;
+      margin-right:-18px;
+    }
+    .sub{color:var(--muted);font-size:13px;margin-bottom:8px}
+
+    .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    .field{display:flex;flex-direction:column;gap:8px}
+    label{font-size:14px;color:#24303a;font-weight:600}
+    select,input[type="number"],input[type="text"]{padding:10px 12px;border-radius:8px;border:1px solid #e6f0e9;background:#fff;outline:none}
+    select{appearance:none;background-image:linear-gradient(45deg,transparent 50%, #9ca3af 50%), linear-gradient(135deg,#9ca3af 50%, transparent 50%); background-position:calc(100% - 12px) calc(1em + 2px), calc(100% - 7px) calc(1em + 2px); background-size:6px 6px,6px 6px; background-repeat:no-repeat}
+    input:focus,select:focus{border-color: var(--accent-strong); box-shadow: 0 0 0 6px rgba(233,217,132,0.06)}
+
+    .toggles{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .toggle{display:flex;align-items:center;gap:10px}
+    .switch{position:relative;width:44px;height:26px;border-radius:16px;background:#eee;cursor:pointer}
+    .switch input{display:none}
+    .knob{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.08);transition:all .22s}
+    .switch.on{background:var(--accent-strong)}
+    .switch.on .knob{transform:translateX(18px)}
+    .toggle-note {font-size:12px;color:var(--muted);margin-top:6px;display:block;}
+
+    .table-wrap{margin-top:6px;border-radius:10px;overflow:visible;position:relative;}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:transparent;table-layout:fixed;}
+    thead th{
+      background:var(--primary);
+      color:#fff;
+      padding:12px 10px;
+      border-top-left-radius:8px;
+      border-top-right-radius:8px;
+      font-weight:700;
+      text-align:left;
+      font-size:13px;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      border-left:1px solid rgba(255,255,255,0.06);
+    }
+    thead th:first-child{border-left:none;}
+    tbody tr{background:#f6f7f9}
+    tbody tr + tr{margin-top:8px}
+    tbody td{
+      padding:8px 8px;
+      border-bottom:1px solid rgba(16,24,32,0.04);
+      vertical-align:middle;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
-    .navbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: white;
-      padding: 12px 20px;
-      border-bottom: 1px solid var(--primary);
-      gap: 10px;
+    /* Column widths */
+    thead th:nth-child(1){width:16%}
+    thead th:nth-child(2){width:8%}
+    thead th:nth-child(3){width:8%}
+    thead th:nth-child(4){width:9%}
+    thead th:nth-child(5){width:9%}
+    thead th:nth-child(6){width:8%}
+    thead th:nth-child(7){width:14%}
+    thead th:nth-child(8){width:9%}
+    thead th:nth-child(9){width:9%}
+    thead th:nth-child(10){width:6%}
+    thead th:nth-child(11){width:12%}
+
+    tbody td input[type="text"],
+    tbody td input[type="number"]{
+      border:1px solid #dfe7d0;
+      padding:6px 8px;
+      border-radius:6px;
+      background:#fff;
+      font-size:13px;
+      max-width:100%;
+      box-sizing:border-box;
     }
 
-    .logo {
-      width: 40px;
-      height: 40px;
-      background: url('image/logo.png') no-repeat center;
-      background-size: contain;
+    .aposta-extra{
+      display:inline-block;
+      margin-left:6px;
+      padding:6px;
+      border-radius:6px;
+      border:1px solid #e8e2c0;
+      background:#fff;
+      font-size:12px;
+      vertical-align:middle;
+      width:100%;
+    }
+    .type-btn{
+      display:inline-block;
+      padding:6px 8px;
+      border-radius:6px;
+      font-weight:700;
+      font-size:12px;
+      cursor:pointer;
+      border:none;
+    }
+    .type-btn.back{background:rgba(0,0,0,0.05);color:#0f1724}
+    .type-btn.lay{background:rgba(255,0,0,0.06);color:#8b1f1f}
+    .info-icon{color:#f3f4f6;background:transparent;border-radius:50;padding:0 4px;font-size:12px}
+    .lucro{color:var(--accent);font-weight:700}
+    .small{font-size:12px;color:var(--muted)}
+
+    tfoot td{
+      background:#f0f3f5;
+      padding:10px;
+      border-bottom-left-radius:8px;
+      border-bottom-right-radius:8px;
+    }
+    .aposta-total{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      justify-content:flex-end;
+    }
+    .aposta-total input{
+      width:130px;
+      text-align:right;
+      font-weight:700;
+      border:1px solid #dfeff0;
+      padding:8px;
+      border-radius:6px;
+      background:#fff;
     }
 
-    .nav-links {
-      display: flex;
-      gap: 20px;
-      margin: 0 auto;
+    .chk {
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .chk input{display:none}
+    .chk .chkbox{
+      width:22px;
+      height:18px;
+      border-radius:6px;
+      border:1px solid #ddd;
+      display:inline-block;
+      position:relative;
+      transition:all .18s;
+      background:#fff;
+    }
+    .chk .chkbox::after{
+      content:'';position:absolute;left:6px;top:1px;width:6px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg);opacity:0;transition:opacity .14s;
+    }
+    .chk input:checked + .chkbox{
+      background:var(--accent);
+      border-color:var(--accent-strong);
+      box-shadow:0 2px 6px rgba(0,0,0,0.06);
+    }
+    .chk input:checked + .chkbox::after{opacity:1}
+
+    /* Hidden columns */
+    .col-freebet.hidden,
+    .col-cashback.hidden,
+    .col-comissao.hidden,
+    .col-aumento.hidden {
+      display: none !important;
     }
 
-    .nav-links a {
-      text-decoration: none;
-      color: #666;
-      font-weight: 500;
-      padding: 5px 10px;
-      border-bottom: 2px solid transparent;
-      position: relative;
+    .results-wrap {
+      margin-top: 8px;
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+      flex-wrap:wrap;
     }
-
-    .nav-links a.active {
-      color: var(--primary-dark);
-      border-bottom: 2px solid var(--primary);
+    .results-left {
+      flex:1 1 620px;
+      min-width:320px;
+      border-radius:10px;
+      overflow:hidden;
+      background:var(--card);
+      border:1px solid #e9eef0;
+      position:relative;
     }
-
-    .nav-links a:hover {
-      color: var(--primary-dark);
+    .results-table {
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      position:relative;
+      z-index:1;
     }
-
-    .top-icons {
-      display: flex;
-      gap: 8px;
-      align-items: center;
+    .results-table thead th {
+      background:var(--primary);
+      color:#fff;
+      padding:10px;
+      font-weight:700;
+      text-align:left;
+      font-size:13px;
     }
-
-    .top-icons button {
-      background: var(--primary);
-      color: #333;
-      border: none;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.2s;
+    .results-table td {
+      padding:10px;
+      border-bottom:1px solid rgba(16,24,32,0.04);
+      background:#fff;
+      font-size:14px;
     }
-
-    .top-icons button:hover {
-      transform: scale(1.1);
+    .results-right {
+      width:240px;
+      min-width:200px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
     }
-
-    .btn-enter {
-      background: var(--primary);
-      color: #333;
-      border: none;
-      padding: 6px 16px;
-      border-radius: 4px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
+    .results-actions {
+      display:flex;
+      flex-direction:column;
+      gap:8px;
     }
-
-    .btn-enter:hover {
-      background: var(--primary-dark);
+    .results-actions .btn {
+      width:100%;
+      display:block;
+      text-align:center;
     }
-
-    .container {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 0 15px;
+    .summary-cards {
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+      margin-top:8px;
     }
-
-    .section {
-      background: var(--card-bg);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      padding: 20px;
-      margin-bottom: 20px;
-      position: relative;
-      overflow: hidden;
+    .summary-card {
+      background:var(--card);
+      border-radius:8px;
+      padding:12px;
+      border:1px solid #eef6f8;
+      position:relative;
+      overflow:hidden;
     }
-
-    /* Marca d'água suave dentro do card */
-    .section::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('image/logo.png');
-      background-size: 150px 150px;
-      background-position: center;
-      opacity: 0.05;
-      z-index: -1;
-      pointer-events: none;
+    .summary-card .label {
+      color:var(--muted);
+      font-size:12px;
+      font-weight:600;
     }
-
-    h5 {
-      font-weight: 700;
-      color: #333;
-      border-bottom: 2px solid var(--primary);
-      padding-bottom: 6px;
-      margin-bottom: 16px;
-      font-size: 1.2rem;
+    .summary-card .value {
+      font-weight:800;
+      margin-top:6px;
+      font-size:16px;
+      color:var(--primary);
     }
-
-    .config-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 16px;
+    .summary-card .value.highlight {
+      color: var(--accent);
     }
+    .highlight{color:var(--accent);font-weight:800}
 
-    .config-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .actions{display:flex;gap:12px;margin-top:12px}
+    .btn{padding:10px 14px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
+    .btn.ghost{background:transparent;border:1px solid #e6e9ee;color:var(--muted)}
+
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(3,6,12,0.45);
+      z-index:60;
     }
-
-    .config-item label {
-      min-width: 180px;
-      font-weight: 500;
+    .modal{
+      width:360px;
+      background:#fff;
+      padding:18px;
+      border-radius:12px;
+      box-shadow:0 10px 40px rgba(2,6,23,0.35);
     }
+    .modal h3{margin-bottom:10px}
+    .modal .muted{font-size:13px;color:var(--muted);margin-bottom:12px}
+    .modal .row{display:flex;gap:8px}
+    .modal .small{font-size:13px;color:var(--muted);margin-top:8px}
 
-    input[type="text"],
-    input[type="number"],
-    select {
-      padding: 8px 12px;
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 14px;
-      background: white;
-      transition: border 0.2s;
-    }
+    .admin-box{margin-top:10px;padding:12px;border-radius:8px;border:1px dashed #e6eef0;background:#fbfeff}
+    .admin-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .file-input{display:none}
 
-    input[type="text"]:focus,
-    input[type="number"]:focus,
-    select:focus {
-      border-color: var(--input-focus);
-      outline: none;
-    }
+    /* Responsive */
+    @media (max-width:768px){
+      .grid2{grid-template-columns:1fr}
+      .wrap{padding:12px}
+      .modal{width:92%}
+      .results-wrap{flex-direction:column}
+      .results-right{width:100%;min-width:0;flex-direction:row;gap:8px;flex-wrap:wrap}
+      .results-actions{flex-direction:row;width:100%}
+      .results-actions .btn{flex:1}
+      .summary-cards{grid-template-columns:repeat(2,1fr)}
 
-    .toggle-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-top: 10px;
-    }
-
-    .toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .toggle label:first-child {
-      font-weight: 500;
-      font-size: 0.95rem;
-    }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 44px;
-      height: 22px;
-    }
-
-    .switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: .4s;
-      border-radius: 22px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 16px;
-      width: 16px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider {
-      background-color: var(--primary);
-    }
-
-    input:checked + .slider:before {
-      transform: translateX(22px);
-    }
-
-    .table-container {
-      overflow-x: auto;
-      margin-top: 15px;
-      border-radius: 6px;
-      background: var(--hover-bg);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    th {
-      background: var(--table-header);
-      color: white;
-      padding: 10px;
-      text-align: left;
-      font-weight: 600;
-      border: 1px solid #dee2e6;
-    }
-
-    td {
-      padding: 10px;
-      border: 1px solid #dee2e6;
-      background: white;
-    }
-
-    .type-btn {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      min-width: 50px;
-      justify-content: center;
-      transition: background 0.2s;
-    }
-
-    .type-btn.back {
-      background: var(--back-bg);
-      color: #0d47a1;
-    }
-
-    .type-btn.lay {
-      background: var(--lay-bg);
-      color: #c62828;
-    }
-
-    .type-btn:hover {
-      opacity: 0.9;
-    }
-
-    .comissao-input,
-    .aumento-input,
-    .freebet-input,
-    .cashback-input {
-      width: 60px;
-      text-align: center;
-      font-size: 12px;
-    }
-
-    .odd-final {
-      font-weight: bold;
-      color: #333;
-    }
-
-    .info-icon {
-      font-size: 10px;
-      color: #666;
-      cursor: help;
-      margin-left: 2px;
-    }
-
-    .copy-btn {
-      background: #e0e0e0;
-      border: none;
-      padding: 2px 6px;
-      border-radius: 3px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .copy-btn:hover {
-      background: #d0d0d0;
-    }
-
-    .result-card {
-      background: #f8f9fa;
-      border: 1px solid #eee;
-      border-radius: 10px;
-      padding: 16px;
-      margin-top: 16px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    /* Marca d'água suave dentro do card de resultados */
-    .result-card::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('image/logo.png');
-      background-size: 100px 100px;
-      background-position: center;
-      opacity: 0.03;
-      z-index: -1;
-      pointer-events: none;
-    }
-
-    .result-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .result-row:last-child {
-      border-bottom: none;
-    }
-
-    .result-label {
-      font-weight: 600;
-      color: #555;
-    }
-
-    .result-value {
-      font-weight: 700;
-      color: var(--green-text);
-    }
-
-    .btn-action {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      background: #f1f1f1;
-      color: #333;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 6px;
-      margin-top: 12px;
-      cursor: pointer;
-      font-weight: 600;
-      width: 100%;
-      justify-content: center;
-      font-size: 15px;
-      transition: background 0.2s;
-    }
-
-    .btn-action:hover {
-      background: #e0e0e0;
-    }
-
-    .btn-action i {
-      font-size: 16px;
-    }
-
-    .remove-row {
-      color: #dc3545;
-      cursor: pointer;
-      font-weight: bold;
-    }
-
-    /* Mobile */
-    @media (max-width: 768px) {
-      .navbar {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-        padding: 10px;
+      /* Mobile table: stack rows */
+      #apostasTable,
+      #apostasTable thead,
+      #apostasTable tbody,
+      #apostasTable th,
+      #apostasTable td,
+      #apostasTable tr {
+        display: block;
       }
 
-      .nav-links {
-        justify-content: center;
-        gap: 15px;
-        margin: 0;
+      #apostasTable thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
       }
 
-      .top-icons {
-        justify-content: center;
-        gap: 5px;
+      #apostasTable tr {
+        border: 1px solid #ccc;
+        padding: 12px 0;
+        margin-bottom: 12px;
+        display: block;
+        background: #f9fafb;
       }
 
-      .config-row,
-      .toggle-container {
-        flex-direction: column;
-        gap: 12px;
+      #apostasTable td {
+        border: none;
+        position: relative;
+        padding-left: 50% !important;
+        white-space: normal;
+        text-align: right;
       }
 
-      .config-item {
-        width: 100%;
+      #apostasTable td::before {
+        content: attr(data-label) ": ";
+        position: absolute;
+        left: 12px;
+        width: 45%;
+        font-weight: bold;
+        text-align: left;
+        color: #24303a;
       }
 
-      .table-container {
-        font-size: 12px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+      tfoot td {
+        display: block !important;
+        text-align: right !important;
+        padding: 12px !important;
       }
 
-      th, td {
-        padding: 6px;
-        white-space: nowrap;
+      .aposta-total {
+        justify-content: space-between;
       }
 
-      .section {
-        padding: 15px;
-      }
-
-      .container {
-        padding: 0 10px;
+      .aposta-total input {
+        width: 120px;
+        text-align: right;
       }
     }
   </style>
 </head>
 <body>
-  <!-- Navbar -->
-  <div class="navbar">
-    <div class="logo"></div>
-    <div class="nav-links">
-      <a href="#" class="active">Calculadora</a>
-      <a href="#">Planilha</a>
-      <a href="#">Área de Membros</a>
+  <div class="wrap">
+    <!-- NAVBAR -->
+    <div class="navbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>Fábrica Super Odd</h1>
+          <div class="small">Calculadora de Arbitragem</div>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <button id="btnOpenLogin" title="Entrar / Cadastrar">Entrar</button>
+        <button class="icon-btn" id="btnOpenAdmin" title="Admin"><i class="fas fa-user-cog"></i></button>
+      </div>
     </div>
-    <div class="top-icons">
-      <button title="Home"><i class="fas fa-home"></i></button>
-      <button title="Instagram"><i class="fab fa-instagram"></i></button>
-      <button title="Telegram"><i class="fab fa-telegram"></i></button>
-      <button title="Notificações"><i class="fas fa-bell"></i></button>
-      <button class="btn-enter">Entrar</button>
-    </div>
-  </div>
 
-  <div class="container">
-    <h5>Calculadora</h5>
-
-    <!-- Configurações -->
+    <!-- CONFIGURAÇÕES -->
     <div class="section">
-      <h5>Configurações</h5>
-      <div class="config-row">
-        <div class="config-item">
-          <label>Procedimento:</label>
+      <h2>Configurações</h2>
+      <div class="sub">Defina o procedimento e as opções. A aposta total será distribuída automaticamente.</div>
+      <div class="grid2" style="margin-top:12px">
+        <div class="field">
+          <label>Procedimento</label>
           <select id="procedimento">
             <option>Selecione um procedimento</option>
             <option>Arbitragem Simples</option>
@@ -515,459 +452,559 @@
             <option>Cashback</option>
           </select>
         </div>
-        <div class="config-item">
-          <label>Quantidade de casas:</label>
-          <select id="qtdCasas" onchange="updateCasas()">
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
-            <option value="9">9</option>
-            <option value="10">10</option>
+        <div class="field">
+          <label>Quantidade de casas</label>
+          <select id="qtdCasas">
+            <option value="2">2</option><option value="3">3</option><option value="4">4</option>
+            <option value="5">5</option><option value="6">6</option>
           </select>
         </div>
-      </div>
-      <div class="toggle-container">
-        <div class="toggle">
-          <label>Aposta com freebet</label>
-          <label class="switch">
-            <input type="checkbox" id="freebet" onchange="updateFreebetField()">
-            <span class="slider"></span>
-          </label>
+        <div class="field">
+          <label>Quantidade de contas</label>
+          <input id="qtdContas" type="number" min="1" value="1">
+          <div class="small">Multiplica stake e lucro final</div>
         </div>
-        <div class="toggle">
-          <label>Aposta com cashback</label>
-          <label class="switch">
-            <input type="checkbox" id="cashback" onchange="updateCashbackField()">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="toggle">
-          <label>Exibir comissão</label>
-          <label class="switch">
-            <input type="checkbox" id="comissao" onchange="updateTableColumns()">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <div class="toggle">
-          <label>Exibir aumento</label>
-          <label class="switch">
-            <input type="checkbox" id="aumento" onchange="updateTableColumns()">
-            <span class="slider"></span>
-          </label>
+        <div class="field">
+          <label>Aposta total (R$)</label>
+          <input id="apostaTotalInput" type="number" step="0.01" value="100.00">
         </div>
       </div>
-      <div class="config-item">
-        <label>Quantidade de contas:</label>
-        <input type="number" id="qtdContas" value="1" min="1" max="10" onchange="updateTotalValues()">
+      <div style="margin-top:14px" class="toggles">
+        <div class="toggle" title="Ativa coluna 'Freebet': aposta gratuita (não reduz seu saldo)">
+          <div id="switchFreebet" class="switch"><div class="knob"></div></div>
+          <div class="small">Usar Freebet</div>
+        </div>
+        <div class="toggle" title="Ativa coluna 'Cashback': devolve % da aposta em caso de perda">
+          <div id="switchCashback" class="switch"><div class="knob"></div></div>
+          <div class="small">Usar Cashback</div>
+        </div>
+        <div class="toggle" title="Exibir comissão aplicada à aposta">
+          <div id="switchComissao" class="switch on"><div class="knob"></div></div>
+          <div class="small">Exibir comissão</div>
+        </div>
+        <div class="toggle" title="Exibir aumento nas odds (ex: +2%)">
+          <div id="switchAumento" class="switch"><div class="knob"></div></div>
+          <div class="small">Exibir aumento</div>
+        </div>
+      </div>
+      <div class="toggle-note">
+        • <strong>Freebet</strong>: aposta grátis — não reduz seu saldo real.<br>
+        • <strong>Cashback</strong>: em caso de perda, você recupera a % informada do valor apostado.
       </div>
     </div>
 
-    <!-- Linhas de Apostas -->
+    <!-- LINHAS DE APOSTAS -->
     <div class="section">
-      <h5>Linhas de Apostas</h5>
-      <div class="table-container">
-        <table id="apostasTable">
+      <h2>Linhas de Apostas</h2>
+      <div class="sub">Insira odds e o sistema distribuirá automaticamente a aposta total.</div>
+      <div class="table-wrap">
+        <table id="apostasTable" aria-label="Linhas de apostas">
           <thead>
             <tr>
               <th>Casa</th>
               <th>Tipo</th>
               <th>ODD</th>
-              <th>Comissão</th>
-              <th>ODD Final</th>
-              <th>Aumento</th>
+              <th class="col-comissao">Comissão %</th>
+              <th class="col-oddfinal">ODD Final</th>
+              <th class="col-aumento">Aumento %</th>
               <th>Aposta</th>
-              <th>C<i class="fas fa-info-circle info-icon" title="Comissão"></i></th>
+              <th class="col-freebet">Freebet</th>
+              <th class="col-cashback">Cashback %</th>
+              <th>C <i class="fas fa-info-circle small" title="Comissão aplicada"></i></th>
               <th>Lucro</th>
             </tr>
           </thead>
           <tbody id="apostasBody">
-            <!-- Preenchido por JS -->
+            <!-- linhas geradas via JS -->
           </tbody>
           <tfoot>
             <tr>
-              <td colspan="6"><strong>Aposta total:</strong></td>
-              <td>
-                <input type="text" id="apostaTotal" value="0.00" oninput="distributeValue()" style="background:#f0f0f0;border:none;font-weight:bold;width:100px;">
-                <button class="copy-btn" onclick="copyApostaTotal()">📋</button>
+              <td colspan="6" class="aposta-total-label"></td>
+              <td colspan="4" class="aposta-total">
+                <strong>Aposta total:</strong>
+                <input id="apostaTotalDisplay" type="text" readonly>
+                <button class="btn ghost" id="btnCopyAposta">📋</button>
               </td>
-              <td colspan="2"></td>
+              <td></td>
             </tr>
           </tfoot>
         </table>
       </div>
     </div>
 
-    <!-- Resultados -->
+    <!-- RESULTADOS -->
     <div class="section">
-      <h5>Resultados</h5>
-      <div class="table-container">
-        <table id="resultadosTable">
-          <thead>
-            <tr>
-              <th>Casa</th>
-              <th>ODD</th>
-              <th>Aposta</th>
-              <th>Tipo</th>
-              <th>Lucro</th>
-            </tr>
-          </thead>
-          <tbody id="resultadosBody">
-            <!-- Preenchido automaticamente -->
-          </tbody>
-        </table>
+      <h2>Resultados</h2>
+      <div class="results-wrap">
+        <div class="results-left">
+          <table class="results-table" aria-label="Tabela de resultados">
+            <thead>
+              <tr>
+                <th>Casa</th>
+                <th>ODD</th>
+                <th>Aposta</th>
+                <th>Tipo</th>
+                <th>Lucro</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody">
+              <!-- preenchido via JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="results-right">
+          <div class="results-actions">
+            <button class="btn" id="btnShare">📤 Compartilhar</button>
+            <button class="btn ghost" id="btnAddPlanilha">📊 Adicionar à planilha</button>
+          </div>
+          <div class="summary-cards">
+            <div class="summary-card">
+              <div class="label">Stake Total (Risco)</div>
+              <div class="value highlight" id="stakeTotal">R$ 0.00</div>
+            </div>
+            <div class="summary-card">
+              <div class="label">Porcentagem</div>
+              <div class="value" id="porcentagem">0.00 %</div>
+            </div>
+            <div class="summary-card">
+              <div class="label">Lucro (pior cenário)</div>
+              <div class="value highlight" id="lucroTotal">R$ 0.00</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <button class="btn-action" onclick="shareResults()">
-          <i class="fas fa-share-alt"></i> Compartilhar
-        </button>
-        <button class="btn-action" onclick="addToPlanilha()">
-          <i class="fas fa-plus"></i> Adicionar à planilha
-        </button>
-      </div>
-      <div class="result-card">
-        <div class="result-row">
-          <span class="result-label">Stake Total (Risco):</span>
-          <span class="result-value" id="stakeTotal">R$ 0.00</span>
+    </div>
+
+    <!-- ADMIN -->
+    <div id="adminPanel" class="section" style="display:none">
+      <h2>Admin — Usuários</h2>
+      <div class="sub">Importe/exporte usuários via CSV (Google Sheets → Exportar como CSV). Cada linha: <code>email,password,enabled</code></div>
+      <div class="admin-box">
+        <div class="admin-actions">
+          <label class="btn ghost" for="fileUsers">Importar CSV</label>
+          <input id="fileUsers" class="file-input" type="file" accept=".csv">
+          <button class="btn" id="btnExportUsers">Exportar CSV</button>
+          <button class="btn ghost" id="btnClearUsers">Limpar todos (local)</button>
         </div>
-        <div class="result-row">
-          <span class="result-label">Porcentagem:</span>
-          <span class="result-value" id="porcentagem">0.00 %</span>
-        </div>
-        <div class="result-row">
-          <span class="result-label">Lucro:</span>
-          <span class="result-value" id="lucroTotal">R$ 0.00</span>
-        </div>
+        <div style="margin-top:12px" id="usersList"></div>
       </div>
     </div>
   </div>
 
+  <!-- MODAL -->
+  <div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3 id="modalTitle">Entrar</h3>
+      <div class="muted">Use seu e-mail e senha. Para produção, substitua por autenticação via servidor ou Firebase.</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn" id="btnModalLogin">Login</button>
+        <button class="btn ghost" id="btnModalRegister">Cadastrar</button>
+      </div>
+      <div style="margin-top:8px">
+        <label>Email</label>
+        <input id="authEmail" type="text" placeholder="seu@email.com">
+      </div>
+      <div style="margin-top:8px">
+        <label>Senha</label>
+        <input id="authPass" type="password" placeholder="senha">
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn" id="btnDoAuth">Confirmar</button>
+        <button class="btn ghost" id="btnCloseModal">Fechar</button>
+      </div>
+      <div class="small" style="margin-top:8px">Nota: o cliente pode gerenciar usuários via Google Sheets exportando CSV e importando aqui.</div>
+    </div>
+  </div>
+
   <script>
-    // Gera linhas iniciais
-    function generateInitialRows() {
-      const tbody = document.getElementById('apostasBody');
-      tbody.innerHTML = '';
-      for (let i = 1; i <= 2; i++) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><input type="text" value="Casa ${i}" class="casa-input"></td>
-          <td><div class="type-btn back" onclick="toggleType(this)">BACK</div></td>
-          <td><input type="number" value="2.000" class="odd-input" step="0.001" min="1"></td>
-          <td><input type="text" value="0.00%" class="comissao-input" readonly></td>
-          <td><span class="odd-final">2.000</span></td>
-          <td><input type="text" value="0.00%" class="aumento-input" readonly></td>
-          <td><input type="number" value="0.00" class="aposta-input" step="0.01" min="0"></td>
-          <td><input type="checkbox" class="comissao-checkbox"></td>
-          <td><span class="lucro-output">0.00</span></td>
-        `;
-        tbody.appendChild(row);
-      }
-      attachInputListeners();
+    const state = {
+      qtdCasas: 2,
+      rows: [],
+      showComissao: true,
+      showAumento: false,
+      showFreebet: false,
+      showCashback: false
+    };
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    const money = v => Number(v || 0).toFixed(2);
+
+    // ========== Autenticação (mantida) ==========
+    function loadUsers(){ try{ return JSON.parse(localStorage.getItem('ss_users')||'[]'); }catch(e){ return []; } }
+    function saveUsers(list){ localStorage.setItem('ss_users', JSON.stringify(list)); renderUsers(); }
+    function renderUsers(){
+      const users = loadUsers();
+      const container = $('#usersList');
+      if(!container) return;
+      if(users.length===0){ container.innerHTML = '<div class="small">Nenhum usuário cadastrado.</div>'; return; }
+      container.innerHTML = users.map((u,i)=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 6px;border-bottom:1px solid #eef6f8">
+          <div>
+            <div style="font-weight:700">${u.email}</div>
+            <div class="small">enabled: ${u.enabled ? 'sim' : 'não'}</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn ghost" onclick="toggleUser(${i})">${u.enabled ? 'Bloquear' : 'Liberar'}</button>
+            <button class="btn ghost" onclick="deleteUser(${i})">Remover</button>
+          </div>
+        </div>
+      `).join('');
+    }
+    function toggleUser(i){ const users=loadUsers(); users[i].enabled=!users[i].enabled; saveUsers(users); }
+    function deleteUser(i){ const users=loadUsers(); users.splice(i,1); saveUsers(users); }
+    function exportUsersCSV(){
+      const users = loadUsers();
+      const csv = users.map(u=>[u.email,u.pass,u.enabled?1:0].join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='users.csv'; a.click(); URL.revokeObjectURL(url);
+    }
+    function importUsersCSV(file){
+      const reader = new FileReader();
+      reader.onload = e => {
+        const text = e.target.result.trim();
+        if(!text) return alert('CSV vazio');
+        const lines = text.split(/\r?\n/);
+        const users = lines.map(l=>{
+          const [email,pass,enabled] = l.split(',');
+          return {email: (email||'').trim(), pass: (pass||'').trim(), enabled: !!(enabled && enabled.trim() !== '0')};
+        }).filter(u=>u.email);
+        const existing = loadUsers();
+        const map = {};
+        existing.concat(users).forEach(u=>{ map[u.email]=u; });
+        const merged = Object.values(map);
+        saveUsers(merged);
+        alert('Importado ' + users.length + ' usuário(s).');
+      };
+      reader.readAsText(file);
     }
 
-    // Atualiza campo Freebet
-    function updateFreebetField() {
-      const showFreebet = document.getElementById('freebet').checked;
-      const rows = document.querySelectorAll('#apostasBody tr');
-      rows.forEach(row => {
-        if (showFreebet) {
-          if (!row.querySelector('.freebet-input')) {
-            const td = row.children[6];
-            const freebetInput = document.createElement('input');
-            freebetInput.type = 'number';
-            freebetInput.className = 'freebet-input';
-            freebetInput.placeholder = 'Freebet';
-            freebetInput.step = '0.01';
-            freebetInput.value = '0.00';
-            freebetInput.style.marginTop = '5px';
-            td.appendChild(freebetInput);
-          }
-        } else {
-          const freebetInput = row.querySelector('.freebet-input');
-          if (freebetInput) freebetInput.remove();
-        }
-      });
-      updateCalculations();
+    // ========== Modal ==========
+    const modal = $('#modal');
+    let modalMode = 'login';
+    $('#btnOpenLogin').addEventListener('click', ()=>{ openModal('login'); });
+    $('#btnOpenAdmin').addEventListener('click', ()=>{ $('#adminPanel').style.display = $('#adminPanel').style.display === 'none' ? 'block' : 'none'; renderUsers(); });
+    $('#btnModalLogin').addEventListener('click', ()=>openModal('login'));
+    $('#btnModalRegister').addEventListener('click', ()=>openModal('register'));
+    $('#btnCloseModal').addEventListener('click', closeModal);
+    function openModal(mode){
+      modalMode = mode;
+      $('#modalTitle').textContent = mode === 'login' ? 'Entrar' : 'Cadastrar';
+      $('#btnDoAuth').textContent = mode === 'login' ? 'Entrar' : 'Criar conta';
+      modal.style.display = 'flex';
+      modal.setAttribute('aria-hidden','false');
     }
-
-    // Atualiza campo Cashback
-    function updateCashbackField() {
-      const showCashback = document.getElementById('cashback').checked;
-      const rows = document.querySelectorAll('#apostasBody tr');
-      rows.forEach(row => {
-        if (showCashback) {
-          if (!row.querySelector('.cashback-input')) {
-            const td = row.children[6];
-            const cashbackInput = document.createElement('input');
-            cashbackInput.type = 'number';
-            cashbackInput.className = 'cashback-input';
-            cashbackInput.placeholder = 'Cashback %';
-            cashbackInput.step = '0.01';
-            cashbackInput.value = '0.00';
-            cashbackInput.style.marginTop = '5px';
-            td.appendChild(cashbackInput);
-          }
-        } else {
-          const cashbackInput = row.querySelector('.cashback-input');
-          if (cashbackInput) cashbackInput.remove();
-        }
-      });
-      updateCalculations();
-    }
-
-    // Distribui valor total entre as casas para garantir lucro líquido em todos os cenários
-    function distributeValue() {
-      const total = parseFloat(document.getElementById('apostaTotal').value) || 0;
-      const rows = document.querySelectorAll('#apostasBody tr');
-      if (rows.length === 0 || total <= 0) {
-        rows.forEach(row => row.querySelector('.aposta-input').value = '0.00');
-        updateCalculations();
-        return;
-      }
-
-      // Calcula soma dos inversos das odds ajustadas
-      let sumInverses = 0;
-      const odds = [];
-      rows.forEach(row => {
-        let odd = parseFloat(row.querySelector('.odd-input').value) || 1;
-        if (document.getElementById('aumento').checked) odd *= 1.02;
-        odds.push(odd);
-        sumInverses += 1 / odd;
-      });
-
-      // Se for arbitragem viável (sumInverses < 1), distribui para lucro positivo
-      // Caso contrário, distribui proporcionalmente (menor prejuízo)
-      rows.forEach((row, i) => {
-        const apostaInput = row.querySelector('.aposta-input');
-        let aposta;
-        if (sumInverses < 1) {
-          // Garante lucro igual em todos os cenários
-          aposta = total * (1 / odds[i]) / sumInverses;
-        } else {
-          // Distribuição proporcional (menor prejuízo)
-          aposta = total * (1 / odds[i]) / sumInverses;
-        }
-        apostaInput.value = aposta.toFixed(2);
-      });
-
-      updateCalculations();
-    }
-
-    // Atualiza colunas da tabela conforme configurações
-    function updateTableColumns() {
-      const showComissao = document.getElementById('comissao').checked;
-      const showAumento = document.getElementById('aumento').checked;
-
-      const headers = document.querySelectorAll('#apostasTable thead th');
-      const rows = document.querySelectorAll('#apostasTable tbody tr');
-
-      headers[3].style.display = showComissao ? 'table-cell' : 'none';
-      headers[4].style.display = 'table-cell';
-      headers[5].style.display = showAumento ? 'table-cell' : 'none';
-      headers[6].style.display = 'table-cell';
-      headers[7].style.display = showComissao ? 'table-cell' : 'none';
-
-      rows.forEach(row => {
-        row.children[3].style.display = showComissao ? 'table-cell' : 'none';
-        row.children[4].style.display = 'table-cell';
-        row.children[5].style.display = showAumento ? 'table-cell' : 'none';
-        row.children[6].style.display = 'table-cell';
-        row.children[7].style.display = showComissao ? 'table-cell' : 'none';
-      });
-
-      updateCalculations();
-    }
-
-    // Alterna tipo BACK/LAY
-    function toggleType(btn) {
-      if (btn.classList.contains('back')) {
-        btn.classList.remove('back');
-        btn.classList.add('lay');
-        btn.textContent = 'LAY';
+    function closeModal(){ modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); }
+    $('#btnDoAuth').addEventListener('click', ()=>{
+      const email = $('#authEmail').value.trim();
+      const pass = $('#authPass').value.trim();
+      if(!email || !pass) return alert('Preencha email e senha');
+      const users = loadUsers();
+      if(modalMode === 'register'){
+        if(users.some(u=>u.email===email)) return alert('Email já cadastrado');
+        users.push({email,pass,enabled:true});
+        saveUsers(users);
+        alert('Cadastro realizado. Você já pode entrar.');
+        closeModal();
       } else {
-        btn.classList.remove('lay');
-        btn.classList.add('back');
-        btn.textContent = 'BACK';
+        const user = users.find(u=>u.email===email && u.pass===pass);
+        if(!user) return alert('Credenciais inválidas.');
+        if(!user.enabled) return alert('Usuário bloqueado.');
+        alert('Login efetuado: ' + email);
+        closeModal();
       }
-      updateCalculations();
-    }
-
-    // Atualizar número de casas
-    function updateCasas() {
-      const qtd = parseInt(document.getElementById('qtdCasas').value) || 2;
-      const tbody = document.getElementById('apostasBody');
-      tbody.innerHTML = '';
-      for (let i = 1; i <= qtd; i++) {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><input type="text" value="Casa ${i}" class="casa-input"></td>
-          <td><div class="type-btn back" onclick="toggleType(this)">BACK</div></td>
-          <td><input type="number" value="2.000" class="odd-input" step="0.001" min="1"></td>
-          <td><input type="text" value="0.00%" class="comissao-input" readonly></td>
-          <td><span class="odd-final">2.000</span></td>
-          <td><input type="text" value="0.00%" class="aumento-input" readonly></td>
-          <td><input type="number" value="0.00" class="aposta-input" step="0.01" min="0"></td>
-          <td><input type="checkbox" class="comissao-checkbox"></td>
-          <td><span class="lucro-output">0.00</span></td>
-        `;
-        tbody.appendChild(row);
-      }
-      attachInputListeners();
-      updateFreebetField();
-      updateCashbackField();
-      updateCalculations();
-    }
-
-    // Copiar aposta total
-    function copyApostaTotal() {
-      const valor = document.getElementById('apostaTotal').value;
-      navigator.clipboard.writeText(valor).then(() => {
-        alert('Valor copiado: R$ ' + valor);
-      });
-    }
-
-    // Compartilhar
-    function shareResults() {
-      const stake = document.getElementById('stakeTotal').textContent;
-      const lucro = document.getElementById('lucroTotal').textContent;
-      const pct = document.getElementById('porcentagem').textContent;
-      const msg = `Fábrica Super Odd\nStake Total: ${stake}\nLucro: ${lucro}\nPorcentagem: ${pct}`;
-      if (navigator.share) {
-        navigator.share({ title: 'Resultado da Arbitragem', text: msg });
-      } else {
-        navigator.clipboard.writeText(msg).then(() => {
-          alert('Resultado copiado!');
-        });
-      }
-    }
-
-    // Adicionar à planilha (simulado)
-    function addToPlanilha() {
-      alert('Aposta adicionada à sua planilha com sucesso!');
-    }
-
-    // Atualizar cálculos
-    function updateCalculations() {
-      const rows = document.querySelectorAll('#apostasBody tr');
-      let totalAposta = 0;
-      let totalLucro = 0;
-
-      const resultadosBody = document.getElementById('resultadosBody');
-      resultadosBody.innerHTML = '';
-
-      rows.forEach(row => {
-        const casaInput = row.querySelector('.casa-input');
-        const apostaInput = row.querySelector('.aposta-input');
-        const oddInput = row.querySelector('.odd-input');
-        const lucroOutput = row.querySelector('.lucro-output');
-        const comissaoCheckbox = row.querySelector('.comissao-checkbox');
-        const typeBtn = row.querySelector('.type-btn');
-        const comissaoInput = row.querySelector('.comissao-input');
-        const aumentoInput = row.querySelector('.aumento-input');
-        const oddFinalSpan = row.querySelector('.odd-final');
-        const freebetInput = row.querySelector('.freebet-input');
-        const cashbackInput = row.querySelector('.cashback-input');
-
-        let aposta = parseFloat(apostaInput.value) || 0;
-        let odd = parseFloat(oddInput.value) || 0;
-        let comissao = 0;
-        let aumento = 0;
-        let freebet = 0;
-        let cashback = 0;
-        let lucro = 0;
-
-        if (comissaoCheckbox.checked) {
-          comissao = 0.05;
-          comissaoInput.value = '5.00%';
-        } else {
-          comissaoInput.value = '0.00%';
-        }
-
-        if (document.getElementById('aumento').checked) {
-          aumento = 0.02;
-          aumentoInput.value = '2.00%';
-          odd = odd * (1 + aumento);
-        } else {
-          aumentoInput.value = '0.00%';
-        }
-
-        if (document.getElementById('freebet').checked && freebetInput) {
-          freebet = parseFloat(freebetInput.value) || 0;
-        }
-
-        if (document.getElementById('cashback').checked && cashbackInput) {
-          cashback = parseFloat(cashbackInput.value) || 0;
-        }
-
-        oddFinalSpan.textContent = odd.toFixed(3);
-
-        if (typeBtn.classList.contains('back')) {
-          lucro = aposta * (odd - 1);
-        } else {
-          lucro = aposta * (1 - odd);
-        }
-
-        if (comissaoCheckbox.checked) {
-          lucro *= (1 - comissao);
-        }
-
-        if (freebet > 0) {
-          lucro += freebet; // Freebet é lucro adicional
-        }
-
-        if (cashback > 0) {
-          lucro += aposta * (cashback / 100); // Cashback é percentual sobre aposta
-        }
-
-        lucroOutput.textContent = lucro.toFixed(2);
-        totalAposta += aposta;
-        totalLucro += lucro;
-
-        const resultRow = document.createElement('tr');
-        resultRow.innerHTML = `
-          <td>${casaInput.value}</td>
-          <td>${odd.toFixed(3)}</td>
-          <td>${aposta.toFixed(2)}</td>
-          <td>${typeBtn.textContent}</td>
-          <td>${lucro.toFixed(2)}</td>
-        `;
-        resultadosBody.appendChild(resultRow);
-      });
-
-      const qtdContas = parseInt(document.getElementById('qtdContas').value) || 1;
-      const stake = totalAposta * qtdContas;
-      const lucro = totalLucro * qtdContas;
-      const porcentagem = totalAposta > 0 ? (totalLucro / totalAposta * 100) : 0;
-
-      document.getElementById('apostaTotal').value = totalAposta.toFixed(2);
-      document.getElementById('stakeTotal').textContent = `R$ ${stake.toFixed(2)}`;
-      document.getElementById('lucroTotal').textContent = `R$ ${lucro.toFixed(2)}`;
-      document.getElementById('porcentagem').textContent = `${porcentagem.toFixed(2)} %`;
-    }
-
-    function attachInputListeners() {
-      document.querySelectorAll('.aposta-input, .odd-input, .comissao-checkbox').forEach(el => {
-        el.removeEventListener('input', updateCalculations);
-        el.addEventListener('input', updateCalculations);
-      });
-    }
-
-    function updateTotalValues() {
-      updateCalculations();
-    }
-
-    // Inicializa
-    document.addEventListener('DOMContentLoaded', () => {
-      generateInitialRows();
-      document.getElementById('qtdContas').value = '1';
-      updateTableColumns();
-      updateFreebetField();
-      updateCashbackField();
-      updateCalculations();
     });
+    $('#btnExportUsers').addEventListener('click', exportUsersCSV);
+    $('#fileUsers').addEventListener('change', (ev)=> { const f = ev.target.files[0]; if(f) importUsersCSV(f); ev.target.value = ''; });
+    $('#btnClearUsers').addEventListener('click', ()=>{ if(confirm('Apagar todos os usuários locais?')){ localStorage.removeItem('ss_users'); renderUsers(); } });
+
+    // ========== Toggles ==========
+    function initToggles(){
+      const switchMap = {
+        switchFreebet: 'showFreebet',
+        switchCashback: 'showCashback',
+        switchComissao: 'showComissao',
+        switchAumento: 'showAumento'
+      };
+      Object.keys(switchMap).forEach(id=>{
+        const el = $('#'+id);
+        el.addEventListener('click', ()=>{
+          const on = el.classList.toggle('on');
+          state[switchMap[id]] = on;
+          renderTableColumns();
+          updateFreebetCashbackFields();
+          distributeValue();
+        });
+      });
+    }
+
+    // ========== Tabela ==========
+    function createRow(i){
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td data-label="Casa"><input class="casa-input" type="text" value="Casa ${i+1}"></td>
+        <td data-label="Tipo"><button class="type-btn back">BACK</button></td>
+        <td data-label="ODD"><input class="odd-input" type="number" step="0.001" min="1" value="2.000"></td>
+        <td data-label="Comissão %" class="col-comissao"><input class="comissao-input" type="number" step="0.01" min="0" value="0.00"></td>
+        <td data-label="ODD Final" class="col-oddfinal"><span class="odd-final">2.000</span></td>
+        <td data-label="Aumento %" class="col-aumento"><input class="aumento-input" type="number" step="0.01" min="0" value="0.00"></td>
+        <td data-label="Aposta"><input class="aposta-input" type="number" step="0.01" min="0" value="0.00"></td>
+        <td data-label="Freebet" class="col-freebet"><input class="freebet-input" type="number" step="0.01" min="0" value="0.00" placeholder="freebet"></td>
+        <td data-label="Cashback %" class="col-cashback"><input class="cashback-input" type="number" step="0.01" min="0" value="0.00" placeholder="%"></td>
+        <td data-label="C" style="text-align:center">
+          <label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label>
+        </td>
+        <td data-label="Lucro"><span class="lucro-output">0.00</span></td>
+      `;
+      const casaInput = tr.querySelector('.casa-input');
+      casaInput.addEventListener('input', () => renderResultsTable());
+
+      tr.querySelector('.type-btn').addEventListener('click', (e)=>{ toggleType(e.target); distributeValue(); });
+
+      ['.odd-input','.aposta-input','.freebet-input','.cashback-input','.comissao-input','.aumento-input'].forEach(sel=>{
+        const el = tr.querySelector(sel);
+        if(el) el.addEventListener('input', ()=> { updateCalculations(); distributeValue(); });
+      });
+
+      tr.querySelector('.comissao-checkbox').addEventListener('change', ()=> { updateCalculations(); });
+      return tr;
+    }
+
+    function renderRows(){
+      const tbody = $('#apostasBody');
+      tbody.innerHTML = '';
+      for(let i=0;i<state.qtdCasas;i++){
+        tbody.appendChild(createRow(i));
+      }
+      renderTableColumns();
+      updateFreebetCashbackFields();
+      attachApontaListeners();
+    }
+
+    function attachApontaListeners(){
+      $('#apostaTotalInput').addEventListener('input', ()=>distributeValue());
+      $('#btnCopyAposta').addEventListener('click', ()=>{ navigator.clipboard.writeText($('#apostaTotalDisplay').value||''); alert('Copiado: ' + ($('#apostaTotalDisplay').value||'')); });
+    }
+
+    function toggleType(btn){
+      if(btn.classList.contains('back')){
+        btn.classList.remove('back'); btn.classList.add('lay'); btn.textContent='LAY';
+      } else {
+        btn.classList.remove('lay'); btn.classList.add('back'); btn.textContent='BACK';
+      }
+      distributeValue();
+    }
+
+    function renderTableColumns(){
+      const cols = {
+        colFreebet: state.showFreebet,
+        colCashback: state.showCashback,
+        colComissao: state.showComissao,
+        colAumento: state.showAumento
+      };
+
+      $$('.col-freebet').forEach(el => el.classList.toggle('hidden', !cols.colFreebet));
+      $$('.col-cashback').forEach(el => el.classList.toggle('hidden', !cols.colCashback));
+      $$('.col-comissao').forEach(el => el.classList.toggle('hidden', !cols.colComissao));
+      $$('.col-aumento').forEach(el => el.classList.toggle('hidden', !cols.colAumento));
+
+      const headers = $$('#apostasTable thead th');
+      headers[3].style.display = cols.colComissao ? '' : 'none';
+      headers[5].style.display = cols.colAumento ? '' : 'none';
+      headers[7].style.display = cols.colFreebet ? '' : 'none';
+      headers[8].style.display = cols.colCashback ? '' : 'none';
+
+      // Adjust colspan in tfoot dynamically
+      const visibleCount = [
+        true, true, true,
+        cols.colComissao, true,
+        cols.colAumento, true,
+        cols.colFreebet, cols.colCashback,
+        true, true
+      ].filter(Boolean).length;
+
+      const labelColspan = visibleCount - 5; // leave 5 for total area
+      $('.aposta-total-label').setAttribute('colspan', Math.max(1, labelColspan));
+      $('.aposta-total').closest('td').setAttribute('colspan', 5);
+    }
+
+    function updateFreebetCashbackFields(){
+      const rows = $$('#apostasBody tr');
+      rows.forEach(row=>{
+        const freeIn = row.querySelector('.freebet-input');
+        const cbIn = row.querySelector('.cashback-input');
+
+        if(freeIn){
+          if(state.showFreebet){
+            freeIn.disabled = false;
+            freeIn.parentElement.classList.remove('hidden');
+          } else {
+            freeIn.disabled = true;
+            freeIn.value = '0.00';
+            freeIn.parentElement.classList.add('hidden');
+          }
+        }
+
+        if(cbIn){
+          if(state.showCashback){
+            cbIn.disabled = false;
+            cbIn.parentElement.classList.remove('hidden');
+            if(parseFloat(cbIn.value) === 0) cbIn.value = '5.00';
+          } else {
+            cbIn.disabled = true;
+            cbIn.value = '0.00';
+            cbIn.parentElement.classList.add('hidden');
+          }
+        }
+      });
+    }
+
+    // ========== Distribuição com LAY logic ==========
+    function getEffectiveOdd(odd, isLay){
+      if(isLay){
+        return odd > 1 ? 1 / (odd - 1) : 1;
+      }
+      return odd;
+    }
+
+    function distributeValue(){
+      const total = parseFloat($('#apostaTotalInput').value) || 0;
+      const rows = $$('#apostasBody tr');
+      if(rows.length===0) return;
+
+      let sumInv = 0;
+      const effectiveOdds = [];
+
+      rows.forEach(r=>{
+        const odd = parseFloat(r.querySelector('.odd-input').value) || 1;
+        const isLay = r.querySelector('.type-btn').classList.contains('lay');
+        const aumento = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value)/100 || 0 : 0;
+        let effectiveOdd = getEffectiveOdd(odd, isLay);
+        if(state.showAumento) effectiveOdd *= (1 + aumento);
+        effectiveOdds.push(effectiveOdd);
+        sumInv += 1 / effectiveOdd;
+      });
+
+      rows.forEach((r,i)=>{
+        const apostaInput = r.querySelector('.aposta-input');
+        let apostaVal = 0;
+        if(total > 0 && sumInv > 0){
+          apostaVal = total * (1 / effectiveOdds[i]) / sumInv;
+        }
+        apostaInput.value = Number(apostaVal || 0).toFixed(2);
+      });
+
+      const sumDistributed = rows.reduce((s,r)=> s + (parseFloat(r.querySelector('.aposta-input').value)||0), 0);
+      $('#apostaTotalDisplay').value = money(sumDistributed);
+      updateCalculations();
+    }
+
+    // ========== Cálculos com LAY ==========
+    function updateCalculations(){
+      const rows = $$('#apostasBody tr');
+      let totalStake = rows.reduce((s,r)=> s + (parseFloat(r.querySelector('.aposta-input').value)||0), 0);
+      const inputTotal = parseFloat($('#apostaTotalInput').value) || 0;
+      if(inputTotal>0) totalStake = inputTotal;
+
+      const lucroByOutcome = [];
+      rows.forEach((r,i)=>{
+        const odd = parseFloat(r.querySelector('.odd-input').value) || 0;
+        const bet = parseFloat(r.querySelector('.aposta-input').value) || 0;
+        const comCheckbox = r.querySelector('.comissao-checkbox') ? r.querySelector('.comissao-checkbox').checked : false;
+        const freebet = r.querySelector('.freebet-input') ? parseFloat(r.querySelector('.freebet-input').value)||0 : 0;
+        const cashback = r.querySelector('.cashback-input') ? parseFloat(r.querySelector('.cashback-input').value)||0 : 0;
+        const comPct = r.querySelector('.comissao-input') ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
+        const aumento = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value)/100 || 0 : 0;
+        const isLay = r.querySelector('.type-btn').classList.contains('lay');
+
+        let oddFinal = odd * (1 + aumento);
+        const oddFinalEl = r.querySelector('.odd-final');
+        if(oddFinalEl) oddFinalEl.textContent = oddFinal.toFixed(3);
+
+        let stakeUsedForPayout = freebet > 0 ? freebet : bet;
+        let payout = isLay ? (oddFinal - 1) * stakeUsedForPayout : oddFinal * stakeUsedForPayout;
+        let lucroOutcome = isLay ? payout - (totalStake - bet) : payout - totalStake;
+
+        if(comCheckbox && comPct > 0){
+          lucroOutcome *= (1 - (comPct/100));
+        }
+
+        if(cashback){
+          lucroOutcome += bet * (cashback/100);
+        }
+
+        const outEl = r.querySelector('.lucro-output');
+        if(outEl) outEl.textContent = money(lucroOutcome);
+        lucroByOutcome.push(lucroOutcome);
+      });
+
+      const worst = lucroByOutcome.length ? Math.min(...lucroByOutcome) : 0;
+      const qtdContas = parseInt($('#qtdContas').value) || 1;
+      const stakeMult = totalStake * qtdContas;
+      const lucroMult = worst * qtdContas;
+      const pct = totalStake > 0 ? (worst / totalStake * 100) : 0;
+      $('#stakeTotal').textContent = 'R$ ' + money(stakeMult);
+      $('#lucroTotal').textContent = 'R$ ' + money(lucroMult);
+      $('#porcentagem').textContent = money(pct) + ' %';
+      $('#apostaTotalDisplay').value = money(totalStake);
+      renderResultsTable();
+    }
+
+    function renderResultsTable(){
+      const rows = $$('#apostasBody tr');
+      const tbody = $('#resultsBody');
+      tbody.innerHTML = '';
+      rows.forEach((r,i)=>{
+        const casa = r.querySelector('.casa-input') ? r.querySelector('.casa-input').value : `Casa ${i+1}`;
+        const oddFinal = r.querySelector('.odd-final') ? r.querySelector('.odd-final').textContent : (r.querySelector('.odd-input') ? r.querySelector('.odd-input').value : '0.000');
+        const aposta = Number(r.querySelector('.aposta-input').value || 0).toFixed(2);
+        const tipo = r.querySelector('.type-btn') ? r.querySelector('.type-btn').textContent : 'BACK';
+        const lucro = Number(r.querySelector('.lucro-output').textContent || 0).toFixed(2);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${casa}</td>
+          <td>${oddFinal}</td>
+          <td>R$ ${aposta}</td>
+          <td>${tipo}</td>
+          <td class="${Number(lucro) >= 0 ? 'lucro' : ''}">R$ ${lucro}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ========== Eventos ==========
+    $('#qtdCasas').addEventListener('change', ()=>{
+      state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
+      renderRows();
+      distributeValue();
+    });
+    $('#apostaTotalInput').addEventListener('input', ()=> distributeValue());
+    $('#qtdContas').addEventListener('input', ()=> updateCalculations());
+    $('#btnShare').addEventListener('click', ()=>{
+      const stake = $('#stakeTotal').textContent;
+      const lucro = $('#lucroTotal').textContent;
+      const pct = $('#porcentagem').textContent;
+      const msg = `Fábrica Super Odd — Stake: ${stake} | Lucro: ${lucro} | Porc: ${pct}`;
+      if(navigator.share){ navigator.share({title:'Resultado', text:msg}); }
+      else { navigator.clipboard.writeText(msg); alert('Copiado: ' + msg); }
+    });
+    $('#btnAddPlanilha').addEventListener('click', ()=> alert('Simulado: adicionaria à planilha.'));
+
+    // ========== Inicialização ==========
+    function init(){
+      initToggles();
+      state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
+      renderRows();
+      renderUsers();
+      updateFreebetCashbackFields();
+      distributeValue();
+      $('#adminPanel').style.display = 'none';
+    }
+
+    window.toggleUser = toggleUser;
+    window.deleteUser = deleteUser;
+    document.addEventListener('DOMContentLoaded', init);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
   </script>
 </body>
 </html>
