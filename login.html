@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Entrar — Fábrica Super Odd</title>
+  <link rel="icon" href="image/logo.png" type="image/png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --pastel-yellow: #f9f3cc;
+      --pastel-yellow-dark: #f3e5a6;
+      --text: #2c2c2c;
+      --light-gray: #f8f9fa;
+      --border: #e0d9b0;
+      --shadow: 0 8px 24px rgba(243, 229, 166, 0.3);
+      --watermark-opacity: 0.03;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', 'Segoe UI', Roboto, sans-serif;
+    }
+
+    body {
+      background: var(--pastel-yellow);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: url('image/logo.png');
+      background-size: 200px;
+      background-repeat: repeat;
+      opacity: var(--watermark-opacity);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .login-container {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      width: 90%;
+      max-width: 420px;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 2;
+      animation: fadeIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transform-origin: top;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .logo {
+      width: 60px;
+      height: 60px;
+      margin: 0 auto 20px;
+      background: url('image/logo.png') center/contain no-repeat;
+      animation: pulseLogo 1.2s ease-out;
+    }
+
+    @keyframes pulseLogo {
+      0% { transform: scale(0.9); opacity: 0; }
+      70% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    h2 {
+      text-align: center;
+      font-weight: 700;
+      font-size: 24px;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: var(--light-gray);
+      font-size: 15px;
+      transition: all 0.25s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--pastel-yellow-dark);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(243, 229, 166, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--pastel-yellow-dark);
+      color: var(--text);
+      border: none;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 8px;
+      box-shadow: 0 4px 8px rgba(243, 229, 166, 0.2);
+    }
+
+    .btn:hover {
+      background: #e9d984;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(243, 229, 166, 0.3);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 6px rgba(243, 229, 166, 0.2);
+    }
+
+    .switch-mode {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--pastel-yellow-dark);
+    }
+
+    .switch-mode a {
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .message {
+      margin-top: 16px;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      font-size: 14px;
+      display: none;
+      opacity: 0;
+      animation: slideUp 0.4s forwards;
+    }
+
+    @keyframes slideUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.success {
+      background: #e6f4ea;
+      color: #137333;
+      display: block;
+      transform: translateY(10px);
+    }
+
+    .message.error {
+      background: #fce8e6;
+      color: #c5221f;
+      display: block;
+      transform: translateY(10px);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--pastel-yellow-dark);
+      font-size: 14px;
+      text-decoration: none;
+      margin-top: 12px;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="logo" aria-hidden="true"></div>
+    <h2 id="form-title">Entrar na sua conta</h2>
+
+    <div id="message" class="message"></div>
+
+    <form id="auth-form">
+      <div class="form-group">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" required autocomplete="email" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" required autocomplete="current-password" placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn" id="submit-btn">Entrar</button>
+    </form>
+
+    <div class="switch-mode">
+      Não tem conta? <a id="toggle-mode">Cadastrar-se</a>
+    </div>
+
+    <a href="index.html" class="back-link">
+      <i class="fas fa-arrow-left"></i> Voltar para a Calculadora
+    </a>
+
+    <footer>
+      © 2025 Fábrica Super Odd — Todos os direitos reservados.
+    </footer>
+  </div>
+
+  <script>
+    // 🔗 Conexão com seu backend no Render
+    const API_BASE = "https://backendfabricasuperodds.onrender.com";
+
+    let isRegisterMode = false;
+
+    const form = document.getElementById('auth-form');
+    const title = document.getElementById('form-title');
+    const toggleBtn = document.getElementById('toggle-mode');
+    const messageEl = document.getElementById('message');
+    const submitBtn = document.getElementById('submit-btn');
+
+    toggleBtn.addEventListener('click', () => {
+      isRegisterMode = !isRegisterMode;
+      title.textContent = isRegisterMode ? 'Criar conta' : 'Entrar na sua conta';
+      submitBtn.textContent = isRegisterMode ? 'Criar conta' : 'Entrar';
+      messageEl.className = 'message';
+      messageEl.style.display = 'none';
+    });
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!email || !password) {
+        showMessage('Preencha todos os campos.', 'error');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = isRegisterMode ? 'Criando...' : 'Entrando...';
+
+      try {
+        const payload = {
+          email: email,
+          password: password
+        };
+
+        const url = isRegisterMode ? `${API_BASE}/api/register` : `${API_BASE}/api/login`;
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (data.success) {
+          showMessage(data.message, 'success');
+          if (!isRegisterMode) {
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 1500);
+          }
+        } else {
+          showMessage(data.message || 'Erro desconhecido.', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage('Falha na conexão. Verifique sua internet.', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = isRegisterMode ? 'Criar conta' : 'Entrar';
+      }
+    });
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = `message ${type}`;
+      messageEl.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
