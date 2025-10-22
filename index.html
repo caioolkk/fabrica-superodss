@@ -184,11 +184,11 @@
       justify-content:flex-end;
     }
     .aposta-total input{
-      width:100px; /* Reduzido */
+      width:100px;
       text-align:right;
       font-weight:700;
       border:1px solid #dfeff0;
-      padding:6px 8px; /* Reduzido */
+      padding:6px 8px;
       border-radius:6px;
       background:#fff;
       font-size:14px;
@@ -282,13 +282,13 @@
     .summary-cards {
       display:grid;
       grid-template-columns:1fr;
-      gap:10px; /* Aumentado */
+      gap:10px;
       margin-top:12px;
     }
     .summary-card {
       background:var(--card);
-      border-radius:10px; /* Aumentado */
-      padding:14px; /* Aumentado */
+      border-radius:10px;
+      padding:14px;
       border:1px solid #eef6f8;
       position:relative;
       overflow:hidden;
@@ -425,8 +425,7 @@
         </div>
       </div>
       <div class="nav-actions">
-        <a href="login.html" id="btnOpenLogin" title="Entrar / Cadastrar" style="background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;text-decoration:none;display:inline-block">Entrar</a>
-        <!-- Botão de admin REMOVIDO conforme solicitado -->
+        <a href="#" id="btnOpenLogin" title="Entrar / Sair" style="background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;text-decoration:none;display:inline-block">Entrar</a>
       </div>
     </div>
     <!-- CONFIGURAÇÕES -->
@@ -500,7 +499,7 @@
               <th>Aposta</th>
               <th class="col-freebet">Freebet</th>
               <th class="col-cashback">Cashback %</th>
-              <th>Travar <i class="fas fa-info-circle small" title="Modo de controle: marque para usar esta linha como referência"></i></th> <!-- Alterado de "C" para "Travar" -->
+              <th>Travar <i class="fas fa-info-circle small" title="Modo de controle: marque para usar esta linha como referência"></i></th>
               <th>Lucro</th>
             </tr>
           </thead>
@@ -655,15 +654,6 @@
 
     // ========== Modal (redireciona para login.html se não estiver logado) ==========
     const modal = $('#modal');
-    $('#btnOpenLogin').addEventListener('click', (e) => {
-      e.preventDefault();
-      if (isLoggedIn()) {
-        logout();
-      } else {
-        window.location.href = 'login.html';
-      }
-    });
-
     $('#btnModalLogin').addEventListener('click', () => { window.location.href = 'login.html'; });
     $('#btnModalRegister').addEventListener('click', () => { window.location.href = 'login.html'; });
     $('#btnCloseModal').addEventListener('click', () => {
@@ -758,7 +748,7 @@
       return tr;
     }
 
-    // ========== Funções auxiliares (mantidas, mas com verificação) ==========
+    // ========== Funções auxiliares ==========
     function renderRows(){
       const tbody = $('#apostasBody');
       tbody.innerHTML = '';
