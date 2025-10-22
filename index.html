@@ -609,7 +609,7 @@
       showAumento: false,
       showFreebet: false,
       showCashback: false,
-      controlMode: 'total',
+      controlMode: 'total', // 'total' ou 'row'
       controlIndex: null
     };
     const $ = sel => document.querySelector(sel);
@@ -700,6 +700,7 @@
           state[switchMap[id]] = el.classList.contains('on');
           renderTableColumns();
           updateFreebetCashbackFields();
+          updateCalculations();
         });
       });
     }
@@ -729,12 +730,16 @@
         input.addEventListener('input', () => {
           if (!isLoggedIn()) {
             window.location.href = 'login.html';
+            return;
           }
+          updateCalculations();
         });
         input.addEventListener('click', () => {
           if (!isLoggedIn()) {
             window.location.href = 'login.html';
+            return;
           }
+          updateCalculations();
         });
       });
 
@@ -742,7 +747,18 @@
       checkbox.addEventListener('change', () => {
         if (!isLoggedIn()) {
           window.location.href = 'login.html';
+          return;
         }
+        if (checkbox.checked) {
+          state.controlMode = 'row';
+          state.controlIndex = i;
+        } else {
+          if (state.controlIndex === i) {
+            state.controlMode = 'total';
+            state.controlIndex = null;
+          }
+        }
+        updateCalculations();
       });
 
       return tr;
@@ -810,17 +826,170 @@
       });
     }
 
-    // ========== Funções de cálculo (mantidas desabilitadas até login) ==========
-    function recalculate(){ /* Mantido vazio por enquanto */ }
-    function distributeFromTotal(){ /* Mantido vazio */ }
-    function recalculateFromIndividual(){ /* Mantido vazio */ }
-    function getEffectiveOdd(odd, isLay){ return isLay ? (odd > 1 ? 1 / (odd - 1) : 1) : odd; }
-    function updateCalculations(){ /* Mantido vazio */ }
-    function renderResultsTable(){ /* Mantido vazio */ }
+    // ========== Funções de cálculo ==========
+    function getEffectiveOdd(odd, comissao = 0, aumento = 0) {
+      const oddAjustada = odd * (1 + aumento / 100);
+      const oddFinal = oddAjustada * (1 - comissao / 100);
+      return Math.max(1.001, oddFinal);
+    }
+
+    function calculateProfit(aposta, odd, freebet = 0, cashback = 0) {
+      const retorno = (aposta - freebet) * odd + freebet * odd;
+      const perda = aposta;
+      const ganhoComCashback = retorno - perda;
+      const perdaLiquida = perda * (1 - cashback / 100);
+      const lucro = ganhoComCashback > 0 ? ganhoComCashback : -perdaLiquida;
+      return lucro;
+    }
+
+    function recalculate() {
+      const totalInput = parseFloat($('#apostaTotalInput').value) || 100;
+      const qtdContas = parseFloat($('#qtdContas').value) || 1;
+      const rows = $$('#apostasBody tr');
+
+      let odds = [];
+      let comissoes = [];
+      let aumentos = [];
+      let freebets = [];
+      let cashbacks = [];
+
+      rows.forEach((row, i) => {
+        const odd = parseFloat(row.querySelector('.odd-input').value) || 2.0;
+        const comissao = state.showComissao ? parseFloat(row.querySelector('.comissao-input').value) || 0 : 0;
+        const aumento = state.showAumento ? parseFloat(row.querySelector('.aumento-input').value) || 0 : 0;
+        const freebet = state.showFreebet ? parseFloat(row.querySelector('.freebet-input').value) || 0 : 0;
+        const cashback = state.showCashback ? parseFloat(row.querySelector('.cashback-input').value) || 0 : 0;
+
+        odds[i] = odd;
+        comissoes[i] = comissao;
+        aumentos[i] = aumento;
+        freebets[i] = freebet;
+        cashbacks[i] = cashback;
+
+        const oddFinal = getEffectiveOdd(odd, comissao, aumento);
+        row.querySelector('.odd-final').textContent = oddFinal.toFixed(3);
+      });
+
+      let apostas = Array(rows.length).fill(0);
+      let totalAposta = 0;
+
+      if (state.controlMode === 'row' && state.controlIndex !== null) {
+        const idx = state.controlIndex;
+        const apostaTravada = parseFloat(rows[idx].querySelector('.aposta-input').value) || 0;
+        if (apostaTravada <= 0) {
+          state.controlMode = 'total';
+          state.controlIndex = null;
+          distributeFromTotal(totalInput, odds, comissoes, aumentos);
+        } else {
+          apostas[idx] = apostaTravada;
+          const oddRef = getEffectiveOdd(odds[idx], comissoes[idx], aumentos[idx]);
+          const retornoRef = apostaTravada * oddRef;
+
+          for (let i = 0; i < rows.length; i++) {
+            if (i === idx) continue;
+            const odd = getEffectiveOdd(odds[i], comissoes[i], aumentos[i]);
+            apostas[i] = retornoRef / odd;
+          }
+          totalAposta = apostas.reduce((a,b) => a + b, 0);
+          $('#apostaTotalInput').value = (totalAposta / qtdContas).toFixed(2);
+        }
+      } else {
+        distributeFromTotal(totalInput, odds, comissoes, aumentos);
+        totalAposta = totalInput * qtdContas;
+      }
+
+      // Atualizar inputs de aposta
+      rows.forEach((row, i) => {
+        const apostaInput = row.querySelector('.aposta-input');
+        apostaInput.value = (apostas[i] / qtdContas).toFixed(2);
+      });
+
+      // Calcular lucros
+      let lucros = [];
+      let minLucro = Infinity;
+      rows.forEach((row, i) => {
+        const aposta = apostas[i];
+        const odd = getEffectiveOdd(odds[i], comissoes[i], aumentos[i]);
+        const freebet = freebets[i];
+        const cashback = cashbacks[i];
+        const lucro = calculateProfit(aposta, odd, freebet, cashback);
+        lucros[i] = lucro;
+        if (lucro < minLucro) minLucro = lucro;
+        row.querySelector('.lucro-output').textContent = money(lucro);
+      });
+
+      // Atualizar resumo
+      $('#stakeTotal').textContent = `R$ ${money(totalAposta)}`;
+      const porcentagem = ((minLucro / totalAposta) * 100).toFixed(2);
+      $('#porcentagem').textContent = `${porcentagem} %`;
+      $('#lucroTotal').textContent = `R$ ${money(minLucro)}`;
+      $('#apostaTotalDisplay').value = money(totalAposta);
+
+      // Atualizar tabela de resultados
+      const resultsBody = $('#resultsBody');
+      resultsBody.innerHTML = '';
+      rows.forEach((row, i) => {
+        const tr = document.createElement('tr');
+        const casa = row.querySelector('.casa-input').value;
+        const odd = getEffectiveOdd(odds[i], comissoes[i], aumentos[i]);
+        const aposta = apostas[i];
+        const tipo = 'BACK';
+        const lucro = lucros[i];
+        tr.innerHTML = `
+          <td>${casa}</td>
+          <td>${odd.toFixed(3)}</td>
+          <td>R$ ${money(aposta)}</td>
+          <td>${tipo}</td>
+          <td class="lucro">R$ ${money(lucro)}</td>
+        `;
+        resultsBody.appendChild(tr);
+      });
+    }
+
+    function distributeFromTotal(totalInput, odds, comissoes, aumentos) {
+      const qtdContas = parseFloat($('#qtdContas').value) || 1;
+      const totalReal = totalInput * qtdContas;
+      const inversos = odds.map((odd, i) => 1 / getEffectiveOdd(odd, comissoes[i], aumentos[i]));
+      const somaInversos = inversos.reduce((a,b) => a + b, 0);
+      const apostas = inversos.map(inv => (totalReal * inv) / somaInversos);
+      const rows = $$('#apostasBody tr');
+      rows.forEach((row, i) => {
+        const apostaInput = row.querySelector('.aposta-input');
+        apostaInput.value = (apostas[i] / qtdContas).toFixed(2);
+      });
+    }
+
+    function updateCalculations() {
+      if (!isLoggedIn()) return;
+      recalculate();
+    }
 
     // ========== Eventos com verificação de login ==========
-    $('#qtdCasas').addEventListener('change', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
-    $('#qtdContas').addEventListener('input', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
+    $('#qtdCasas').addEventListener('change', () => {
+      if (!isLoggedIn()) {
+        window.location.href = 'login.html';
+        return;
+      }
+      state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
+      renderRows();
+      updateCalculations();
+    });
+
+    $('#qtdContas').addEventListener('input', () => {
+      if (!isLoggedIn()) return;
+      updateCalculations();
+    });
+
+    $('#apostaTotalInput').addEventListener('input', () => {
+      if (!isLoggedIn()) return;
+      if (state.controlMode === 'row') {
+        state.controlMode = 'total';
+        state.controlIndex = null;
+        $$('.comissao-checkbox').forEach(cb => cb.checked = false);
+      }
+      updateCalculations();
+    });
+
     $('#btnShare').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
     $('#btnAddPlanilha').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
     $('#btnExportUsers').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
@@ -836,6 +1005,9 @@
       renderRows();
       updateFreebetCashbackFields();
       $('#adminPanel').style.display = 'none';
+      if (isLoggedIn()) {
+        updateCalculations();
+      }
     }
 
     document.addEventListener('DOMContentLoaded', init);
