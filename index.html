@@ -610,69 +610,87 @@
       showAumento: false,
       showFreebet: false,
       showCashback: false,
-      controlMode: 'total', // 'total' ou 'individual'
+      controlMode: 'total',
       controlIndex: null
     };
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
     const money = v => Number(v || 0).toFixed(2);
 
-    // ========== Função para verificar login ==========
-    // REMOVIDA: não usamos mais localStorage
+    // ========== Nova função: verificar se está logado ==========
+    function isLoggedIn() {
+      return localStorage.getItem('superodd_logged_in') === 'true';
+    }
 
-    // ========== Nova função: garantir login ==========
+    // ========== Nova função: fazer logout ==========
+    function logout() {
+      localStorage.removeItem('superodd_logged_in');
+      window.location.href = 'login.html';
+    }
+
+    // ========== Nova função: garantir login (com verificação) ==========
     function ensureLoggedIn() {
-      window.location.href = 'login.html';
-      return false;
+      if (!isLoggedIn()) {
+        window.location.href = 'login.html';
+      }
     }
 
-    // ========== Autenticação (REMOVIDA) ==========
-    // Todas as funções abaixo foram removidas:
-    // - loadUsers
-    // - saveUsers
-    // - renderUsers
-    // - toggleUser
-    // - deleteUser
-    // - exportUsersCSV
-    // - importUsersCSV
+    // ========== Atualizar UI do navbar ==========
+    function updateNavbar() {
+      const btnLogin = $('#btnOpenLogin');
+      if (isLoggedIn()) {
+        btnLogin.textContent = 'Sair';
+        btnLogin.onclick = (e) => {
+          e.preventDefault();
+          logout();
+        };
+      } else {
+        btnLogin.textContent = 'Entrar';
+        btnLogin.onclick = (e) => {
+          e.preventDefault();
+          window.location.href = 'login.html';
+        };
+      }
+    }
 
-    // ========== Modal ==========
+    // ========== Modal (redireciona para login.html se não estiver logado) ==========
     const modal = $('#modal');
-    let modalMode = 'login';
-    $('#btnOpenLogin').addEventListener('click', ()=>{ window.location.href = 'login.html'; });
-    // Removido o listener do botão de admin
-    $('#btnModalLogin').addEventListener('click', ()=>{ window.location.href = 'login.html'; });
-    $('#btnModalRegister').addEventListener('click', ()=>{ window.location.href = 'login.html'; });
-    $('#btnCloseModal').addEventListener('click', closeModal);
-    function openModal(mode){
-      window.location.href = 'login.html';
-    }
-    function closeModal(){ modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); }
-    $('#btnDoAuth').addEventListener('click', ()=>{
+    $('#btnOpenLogin').addEventListener('click', (e) => {
+      e.preventDefault();
+      if (isLoggedIn()) {
+        logout();
+      } else {
+        window.location.href = 'login.html';
+      }
+    });
+
+    $('#btnModalLogin').addEventListener('click', () => { window.location.href = 'login.html'; });
+    $('#btnModalRegister').addEventListener('click', () => { window.location.href = 'login.html'; });
+    $('#btnCloseModal').addEventListener('click', () => {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden','true');
+    });
+
+    $('#btnDoAuth').addEventListener('click', () => {
       window.location.href = 'login.html';
     });
 
-    // ========== Funções de controle de acesso ==========
+    // ========== Função para habilitar/desabilitar inputs ==========
     function disableInputs() {
-      $('#procedimento').disabled = true;
-      $('#qtdCasas').disabled = true;
-      $('#qtdContas').disabled = true;
-      $('#apostaTotalInput').disabled = true;
-      $('#btnCopyAposta').disabled = true;
-      $('#btnShare').disabled = true;
-      $('#btnAddPlanilha').disabled = true;
-      $$('#apostasBody input, #apostasBody button').forEach(el => el.disabled = true);
+      const isLogged = isLoggedIn();
+      $('#procedimento').disabled = !isLogged;
+      $('#qtdCasas').disabled = !isLogged;
+      $('#qtdContas').disabled = !isLogged;
+      $('#apostaTotalInput').disabled = !isLogged;
+      $('#btnCopyAposta').disabled = !isLogged;
+      $('#btnShare').disabled = !isLogged;
+      $('#btnAddPlanilha').disabled = !isLogged;
+      $$('#apostasBody input, #apostasBody button, .comissao-checkbox').forEach(el => {
+        el.disabled = !isLogged;
+      });
     }
 
-    // Aplicar estado inicial
-    disableInputs();
-
-    // Eventos removidos ou redirecionados
-    $('#btnExportUsers').addEventListener('click', ()=>{ window.location.href = 'login.html'; });
-    $('#fileUsers').addEventListener('change', (ev)=> { window.location.href = 'login.html'; });
-    $('#btnClearUsers').addEventListener('click', ()=>{ window.location.href = 'login.html'; });
-
-    // ========== Toggles ==========
+    // ========== Toggles com verificação de login ==========
     function initToggles(){
       const switchMap = {
         switchFreebet: 'showFreebet',
@@ -680,15 +698,23 @@
         switchComissao: 'showComissao',
         switchAumento: 'showAumento'
       };
-      Object.keys(switchMap).forEach(id=>{
-        const el = $('#'+id);
-        el.addEventListener('click', ()=>{
-          ensureLoggedIn();
+      Object.keys(switchMap).forEach(id => {
+        const el = $('#' + id);
+        el.addEventListener('click', (e) => {
+          if (!isLoggedIn()) {
+            window.location.href = 'login.html';
+            return;
+          }
+          // Alternar visualmente (sem salvar, pois não há backend aqui)
+          el.classList.toggle('on');
+          state[switchMap[id]] = el.classList.contains('on');
+          renderTableColumns();
+          updateFreebetCashbackFields();
         });
       });
     }
 
-    // ========== Tabela ==========
+    // ========== Criar linha com verificação de login ==========
     function createRow(i){
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -706,22 +732,33 @@
         </td>
         <td data-label="Lucro"><span class="lucro-output">0.00</span></td>
       `;
-      const casaInput = tr.querySelector('.casa-input');
-      casaInput.addEventListener('input', () => { ensureLoggedIn(); });
-      tr.querySelector('.type-btn').addEventListener('click', (e)=>{ ensureLoggedIn(); });
-      ['.odd-input','.aposta-input','.freebet-input','.cashback-input','.comissao-input','.aumento-input'].forEach(sel=>{
-        const el = tr.querySelector(sel);
-        if(el) el.addEventListener('input', ()=> { ensureLoggedIn(); });
+
+      // Adicionar listeners apenas se logado
+      const inputs = tr.querySelectorAll('input, button');
+      inputs.forEach(input => {
+        input.addEventListener('input', () => {
+          if (!isLoggedIn()) {
+            window.location.href = 'login.html';
+          }
+        });
+        input.addEventListener('click', () => {
+          if (!isLoggedIn()) {
+            window.location.href = 'login.html';
+          }
+        });
       });
+
       const checkbox = tr.querySelector('.comissao-checkbox');
-      checkbox.addEventListener('change', (e) => { ensureLoggedIn(); });
+      checkbox.addEventListener('change', () => {
+        if (!isLoggedIn()) {
+          window.location.href = 'login.html';
+        }
+      });
+
       return tr;
     }
 
-    function handleControlCheckbox(checkbox, index) {
-      ensureLoggedIn();
-    }
-
+    // ========== Funções auxiliares (mantidas, mas com verificação) ==========
     function renderRows(){
       const tbody = $('#apostasBody');
       tbody.innerHTML = '';
@@ -730,15 +767,6 @@
       }
       renderTableColumns();
       updateFreebetCashbackFields();
-    }
-
-    function attachApontaListeners(){
-      $('#apostaTotalInput').addEventListener('input', ()=>{ ensureLoggedIn(); });
-      $('#btnCopyAposta').addEventListener('click', ()=>{ ensureLoggedIn(); });
-    }
-
-    function toggleType(btn){
-      ensureLoggedIn();
     }
 
     function renderTableColumns(){
@@ -792,51 +820,36 @@
       });
     }
 
-    // ========== Nova lógica central ==========
-    function getEffectiveOdd(odd, isLay){
-      if(isLay){
-        return odd > 1 ? 1 / (odd - 1) : 1;
-      }
-      return odd;
-    }
+    // ========== Funções de cálculo (mantidas desabilitadas até login) ==========
+    function recalculate(){ /* Mantido vazio por enquanto */ }
+    function distributeFromTotal(){ /* Mantido vazio */ }
+    function recalculateFromIndividual(){ /* Mantido vazio */ }
+    function getEffectiveOdd(odd, isLay){ return isLay ? (odd > 1 ? 1 / (odd - 1) : 1) : odd; }
+    function updateCalculations(){ /* Mantido vazio */ }
+    function renderResultsTable(){ /* Mantido vazio */ }
 
-    function recalculate(){
-      ensureLoggedIn();
-    }
-
-    function distributeFromTotal(){
-      ensureLoggedIn();
-    }
-
-    function recalculateFromIndividual(){
-      ensureLoggedIn();
-    }
-
-    // ========== Cálculos com LAY ==========
-    function updateCalculations(){
-      ensureLoggedIn();
-    }
-
-    function renderResultsTable(){
-      ensureLoggedIn();
-    }
-
-    // ========== Eventos ==========
-    $('#qtdCasas').addEventListener('change', ()=>{ ensureLoggedIn(); });
-    $('#qtdContas').addEventListener('input', ()=> { ensureLoggedIn(); });
-    $('#btnShare').addEventListener('click', ()=>{ ensureLoggedIn(); });
-    $('#btnAddPlanilha').addEventListener('click', ()=>{ ensureLoggedIn(); });
+    // ========== Eventos com verificação de login ==========
+    $('#qtdCasas').addEventListener('change', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
+    $('#qtdContas').addEventListener('input', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
+    $('#btnShare').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
+    $('#btnAddPlanilha').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
+    $('#btnExportUsers').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
+    $('#fileUsers').addEventListener('change', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
+    $('#btnClearUsers').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
 
     // ========== Inicialização ==========
     function init(){
+      updateNavbar(); // Atualiza botão Entrar/Sair
+      disableInputs(); // Habilita/desabilita conforme login
       initToggles();
       state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
       renderRows();
       updateFreebetCashbackFields();
       $('#adminPanel').style.display = 'none';
     }
+
     document.addEventListener('DOMContentLoaded', init);
-    modal.addEventListener('click', (e)=>{ if(e.target === modal) closeModal(); });
+    modal.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
   </script>
 </body>
 </html>
