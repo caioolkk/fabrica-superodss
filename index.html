@@ -298,16 +298,16 @@
     .admin-box{margin-top:10px;padding:12px;border-radius:8px;border:1px dashed #e6eef0;background:#fbfeff}
     .admin-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .file-input{display:none}
-    /* NOVAS REGRAS: controle fixo de aposta total */
+    /* NOVAS REGRAS: controle fixo de aposta total (agora ligado à table-wrap, canto inferior esquerdo da área de apostas) */
     .aposta-fixed {
-      position:fixed;
-      right:24px;
-      bottom:24px;
+      position:absolute; /* preso ao .table-wrap (que é relative) */
+      left:12px;
+      bottom:12px;
       z-index:120;
       background:var(--card);
       border-radius:12px;
-      padding:12px;
-      box-shadow:0 10px 30px rgba(2,6,23,0.15);
+      padding:10px 12px;
+      box-shadow:0 8px 24px rgba(2,6,23,0.12);
       display:flex;
       gap:8px;
       align-items:center;
@@ -320,6 +320,10 @@
     .aposta-fixed .btn{padding:8px 10px;border-radius:8px}
     /* esconder TFOOT antigo (mantido por compatibilidade/responsividade) */
     tfoot tr td.aposta-total { display:none; }
+    @media (max-width:1024px){
+      /* ajustes leves em tablets - manter aposta dentro da table-wrap mas com largura menor se necessário */
+      .aposta-fixed { left:8px; bottom:8px; min-width:200px; padding:8px; }
+    }
     @media (max-width:768px){
       .grid2{grid-template-columns:1fr}
       .wrap{padding:12px}
@@ -340,6 +344,8 @@
       .summary-card .value{
         font-size:14px;
       }
+
+      /* Tabela: mobile otimizada */
       #apostasTable,
       #apostasTable thead,
       #apostasTable tbody,
@@ -354,28 +360,44 @@
         left: -9999px;
       }
       #apostasTable tr {
-        border: 1px solid #ccc;
-        padding: 12px 0;
+        border: 1px solid #e3e7ea;
+        padding: 12px;
         margin-bottom: 12px;
         display: block;
-        background: #f9fafb;
+        background: #fff;
+        border-radius:8px;
       }
       #apostasTable td {
         border: none;
         position: relative;
-        padding-left: 50% !important;
+        padding-left: 48%;
         white-space: normal;
-        text-align: right;
+        text-align: left;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:8px;
       }
+      /* Mostra o label antes de cada célula (mais compacto para mobile) */
       #apostasTable td::before {
         content: attr(data-label) ": ";
         position: absolute;
         left: 12px;
-        width: 45%;
-        font-weight: bold;
+        width: 40%;
+        font-weight: 700;
         text-align: left;
         color: #24303a;
       }
+      /* inputs e botões ocupam espaço adequado em mobile */
+      #apostasTable td input[type="text"],
+      #apostasTable td input[type="number"]{
+        max-width:110px;
+        width:110px;
+      }
+      .type-btn{padding:6px 10px;font-size:13px}
+      .chk .chkbox{width:24px;height:18px}
+
+      /* Footer antigo - mostrar em mobile */
       tfoot td {
         display: block !important;
         text-align: right !important;
@@ -383,15 +405,36 @@
       }
       .aposta-total {
         justify-content: space-between;
+        display:flex;
+        gap:8px;
+        align-items:center;
       }
       .aposta-total input {
-        width: 90px;
+        width: 110px;
         text-align: right;
         font-size:14px;
       }
-      /* em mobile mostramos a versão no rodapé (não fixa) */
-      .aposta-fixed { position: static; box-shadow:none; border:none; margin-top:10px; }
-      tfoot tr td.aposta-total { display:table-cell; }
+
+      /* Em mobile colocamos a aposta-fixed como elemento estático logo abaixo da tabela (visual consistente) */
+      .aposta-fixed {
+        position: static !important;
+        box-shadow:none;
+        border:none;
+        margin-top:12px;
+        width:100%;
+        justify-content:space-between;
+        padding:10px 0;
+      }
+      .aposta-fixed input { width: 110px; }
+
+      /* Reorganizar results para mobile: resumo abaixo da tabela de resultados */
+      .results-left { order: 0; width:100% }
+      .results-right { order: 1; width:100%; display:flex; gap:8px; flex-wrap:wrap }
+      .results-actions { width:100%; display:flex; gap:8px }
+      .summary-cards { grid-template-columns:repeat(3,1fr); width:100% }
+
+      /* garantir que elementos fiquem legíveis e touch-friendly */
+      .btn, .type-btn { touch-action: manipulation; }
     }
   </style>
 </head>
@@ -493,6 +536,16 @@
             </tr>
           </tfoot>
         </table>
+
+        <!-- Controlo fixo de Aposta Total agora DENTRO da table-wrap
+             posicionado no canto inferior esquerdo da área Linhas de Apostas (desktop).
+             Em mobile ele vira estático e aparece logo abaixo da tabela. -->
+        <div class="aposta-fixed" id="apostaFixedBox" aria-hidden="false">
+          <strong>Aposta total:</strong>
+          <input id="apostaTotalFixed" type="number" step="0.01" value="100.00" aria-label="Aposta total fixa">
+          <button class="btn ghost" id="btnCopyApostaFixed" disabled>📋</button>
+        </div>
+
       </div>
     </div>
 
@@ -520,13 +573,6 @@
     </div>
 
     <div id="adminPanel" class="section" style="display:none"></div>
-  </div>
-
-  <!-- Controlo fixo de Aposta Total (desktop) -->
-  <div class="aposta-fixed" id="apostaFixedBox" aria-hidden="false">
-    <strong>Aposta total:</strong>
-    <input id="apostaTotalFixed" type="number" step="0.01" value="100.00" aria-label="Aposta total fixa">
-    <button class="btn ghost" id="btnCopyApostaFixed" disabled>📋</button>
   </div>
 
   <div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
