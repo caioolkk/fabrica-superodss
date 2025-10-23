@@ -7,9 +7,8 @@
   <link rel="icon" href="image/logo.png" type="image/png">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    /* -------------------------
-       Reset / tipografia
-       ------------------------- */
+    /* ... (ESTILOS INTEIRAMENTE IGUAIS — NÃO ALTERADOS) ... */
+    /* Mantive o mesmo CSS completo do seu código original */
     :root{
       --primary: #1f2b3a;
       --accent: #f3e5a6;
@@ -414,6 +413,7 @@
   </style>
 </head>
 <body>
+  <!-- ... HTML EXATAMENTE IGUAL AO SEU ... -->
   <div class="wrap">
     <!-- NAVBAR -->
     <div class="navbar">
@@ -616,25 +616,15 @@
     const $$ = sel => Array.from(document.querySelectorAll(sel));
     const money = v => Number(v || 0).toFixed(2);
 
-    // ========== Nova função: verificar se está logado ==========
     function isLoggedIn() {
       return localStorage.getItem('superodd_logged_in') === 'true';
     }
 
-    // ========== Nova função: fazer logout ==========
     function logout() {
       localStorage.removeItem('superodd_logged_in');
       window.location.href = 'login.html';
     }
 
-    // ========== Nova função: garantir login (com verificação) ==========
-    function ensureLoggedIn() {
-      if (!isLoggedIn()) {
-        window.location.href = 'login.html';
-      }
-    }
-
-    // ========== Atualizar UI do navbar ==========
     function updateNavbar() {
       const btnLogin = $('#btnOpenLogin');
       if (isLoggedIn()) {
@@ -652,35 +642,34 @@
       }
     }
 
-    // ========== Modal (redireciona para login.html se não estiver logado) ==========
-    const modal = $('#modal');
-    $('#btnModalLogin').addEventListener('click', () => { window.location.href = 'login.html'; });
-    $('#btnModalRegister').addEventListener('click', () => { window.location.href = 'login.html'; });
-    $('#btnCloseModal').addEventListener('click', () => {
-      modal.style.display = 'none';
-      modal.setAttribute('aria-hidden','true');
-    });
+    // ✅ Nova função: atualiza o estado de TODOS os inputs das linhas
+    function updateRowInputsState() {
+      const isLogged = isLoggedIn();
+      const rows = $$('#apostasBody tr');
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input, button');
+        inputs.forEach(input => {
+          input.disabled = !isLogged;
+        });
+        const checkbox = row.querySelector('.comissao-checkbox');
+        if (checkbox) checkbox.disabled = !isLogged;
+      });
 
-    $('#btnDoAuth').addEventListener('click', () => {
-      window.location.href = 'login.html';
-    });
+      // Também atualiza os botões de ação
+      $('#btnCopyAposta').disabled = !isLogged;
+      $('#btnShare').disabled = !isLogged;
+      $('#btnAddPlanilha').disabled = !isLogged;
+    }
 
-    // ========== Função para habilitar/desabilitar inputs ==========
     function disableInputs() {
       const isLogged = isLoggedIn();
       $('#procedimento').disabled = !isLogged;
       $('#qtdCasas').disabled = !isLogged;
       $('#qtdContas').disabled = !isLogged;
       $('#apostaTotalInput').disabled = !isLogged;
-      $('#btnCopyAposta').disabled = !isLogged;
-      $('#btnShare').disabled = !isLogged;
-      $('#btnAddPlanilha').disabled = !isLogged;
-      $$('#apostasBody input, #apostasBody button, .comissao-checkbox').forEach(el => {
-        el.disabled = !isLogged;
-      });
+      updateRowInputsState(); // ✅ Chama aqui também
     }
 
-    // ========== Toggles com verificação de login ==========
     function initToggles(){
       const switchMap = {
         switchFreebet: 'showFreebet',
@@ -695,7 +684,6 @@
             window.location.href = 'login.html';
             return;
           }
-          // Alternar visualmente (sem salvar, pois não há backend aqui)
           el.classList.toggle('on');
           state[switchMap[id]] = el.classList.contains('on');
           renderTableColumns();
@@ -705,58 +693,50 @@
       });
     }
 
-    // ========== Criar linha com verificação de login ==========
     function createRow(i){
       const tr = document.createElement('tr');
+      // ✅ REMOVIDO 'disabled' dos inputs!
       tr.innerHTML = `
-        <td data-label="Casa"><input class="casa-input" type="text" value="Casa ${i+1}" disabled></td>
-        <td data-label="Tipo"><button class="type-btn back" disabled>BACK</button></td>
-        <td data-label="ODD"><input class="odd-input" type="number" step="0.001" min="1" value="2.000" disabled></td>
-        <td data-label="Comissão %" class="col-comissao"><input class="comissao-input" type="number" step="0.01" min="0" value="0.00" disabled></td>
+        <td data-label="Casa"><input class="casa-input" type="text" value="Casa ${i+1}"></td>
+        <td data-label="Tipo"><button class="type-btn back">BACK</button></td>
+        <td data-label="ODD"><input class="odd-input" type="number" step="0.001" min="1" value="2.000"></td>
+        <td data-label="Comissão %" class="col-comissao"><input class="comissao-input" type="number" step="0.01" min="0" value="0.00"></td>
         <td data-label="ODD Final" class="col-oddfinal"><span class="odd-final">2.000</span></td>
-        <td data-label="Aumento %" class="col-aumento"><input class="aumento-input" type="number" step="0.01" min="0" value="0.00" disabled></td>
-        <td data-label="Aposta"><input class="aposta-input" type="number" step="0.01" min="0" value="0.00" disabled></td>
-        <td data-label="Freebet" class="col-freebet"><input class="freebet-input" type="number" step="0.01" min="0" value="0.00" placeholder="freebet" disabled></td>
-        <td data-label="Cashback %" class="col-cashback"><input class="cashback-input" type="number" step="0.01" min="0" value="0.00" placeholder="%" disabled></td>
+        <td data-label="Aumento %" class="col-aumento"><input class="aumento-input" type="number" step="0.01" min="0" value="0.00"></td>
+        <td data-label="Aposta"><input class="aposta-input" type="number" step="0.01" min="0" value="0.00"></td>
+        <td data-label="Freebet" class="col-freebet"><input class="freebet-input" type="number" step="0.01" min="0" value="0.00" placeholder="freebet"></td>
+        <td data-label="Cashback %" class="col-cashback"><input class="cashback-input" type="number" step="0.01" min="0" value="0.00" placeholder="%"></td>
         <td data-label="Travar" style="text-align:center">
-          <label class="chk"><input class="comissao-checkbox" type="checkbox" disabled><span class="chkbox"></span></label>
+          <label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label>
         </td>
         <td data-label="Lucro"><span class="lucro-output">0.00</span></td>
       `;
 
-      // Adicionar listeners apenas se logado
+      // ✅ Listeners só atualizam se estiver logado
       const inputs = tr.querySelectorAll('input, button');
       inputs.forEach(input => {
         input.addEventListener('input', () => {
-          if (!isLoggedIn()) {
-            window.location.href = 'login.html';
-            return;
-          }
-          updateCalculations();
+          if (isLoggedIn()) updateCalculations();
         });
         input.addEventListener('click', () => {
-          if (!isLoggedIn()) {
-            window.location.href = 'login.html';
-            return;
-          }
-          updateCalculations();
+          if (isLoggedIn()) updateCalculations();
         });
       });
 
       const checkbox = tr.querySelector('.comissao-checkbox');
       checkbox.addEventListener('change', () => {
-        if (!isLoggedIn()) {
-          window.location.href = 'login.html';
-          return;
-        }
-        if (checkbox.checked) {
+        if (!isLoggedIn()) return;
+        const isChecked = checkbox.checked;
+        if (isChecked) {
+          // Desmarcar outros
+          $$('.comissao-checkbox').forEach(cb => {
+            if (cb !== checkbox) cb.checked = false;
+          });
           state.controlMode = 'row';
           state.controlIndex = i;
         } else {
-          if (state.controlIndex === i) {
-            state.controlMode = 'total';
-            state.controlIndex = null;
-          }
+          state.controlMode = 'total';
+          state.controlIndex = null;
         }
         updateCalculations();
       });
@@ -764,7 +744,6 @@
       return tr;
     }
 
-    // ========== Funções auxiliares ==========
     function renderRows(){
       const tbody = $('#apostasBody');
       tbody.innerHTML = '';
@@ -773,6 +752,7 @@
       }
       renderTableColumns();
       updateFreebetCashbackFields();
+      updateRowInputsState(); // ✅ Atualiza estado após renderizar
     }
 
     function renderTableColumns(){
@@ -826,7 +806,6 @@
       });
     }
 
-    // ========== Funções de cálculo ==========
     function getEffectiveOdd(odd, comissao = 0, aumento = 0) {
       const oddAjustada = odd * (1 + aumento / 100);
       const oddFinal = oddAjustada * (1 - comissao / 100);
@@ -879,6 +858,7 @@
         if (apostaTravada <= 0) {
           state.controlMode = 'total';
           state.controlIndex = null;
+          $$('.comissao-checkbox').forEach(cb => cb.checked = false);
           distributeFromTotal(totalInput, odds, comissoes, aumentos);
         } else {
           apostas[idx] = apostaTravada;
@@ -964,7 +944,6 @@
       recalculate();
     }
 
-    // ========== Eventos com verificação de login ==========
     $('#qtdCasas').addEventListener('change', () => {
       if (!isLoggedIn()) {
         window.location.href = 'login.html';
@@ -976,8 +955,7 @@
     });
 
     $('#qtdContas').addEventListener('input', () => {
-      if (!isLoggedIn()) return;
-      updateCalculations();
+      if (isLoggedIn()) updateCalculations();
     });
 
     $('#apostaTotalInput').addEventListener('input', () => {
@@ -996,10 +974,9 @@
     $('#fileUsers').addEventListener('change', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
     $('#btnClearUsers').addEventListener('click', () => { if (!isLoggedIn()) window.location.href = 'login.html'; });
 
-    // ========== Inicialização ==========
     function init(){
-      updateNavbar(); // Atualiza botão Entrar/Sair
-      disableInputs(); // Habilita/desabilita conforme login
+      updateNavbar();
+      disableInputs();
       initToggles();
       state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
       renderRows();
@@ -1011,7 +988,15 @@
     }
 
     document.addEventListener('DOMContentLoaded', init);
+    const modal = $('#modal');
     modal.addEventListener('click', (e) => { if(e.target === modal) modal.style.display = 'none'; });
+    $('#btnCloseModal').addEventListener('click', () => {
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden','true');
+    });
+    $('#btnModalLogin').addEventListener('click', () => { window.location.href = 'login.html'; });
+    $('#btnModalRegister').addEventListener('click', () => { window.location.href = 'login.html'; });
+    $('#btnDoAuth').addEventListener('click', () => { window.location.href = 'login.html'; });
   </script>
 </body>
 </html>
