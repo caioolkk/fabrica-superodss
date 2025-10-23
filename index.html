@@ -120,7 +120,7 @@
       white-space:nowrap;
       font-size:13px;
     }
-    /* Colunas fixas por classe */
+    /* Colunas dinâmicas */
     .col-casa{width:14%}
     .col-tipo{width:7%}
     .col-odd{width:7%}
@@ -183,8 +183,7 @@
     .col-freebet.hidden,
     .col-cashback.hidden,
     .col-comissao.hidden,
-    .col-aumento.hidden,
-    .col-c.hidden {
+    .col-aumento.hidden {
       display: none !important;
     }
     .results-wrap {
@@ -637,14 +636,37 @@
         colFreebet: state.showFreebet,
         colCashback: state.showCashback,
         colComissao: state.showComissao,
-        colAumento: state.showAumento,
-        colC: state.controlIndex !== null
+        colAumento: state.showAumento
       };
       $$('.col-freebet').forEach(el => el.classList.toggle('hidden', !cols.colFreebet));
       $$('.col-cashback').forEach(el => el.classList.toggle('hidden', !cols.colCashback));
       $$('.col-comissao').forEach(el => el.classList.toggle('hidden', !cols.colComissao));
       $$('.col-aumento').forEach(el => el.classList.toggle('hidden', !cols.colAumento));
-      $$('.col-c').forEach(el => el.classList.toggle('hidden', !cols.colC));
+
+      // Atualizar larguras dinamicamente
+      const visibleCols = [
+        '.col-casa',
+        '.col-tipo',
+        '.col-odd',
+        '.col-comissao',
+        '.col-oddfinal',
+        '.col-aumento',
+        '.col-aposta',
+        '.col-freebet',
+        '.col-cashback',
+        '.col-c',
+        '.col-lucro'
+      ].filter(cls => {
+        const els = $$(cls);
+        return els.length > 0 && !els[0].classList.contains('hidden');
+      }).length;
+
+      const width = Math.floor(100 / visibleCols) + '%';
+      $$('.col-casa, .col-tipo, .col-odd, .col-comissao, .col-oddfinal, .col-aumento, .col-aposta, .col-freebet, .col-cashback, .col-c, .col-lucro').forEach(el => {
+        if (!el.classList.contains('hidden')) {
+          el.style.width = width;
+        }
+      });
     }
 
     function updateFreebetCashbackFields() {
@@ -769,7 +791,7 @@
           // Vamos usar a fórmula: Lucro = (Stake_i × Odd_i) - Stake_total
           // Mas aqui, como estamos usando C, queremos que o lucro em todos os cenários seja igual
           // Então, para a linha referência, calculamos o lucro que ela geraria se fosse a única
-          // E depois ajustamos as outras para terem o mesmo lucro
+          // E depois ajustamos as outras apostas para terem o mesmo lucro
           refLucro = (refAposta * refOdd) - refAposta;
         }
 
