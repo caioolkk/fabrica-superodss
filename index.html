@@ -130,7 +130,7 @@
     .col-aposta{width:12%}
     .col-freebet{width:9%}
     .col-cashback{width:9%}
-    .col-travar{width:8%}
+    .col-c{width:8%}
     .col-lucro{width:11%}
     tbody td input[type="text"],
     tbody td input[type="number"]{
@@ -183,7 +183,8 @@
     .col-freebet.hidden,
     .col-cashback.hidden,
     .col-comissao.hidden,
-    .col-aumento.hidden {
+    .col-aumento.hidden,
+    .col-c.hidden {
       display: none !important;
     }
     .results-wrap {
@@ -450,7 +451,7 @@
               <th class="col-aposta">Aposta</th>
               <th class="col-freebet">Freebet</th>
               <th class="col-cashback">Cashback %</th>
-              <th class="col-travar">Travar</th>
+              <th class="col-c">C</th>
               <th class="col-lucro">Lucro</th>
             </tr>
           </thead>
@@ -520,8 +521,7 @@
       showAumento: false,
       showFreebet: false,
       showCashback: false,
-      controlMode: 'total', // 'total' ou 'row'
-      controlIndex: null
+      controlIndex: null // null = não está usando C, número = índice da linha usada como referência
     };
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -574,7 +574,7 @@
         <td class="col-aposta"><input class="aposta-input" type="number" step="0.01" min="0" value="0.00"></td>
         <td class="col-freebet"><input class="freebet-input" type="number" step="0.01" min="0" value="0.00" placeholder="freebet"></td>
         <td class="col-cashback"><input class="cashback-input" type="number" step="0.01" min="0" value="0.00" placeholder="%"></td>
-        <td class="col-travar">
+        <td class="col-c">
           <label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label>
         </td>
         <td class="col-lucro"><span class="lucro-output">0.00</span></td>
@@ -610,11 +610,9 @@
         if (checkbox.checked) {
           // Desmarcar outros
           $$('.comissao-checkbox').forEach(cb => cb.checked = false);
-          checkbox.checked = true; // garantir que fique marcado
-          state.controlMode = 'row';
+          checkbox.checked = true;
           state.controlIndex = i;
         } else {
-          state.controlMode = 'total';
           state.controlIndex = null;
         }
         updateCalculations();
@@ -639,12 +637,14 @@
         colFreebet: state.showFreebet,
         colCashback: state.showCashback,
         colComissao: state.showComissao,
-        colAumento: state.showAumento
+        colAumento: state.showAumento,
+        colC: state.controlIndex !== null
       };
       $$('.col-freebet').forEach(el => el.classList.toggle('hidden', !cols.colFreebet));
       $$('.col-cashback').forEach(el => el.classList.toggle('hidden', !cols.colCashback));
       $$('.col-comissao').forEach(el => el.classList.toggle('hidden', !cols.colComissao));
       $$('.col-aumento').forEach(el => el.classList.toggle('hidden', !cols.colAumento));
+      $$('.col-c').forEach(el => el.classList.toggle('hidden', !cols.colC));
     }
 
     function updateFreebetCashbackFields() {
@@ -666,7 +666,7 @@
       return Math.max(1.001, oddAjustada);
     }
 
-    function calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks) {
+    function calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks, comissoes) {
       const n = apostas.length;
       const profits = [];
 
@@ -680,6 +680,7 @@
           const odd = odds[i];
           const freebet = freebets[i] || 0;
           const cashback = cashbacks[i] || 0;
+          const comissao = comissoes[i] || 0;
           const isLayHere = isLay[i];
 
           if (isLayHere) {
@@ -746,45 +747,66 @@
 
       let apostas = Array(rows.length).fill(0);
 
-      if (state.controlMode === 'row' && state.controlIndex !== null) {
-        const idx = state.controlIndex;
-        const apostaTravada = parseFloat(rows[idx].querySelector('.aposta-input').value) || 0;
-        if (apostaTravada <= 0) {
-          // Se valor inválido, volta ao modo total
-          state.controlMode = 'total';
-          state.controlIndex = null;
-          $$('.comissao-checkbox').forEach(cb => cb.checked = false);
-          // Recalcular como total
-          const inversos = odds.map((odd, i) => isLay[i] ? (odd - 1) : (1 / odd));
-          const soma = inversos.reduce((a,b) => a + b, 0);
-          apostas = inversos.map(inv => (totalReal * inv) / soma);
+      if (state.controlIndex !== null) {
+        // Modo C: usar linha como referência para equalizar lucro
+        const refIndex = state.controlIndex;
+        const refAposta = parseFloat(rows[refIndex].querySelector('.aposta-input').value) || 0;
+        const refOdd = odds[refIndex];
+        const refIsLay = isLay[refIndex];
+        const refFreebet = freebets[refIndex];
+        const refCashback = cashbacks[refIndex];
+        const refComissao = comissoes[refIndex];
+
+        // Calcular lucro esperado na linha referência
+        let refLucro;
+        if (refIsLay) {
+          // Lay: lucro = aposta (se não vencer)
+          refLucro = refAposta - refFreebet;
         } else {
-          apostas[idx] = apostaTravada;
-          // Calcular retorno esperado com base na linha travada
-          let retornoAlvo;
-          if (isLay[idx]) {
-            // Em LAY, o "retorno" se os outros perderem é a aposta travada
-            retornoAlvo = apostaTravada;
-          } else {
-            retornoAlvo = apostaTravada * odds[idx];
+          // Back: lucro = (aposta * odd) - (aposta total risco)
+          // Mas como estamos equalizando, vamos calcular o lucro líquido da referência
+          // Considerando que o lucro deve ser igual em todos os cenários
+          // Vamos usar a fórmula: Lucro = (Stake_i × Odd_i) - Stake_total
+          // Mas aqui, como estamos usando C, queremos que o lucro em todos os cenários seja igual
+          // Então, para a linha referência, calculamos o lucro que ela geraria se fosse a única
+          // E depois ajustamos as outras para terem o mesmo lucro
+          refLucro = (refAposta * refOdd) - refAposta;
+        }
+
+        // Ajustar as outras linhas para que o lucro seja igual
+        for (let i = 0; i < rows.length; i++) {
+          if (i === refIndex) {
+            apostas[i] = refAposta;
+            continue;
           }
 
-          for (let i = 0; i < rows.length; i++) {
-            if (i === idx) continue;
-            if (isLay[i]) {
-              // Para LAY: aposta = retornoAlvo / (odd - 1)
-              apostas[i] = retornoAlvo / (odds[i] - 1);
+          const odd = odds[i];
+          const isLayHere = isLay[i];
+          const freebet = freebets[i];
+          const cashback = cashbacks[i];
+          const comissao = comissoes[i];
+
+          if (isLayHere) {
+            // Para LAY: lucro = aposta (se não vencer) -> então aposta = lucro desejado
+            apostas[i] = refLucro + freebet;
+          } else {
+            // Para BACK: lucro = (aposta * odd) - aposta = aposta * (odd - 1)
+            // Queremos: aposta * (odd - 1) = refLucro
+            // Então: aposta = refLucro / (odd - 1)
+            if (odd > 1) {
+              apostas[i] = refLucro / (odd - 1);
             } else {
-              // Para BACK: aposta = retornoAlvo / odd
-              apostas[i] = retornoAlvo / odds[i];
+              apostas[i] = 0;
             }
           }
-
-          const novoTotal = apostas.reduce((a,b) => a + b, 0);
-          totalDisplay.value = (novoTotal / qtdContas).toFixed(2);
         }
+
+        // Recalcular o total
+        const novoTotal = apostas.reduce((a,b) => a + b, 0);
+        totalDisplay.value = (novoTotal / qtdContas).toFixed(2);
+
       } else {
-        // Modo total
+        // Modo normal: arbitragem com stake total
         const inversos = odds.map((odd, i) => isLay[i] ? (odd - 1) : (1 / odd));
         const soma = inversos.reduce((a,b) => a + b, 0);
         apostas = inversos.map(inv => (totalReal * inv) / soma);
@@ -795,7 +817,7 @@
       }
 
       // Calcular lucros por cenário
-      const scenarioProfits = calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks);
+      const scenarioProfits = calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks, comissoes);
       const minLucro = Math.min(...scenarioProfits);
       const totalAposta = apostas.reduce((a,b) => a + b, 0);
 
@@ -861,7 +883,6 @@
 
       $('#apostaTotalDisplay').addEventListener('input', () => {
         if (!isLoggedIn()) return;
-        state.controlMode = 'total';
         state.controlIndex = null;
         $$('.comissao-checkbox').forEach(cb => cb.checked = false);
         updateCalculations();
