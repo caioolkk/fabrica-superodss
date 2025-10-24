@@ -390,6 +390,14 @@
       .summary-cards { grid-template-columns:repeat(3,1fr); width:100% }
       .btn, .type-btn { touch-action: manipulation; }
     }
+
+    /* Small improvement: guarantee tfoot input aligns visually below "Aposta" column */
+    tfoot td.aposta-foot {
+      padding: 8px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+    tfoot td.aposta-foot .aposta-total { align-items:center; }
   </style>
 </head>
 <body>
@@ -477,9 +485,9 @@
           <tbody id="apostasBody"></tbody>
           <tfoot>
             <tr>
-              <!-- ✅ Aposta total alinhado EXATAMENTE abaixo da coluna "Aposta" -->
+              <!-- Aposta total fixada exatamente sob a coluna "Aposta" -->
               <td colspan="6"></td>
-              <td colspan="1" style="padding: 8px 6px; text-align: left;">
+              <td colspan="1" class="aposta-foot">
                 <div class="aposta-total" style="display: flex; align-items: center; gap: 6px;">
                   <strong>Aposta total:</strong>
                   <input id="apostaTotalDisplay" type="number" step="0.01" value="100.00" style="width: 90px; padding: 4px 6px; font-size: 12px;">
@@ -533,13 +541,16 @@
     </div>
   </div>
   <script>
+    /* =========
+       Estado & utilitários
+       ========= */
     const state = {
       qtdCasas: 2,
       showComissao: true,
       showAumento: false,
       showFreebet: false,
       showCashback: false,
-      controlIndex: null,
+      controlIndex: null,   // índice da linha com "C" selecionado (referência)
       manualMode: false
     };
     const $ = sel => document.querySelector(sel);
@@ -580,6 +591,9 @@
       });
     }
 
+    /* =========
+       Criação das linhas
+       ========= */
     function createRow(i) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -600,6 +614,7 @@
         <td class="col-lucro"><span class="lucro-output">0.00</span></td>
       `;
 
+      // Type button (BACK / LAY)
       const typeBtn = tr.querySelector('.type-btn');
       typeBtn.addEventListener('click', () => {
         if (!isLoggedIn()) return;
@@ -616,13 +631,16 @@
         updateCalculations();
       });
 
+      // Inputs (odd, comissao, aumento, aposta, cashback)
       const inputs = tr.querySelectorAll('input:not(.comissao-checkbox):not(.freebet-checkbox)');
       inputs.forEach(input => {
         input.addEventListener('input', (ev) => {
           if (!isLoggedIn()) return;
+          // When user edits aposta-input manually -> manual mode
           if (input.classList.contains('aposta-input')) {
             state.manualMode = true;
-            state.controlIndex = null;
+            state.controlIndex = null; // remove control when user manually edits aposta
+            // uncheck C boxes
             $$('.comissao-checkbox').forEach(cb => cb.checked = false);
             recalculateTotalFromIndividuals();
           }
@@ -630,23 +648,33 @@
         });
       });
 
+      // C checkbox (control). Note: class name 'comissao-checkbox' preserved to match markup (you used it)
       const checkbox = tr.querySelector('.comissao-checkbox');
       checkbox.addEventListener('change', () => {
         if (!isLoggedIn()) return;
         if (checkbox.checked) {
-          $$('.comissao-checkbox').forEach(cb => cb.checked = false);
-          checkbox.checked = true;
-          state.controlIndex = i;
+          // Only one C allowed
+          $$('.comissao-checkbox').forEach(cb => {
+            if (cb !== checkbox) {
+              cb.checked = false;
+            }
+          });
+          // set control index based on current position in DOM
+          const all = $$('#apostasBody tr');
+          state.controlIndex = all.indexOf(tr);
           state.manualMode = false;
         } else {
+          // if unchecked, clear control
           state.controlIndex = null;
         }
         updateCalculations();
       });
 
+      // Freebet checkbox (can be many)
       const freebetCheckbox = tr.querySelector('.freebet-checkbox');
       freebetCheckbox.addEventListener('change', () => {
         if (!isLoggedIn()) return;
+        // toggling freebet influences calculations
         updateCalculations();
       });
 
@@ -661,7 +689,7 @@
         const aposta = parseFloat(row.querySelector('.aposta-input').value) || 0;
         total += aposta;
       });
-      $('#apostaTotalDisplay').value = (total / qtdContas).toFixed(2);
+      $('#apostaTotalDisplay').value = (total / (qtdContas || 1)).toFixed(2);
     }
 
     function renderRows() {
@@ -687,6 +715,7 @@
       $$('.col-comissao').forEach(el => el.classList.toggle('hidden', !cols.colComissao));
       $$('.col-aumento').forEach(el => el.classList.toggle('hidden', !cols.colAumento));
 
+      // recompute widths (same as before)
       const visibleCols = [
         '.col-casa',
         '.col-tipo',
@@ -726,9 +755,53 @@
     }
 
     function getEffectiveOdd(odd, comissao = 0, aumento = 0) {
-      let oddAjustada = odd * (1 + aumento / 100);
-      oddAjustada = oddAjustada * (1 - comissao / 100);
+      let oddAjustada = odd * (1 + (aumento || 0) / 100);
+      oddAjustada = oddAjustada * (1 - (comissao || 0) / 100);
       return Math.max(1.001, oddAjustada);
+    }
+
+    /* =========
+       Função que monta o sistema linear e resolve stakes quando há C selecionado.
+       Modelo:
+         profit_j = sum_i coef[j][i]*stake_i + const_j
+       stake variables = stakes of indices != control (in real currency, já multiplicados por qtdContas)
+       ========= */
+
+    // Solve linear system Ax = b using Gaussian elimination (returns null if singular)
+    function solveLinearSystem(A, b) {
+      const n = A.length;
+      // make augmented matrix
+      const M = A.map((row, i) => row.concat([b[i]]));
+      for (let k = 0; k < n; k++) {
+        // find pivot
+        let i_max = k;
+        let max_val = Math.abs(M[k][k]);
+        for (let i = k + 1; i < n; i++) {
+          if (Math.abs(M[i][k]) > max_val) {
+            max_val = Math.abs(M[i][k]);
+            i_max = i;
+          }
+        }
+        if (Math.abs(M[i_max][k]) < 1e-12) return null; // singular
+        // swap
+        if (i_max !== k) {
+          const tmp = M[k]; M[k] = M[i_max]; M[i_max] = tmp;
+        }
+        // normalize pivot row
+        const pivot = M[k][k];
+        for (let j = k; j <= n; j++) M[k][j] /= pivot;
+        // eliminate
+        for (let i = 0; i < n; i++) {
+          if (i === k) continue;
+          const factor = M[i][k];
+          if (Math.abs(factor) < 1e-14) continue;
+          for (let j = k; j <= n; j++) {
+            M[i][j] -= factor * M[k][j];
+          }
+        }
+      }
+      // extract solution
+      return M.map(row => row[n]);
     }
 
     function calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks) {
@@ -745,9 +818,11 @@
           const isLayHere = isLay[i];
           if (isLayHere) {
             if (i === winIndex) {
+              // Lay perde (liability)
               const perda = (odd - 1) * aposta;
               totalRisco += perda;
             } else {
+              // Lay ganha stake
               totalRetorno += aposta;
             }
           } else {
@@ -759,7 +834,7 @@
               }
             } else {
               const perda = aposta;
-              const perdaLiquida = perda * (1 - cashback / 100);
+              const perdaLiquida = perda * (1 - (cashback || 0) / 100);
               totalRisco += perdaLiquida;
             }
           }
@@ -770,18 +845,23 @@
       return profits;
     }
 
+    /* =========
+       updateCalculations: toda a lógica principal (nova/refatorada)
+       ========= */
     function updateCalculations() {
+      // if login gating present, respect it
       if (!isLoggedIn()) return;
 
       const totalDisplay = $('#apostaTotalDisplay');
       let totalValue = parseFloat(totalDisplay.value) || 100;
       const qtdContas = parseFloat($('#qtdContas').value) || 1;
-      const totalReal = totalValue * qtdContas;
+      const totalReal = totalValue * qtdContas; // real total stake (multiplica contas)
       const rows = $$('#apostasBody tr');
 
-      let odds = [], freebets = [], cashbacks = [], isLay = [];
+      // gather data per row
+      const odds = [], freebets = [], cashbacks = [], isLay = [], comissoes = [], aumentos = [];
       rows.forEach((row, i) => {
-        const odd = parseFloat(row.querySelector('.odd-input').value) || 2.0;
+        const oddRaw = parseFloat(row.querySelector('.odd-input').value) || 2.0;
         const comissao = state.showComissao ? parseFloat(row.querySelector('.comissao-input').value) || 0 : 0;
         const aumento = state.showAumento ? parseFloat(row.querySelector('.aumento-input').value) || 0 : 0;
         const isFreebet = state.showFreebet && row.querySelector('.freebet-checkbox').checked;
@@ -789,119 +869,215 @@
         const tipoBtn = row.querySelector('.type-btn');
         const lay = tipoBtn.classList.contains('lay');
 
-        odds[i] = getEffectiveOdd(odd, comissao, aumento);
+        const effOdd = getEffectiveOdd(oddRaw, comissao, aumento);
+
+        odds[i] = effOdd;
         freebets[i] = isFreebet;
         cashbacks[i] = cashback;
         isLay[i] = lay;
+        comissoes[i] = comissao;
+        aumentos[i] = aumento;
 
-        row.querySelector('.odd-final').textContent = odds[i].toFixed(3);
+        row.querySelector('.odd-final').textContent = effOdd.toFixed(3);
       });
 
-      let apostas = Array(rows.length).fill(0);
+      // current apostas (per account)
+      let apostasPerAccount = Array(rows.length).fill(0);
       rows.forEach((row, i) => {
-        apostas[i] = parseFloat(row.querySelector('.aposta-input').value) || 0;
+        apostasPerAccount[i] = parseFloat(row.querySelector('.aposta-input').value) || 0;
       });
 
+      // Work in "real stakes" (consider qtdContas). stakesReal = apostasPerAccount * qtdContas
+      let stakesReal = apostasPerAccount.map(a => a * qtdContas);
+
+      // If there's a controlIndex, compute stakes for others so that all profits equal profit_control
       if (state.controlIndex !== null) {
         const refIndex = state.controlIndex;
-        const refAposta = apostas[refIndex];
-        const refOdd = odds[refIndex];
-        const refIsLay = isLay[refIndex];
-        const refIsFreebet = freebets[refIndex];
+        const stakeRefReal = stakesReal[refIndex]; // fixed (if user hasn't set, can be zero -> then no solution)
+        // Build linear system for variables = stakesReal of indices != refIndex
+        const n = rows.length;
+        const varIndices = [];
+        for (let i = 0; i < n; i++) if (i !== refIndex) varIndices.push(i);
 
-        // Calcular lucro da linha de referência
-        let refLucro;
-        if (refIsLay) {
-          // Para LAY, o lucro depende das outras apostas, então usamos abordagem diferente
-          // Vamos igualar todos os lucros ao lucro que a referência teria se vencesse
-          // Mas para LAY, "vencer" significa que NÃO acerta
-          // Simplificamos: só permitimos "C" em BACK por enquanto (comum em surebet)
-          if (rows.length === 2) {
-            const otherIndex = 1 - refIndex;
-            const otherOdd = odds[otherIndex];
-            const otherIsFree = freebets[otherIndex];
-            if (otherIsFree) {
-              // lucro_ref = otherAposta - (refOdd - 1) * refAposta
-              // lucro_other = (otherOdd - 1) * otherAposta - refAposta
-              // Igualar: otherAposta - (refOdd - 1)*refAposta = (otherOdd - 1)*otherAposta - refAposta
-              // => otherAposta * (2 - otherOdd) = refAposta * (refOdd - 2)
-              if (otherOdd !== 2) {
-                apostas[otherIndex] = (refAposta * (refOdd - 2)) / (2 - otherOdd);
+        // Build coefficients: for each outcome j (we'll create equations profit_j - profit_ref = 0 for j != refIndex)
+        // profit_j = sum_i coef[j][i]*stake_i + const_j (const_j includes contributions from ref stake)
+        // We'll create one equation for each j != refIndex, unknowns are stake_i for i in varIndices.
+        const m = varIndices.length;
+        if (m === 0) {
+          // only one row -> nothing to do
+        } else {
+          const A = []; // (m x m)
+          const b = []; // m vector
+
+          // Precompute contribution from ref stake to each profit (const term)
+          const constFromRef = new Array(n).fill(0);
+          for (let j = 0; j < n; j++) {
+            // contribution of refIndex stake to profit when outcome j occurs
+            const stake = stakeRefReal;
+            const odd = odds[refIndex];
+            const isFree = freebets[refIndex];
+            const cashback = cashbacks[refIndex] || 0;
+            const lay = isLay[refIndex];
+            if (lay) {
+              if (refIndex === j) {
+                // ref is lay and its own selection wins -> ref loses liability
+                constFromRef[j] += - (odd - 1) * stake;
+              } else {
+                // ref lay and another outcome wins -> ref wins stake
+                constFromRef[j] += stake;
               }
             } else {
-              // lucro_ref = otherAposta - (refOdd - 1)*refAposta
-              // lucro_other = otherOdd * otherAposta - refAposta
-              // => otherAposta - (refOdd - 1)*refAposta = otherOdd*otherAposta - refAposta
-              // => otherAposta*(1 - otherOdd) = refAposta*(refOdd - 2)
-              if (otherOdd !== 1) {
-                apostas[otherIndex] = (refAposta * (refOdd - 2)) / (1 - otherOdd);
+              if (refIndex === j) {
+                // ref back wins
+                if (isFree) {
+                  constFromRef[j] += (odd - 1) * stake;
+                } else {
+                  constFromRef[j] += odd * stake;
+                }
+              } else {
+                // ref back loses on other outcomes
+                constFromRef[j] += - (stake * (1 - (cashback || 0) / 100));
               }
             }
           }
-        } else {
-          // BACK
-          if (refIsFreebet) {
-            refLucro = (refOdd - 1) * refAposta;
-          } else {
-            refLucro = (refOdd - 1) * refAposta;
-          }
 
-          // Ajustar outras linhas para terem o mesmo lucro
-          for (let i = 0; i < rows.length; i++) {
-            if (i === refIndex) continue;
-            const odd_i = odds[i];
-            const isLay_i = isLay[i];
-            const isFree_i = freebets[i];
+          // For each equation (for j != refIndex), build coefficients for unknown stakes and RHS = - (constFromRef[j] - constFromRef[refIndex])
+          const eqIndices = [];
+          for (let j = 0; j < n; j++) if (j !== refIndex) eqIndices.push(j);
 
-            if (isLay_i) {
-              if (rows.length === 2) {
-                // lucro_i = refAposta - (odd_i - 1) * x_i
-                // lucro_ref = (refOdd - 1) * refAposta - x_i
-                // Igualar: refAposta - (odd_i - 1)*x_i = (refOdd - 1)*refAposta - x_i
-                // => refAposta - (refOdd - 1)*refAposta = (odd_i - 2) * x_i
-                // => x_i = refAposta * (2 - refOdd) / (odd_i - 2)
-                if (odd_i !== 2) {
-                  apostas[i] = (refAposta * (2 - refOdd)) / (odd_i - 2);
+          for (let eq = 0; eq < eqIndices.length; eq++) {
+            const j = eqIndices[eq]; // the outcome index for this equation
+            const rowA = new Array(m).fill(0);
+            // compute coefficients of unknown stakes on profit_j - profit_ref
+            for (let u = 0; u < m; u++) {
+              const i = varIndices[u]; // stake variable index
+              const odd_i = odds[i];
+              const isFree_i = freebets[i];
+              const cashback_i = cashbacks[i] || 0;
+              const lay_i = isLay[i];
+
+              // contribution of stake_i to profit when outcome j occurs:
+              let coef_j_i = 0;
+              if (lay_i) {
+                if (i === j) {
+                  coef_j_i += - (odd_i - 1);
+                } else {
+                  coef_j_i += 1;
+                }
+              } else {
+                if (i === j) {
+                  if (isFree_i) coef_j_i += (odd_i - 1);
+                  else coef_j_i += odd_i;
+                } else {
+                  coef_j_i += - (1 - (cashback_i || 0) / 100);
                 }
               }
-            } else {
-              if (isFree_i) {
-                // lucro_i = (odd_i - 1) * x_i - refAposta
-                // lucro_ref = (refOdd - 1) * refAposta - x_i
-                // Igualar: (odd_i - 1)*x_i - refAposta = (refOdd - 1)*refAposta - x_i
-                // => x_i * odd_i = refAposta * refOdd
-                apostas[i] = (refAposta * refOdd) / odd_i;
+
+              // contribution of stake_i to profit when outcome refIndex occurs:
+              let coef_ref_i = 0;
+              if (lay_i) {
+                if (i === refIndex) {
+                  coef_ref_i += - (odd_i - 1);
+                } else {
+                  coef_ref_i += 1;
+                }
               } else {
-                // lucro_i = (odd_i - 1) * x_i - refAposta
-                // lucro_ref = (refOdd - 1) * refAposta - x_i
-                // Igualar: (odd_i - 1)*x_i - refAposta = (refOdd - 1)*refAposta - x_i
-                // => x_i * odd_i = refAposta * refOdd
-                apostas[i] = (refAposta * refOdd) / odd_i;
+                if (i === refIndex) {
+                  if (isFree_i) coef_ref_i += (odd_i - 1);
+                  else coef_ref_i += odd_i;
+                } else {
+                  coef_ref_i += - (1 - (cashback_i || 0) / 100);
+                }
+              }
+
+              // coefficient in equation profit_j - profit_ref = 0 is coef_j_i - coef_ref_i
+              rowA[u] = coef_j_i - coef_ref_i;
+            }
+
+            // RHS: -(constFromRef[j] - constFromRef[refIndex]) because constants from ref are like known contributions
+            const rhs = - (constFromRef[j] - constFromRef[refIndex]);
+
+            A.push(rowA);
+            b.push(rhs);
+          }
+
+          // Solve A * x = b for x = stakes of varIndices
+          const solution = solveLinearSystem(A, b);
+
+          let validSolution = true;
+          if (solution && solution.length === m) {
+            // Build new stakesReal vector
+            const newStakesReal = stakesReal.slice();
+            for (let u = 0; u < m; u++) {
+              const i = varIndices[u];
+              const val = solution[u];
+              if (!isFinite(val) || isNaN(val) || val < -1e-6) {
+                validSolution = false;
+                break;
+              }
+              newStakesReal[i] = Math.max(0, val); // ensure non-negative
+            }
+            if (validSolution) {
+              stakesReal = newStakesReal;
+            }
+          } else {
+            validSolution = false;
+          }
+
+          // If couldn't solve or invalid (negative), fallback: distribute using inverses logic while keeping control fixed
+          if (!validSolution) {
+            // compute inverses but keeping ref stake fixed, scale others to use remaining totalRealRef
+            // First compute total currently allocated to ref and remaining budget
+            const allocatedRef = stakeRefReal;
+            // We'll distribute the remainder proportionally to "inverse weights"
+            const invs = [];
+            let sumInv = 0;
+            for (let i = 0; i < n; i++) {
+              if (i === refIndex) continue;
+              if (isLay[i]) {
+                invs.push(odds[i] - 1);
+              } else {
+                invs.push(freebets[i] ? 1 / (odds[i] - 1) : 1 / odds[i]);
               }
             }
+            sumInv = invs.reduce((a,b)=>a+b,0);
+            let remaining = Math.max(0, totalReal - allocatedRef);
+            for (let u=0; u<m; u++) {
+              const i = varIndices[u];
+              const stake = sumInv>0 ? (remaining * invs[u] / sumInv) : 0;
+              stakesReal[i] = stake;
+            }
+            // keep ref stake as is
+            stakesReal[refIndex] = stakeRefReal;
           }
+
+          // write stakes back to inputs (divide by qtdContas to show per-account)
+          rows.forEach((row, idx) => {
+            const valPerAccount = (stakesReal[idx] / (qtdContas || 1));
+            row.querySelector('.aposta-input').value = (isFinite(valPerAccount) ? valPerAccount : 0).toFixed(2);
+          });
+
+          // update totalDisplay
+          let somaTotal = 0;
+          rows.forEach((row, i) => {
+            const val = parseFloat(row.querySelector('.aposta-input').value) || 0;
+            somaTotal += val;
+          });
+          totalDisplay.value = somaTotal.toFixed(2);
         }
-
-        // Atualizar inputs (exceto a linha de referência)
-        rows.forEach((row, i) => {
-          if (i !== refIndex) {
-            row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
-          }
-        });
-
-        // Atualizar total display
-        let somaTotal = 0;
-        rows.forEach((row, i) => {
-          const val = parseFloat(row.querySelector('.aposta-input').value) || 0;
-          somaTotal += val;
-        });
-        totalDisplay.value = somaTotal.toFixed(2);
-
       } else {
-        // Modo normal
+        // No control index: normal mode (unless manualMode)
         if (state.manualMode) {
-          // Já carregado
+          // user edited apostas manually -> keep the manual values but update total display
+          let somaTotal = 0;
+          rows.forEach((row, i) => {
+            const val = parseFloat(row.querySelector('.aposta-input').value) || 0;
+            somaTotal += val;
+            stakesReal[i] = val * qtdContas;
+          });
+          totalDisplay.value = somaTotal.toFixed(2);
         } else {
+          // automatic distribution: use inverses
           let inversos = [];
           for (let i = 0; i < rows.length; i++) {
             if (isLay[i]) {
@@ -916,29 +1092,39 @@
           }
           const soma = inversos.reduce((a,b) => a + b, 0);
           if (soma > 0) {
-            apostas = inversos.map(inv => (totalReal * inv) / soma);
+            const stakes = inversos.map(inv => (totalReal * inv) / soma);
+            stakesReal = stakes;
             rows.forEach((row, i) => {
-              row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
+              row.querySelector('.aposta-input').value = ( (stakesReal[i] / (qtdContas || 1)) ).toFixed(2);
             });
+            // update display
+            let somaTotal = 0;
+            rows.forEach((row, i) => {
+              somaTotal += parseFloat(row.querySelector('.aposta-input').value) || 0;
+            });
+            totalDisplay.value = somaTotal.toFixed(2);
           }
         }
       }
 
-      // Atualizar array de apostas com os valores finais
-      rows.forEach((row, i) => {
-        apostas[i] = parseFloat(row.querySelector('.aposta-input').value) || 0;
-      });
+      // Recompute stakesPerAccount and scenario profits
+      const apostasFinalPerAccount = [];
+      for (let i = 0; i < rows.length; i++) {
+        const val = parseFloat(rows[i].querySelector('.aposta-input').value) || 0;
+        apostasFinalPerAccount[i] = val;
+      }
+      const apostasFinalReal = apostasFinalPerAccount.map(a => a * qtdContas);
 
-      // Stake real (exclui freebets)
+      // stakeReal (sum of real stakes excluding freebets)
       let stakeReal = 0;
       for (let i = 0; i < rows.length; i++) {
         if (!freebets[i]) {
-          stakeReal += apostas[i] * qtdContas;
+          stakeReal += apostasFinalReal[i];
         }
       }
 
       const scenarioProfits = calculateScenarioProfits(
-        apostas.map(a => a * qtdContas),
+        apostasFinalReal,
         odds,
         isLay,
         freebets,
@@ -955,11 +1141,12 @@
       $('#porcentagem').textContent = `${porc} %`;
       $('#lucroTotal').textContent = `R$ ${money(minLucro)}`;
 
+      // show results table
       const results = $('#resultsBody');
       results.innerHTML = '';
       rows.forEach((row, i) => {
         const tr = document.createElement('tr');
-        const apostaReal = apostas[i] * qtdContas;
+        const apostaReal = apostasFinalReal[i];
         tr.innerHTML = `
           <td>${row.querySelector('.casa-input').value}</td>
           <td>${odds[i].toFixed(3)}</td>
@@ -971,6 +1158,9 @@
       });
     }
 
+    /* =========
+       Inicialização e handlers
+       ========= */
     function init() {
       updateNavbar();
       updateInputsState();
@@ -1007,8 +1197,41 @@
       $('#apostaTotalDisplay').addEventListener('input', () => {
         if (!isLoggedIn()) return;
         state.controlIndex = null;
-        state.manualMode = true;
+        state.manualMode = true; // user is defining total => manual mode
         $$('.comissao-checkbox').forEach(cb => cb.checked = false);
+        // recalc per-account stakes from total
+        const totalDisplay = $('#apostaTotalDisplay');
+        const totalValue = parseFloat(totalDisplay.value) || 0;
+        const qtdContas = parseFloat($('#qtdContas').value) || 1;
+        const totalReal = totalValue * qtdContas;
+
+        // distribute proportionally (inverses) when user types a total
+        const rows = $$('#apostasBody tr');
+        let inversos = [];
+        const odds = [], freebets = [], isLay = [];
+        rows.forEach((row, i) => {
+          const oddRaw = parseFloat(row.querySelector('.odd-input').value) || 2.0;
+          const comissao = state.showComissao ? parseFloat(row.querySelector('.comissao-input').value) || 0 : 0;
+          const aumento = state.showAumento ? parseFloat(row.querySelector('.aumento-input').value) || 0 : 0;
+          const isFreebet = state.showFreebet && row.querySelector('.freebet-checkbox').checked;
+          const tipoBtn = row.querySelector('.type-btn');
+          const lay = tipoBtn.classList.contains('lay');
+          const effOdd = getEffectiveOdd(oddRaw, comissao, aumento);
+          odds[i] = effOdd;
+          freebets[i] = isFreebet;
+          isLay[i] = lay;
+        });
+        for (let i=0;i<rows.length;i++){
+          if (isLay[i]) inversos[i] = odds[i]-1;
+          else inversos[i] = freebets[i] ? 1/(odds[i]-1) : 1/odds[i];
+        }
+        const soma = inversos.reduce((a,b)=>a+b,0);
+        if (soma>0){
+          const stakes = inversos.map(inv => (totalReal * inv) / soma);
+          rows.forEach((row,i)=>{
+            row.querySelector('.aposta-input').value = (stakes[i] / (qtdContas || 1)).toFixed(2);
+          });
+        }
         recalculateTotalFromIndividuals();
         updateCalculations();
       });
@@ -1018,20 +1241,26 @@
         navigator.clipboard.writeText($('#apostaTotalDisplay').value).then(() => {});
       });
 
+      // wire up modal buttons
+      ['btnModalLogin', 'btnModalRegister', 'btnDoAuth'].forEach(id => {
+        $(`#${id}`).addEventListener('click', () => window.location.href = 'login.html');
+      });
+
+      // initial rendering
       state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
       renderRows();
       if (isLoggedIn()) updateCalculations();
 
+      // periodically refresh input enabled/disabled state to reflect login
       setInterval(updateInputsState, 800);
     }
 
     document.addEventListener('DOMContentLoaded', init);
+
     const modal = $('#modal');
     modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
     $('#btnCloseModal').addEventListener('click', () => modal.style.display = 'none');
-    ['btnModalLogin', 'btnModalRegister', 'btnDoAuth'].forEach(id => {
-      $(`#${id}`).addEventListener('click', () => window.location.href = 'login.html');
-    });
+
   </script>
 </body>
 </html>
