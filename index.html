@@ -323,7 +323,6 @@
       .summary-card .value{
         font-size:14px;
       }
-
       /* Tabela: mobile otimizada */
       #apostasTable,
       #apostasTable thead,
@@ -375,7 +374,6 @@
       }
       .type-btn{padding:6px 10px;font-size:13px}
       .chk .chkbox{width:24px;height:18px}
-
       /* Footer antigo - mostrar em mobile */
       tfoot td {
         display: block !important;
@@ -393,13 +391,11 @@
         text-align: right;
         font-size:14px;
       }
-
       /* Reorganizar results para mobile: resumo abaixo da tabela de resultados */
       .results-left { order: 0; width:100% }
       .results-right { order: 1; width:100%; display:flex; gap:8px; flex-wrap:wrap }
       .results-actions { width:100%; display:flex; gap:8px }
       .summary-cards { grid-template-columns:repeat(3,1fr); width:100% }
-
       /* garantir que elementos fiquem legíveis e touch-friendly */
       .btn, .type-btn { touch-action: manipulation; }
     }
@@ -419,7 +415,6 @@
         <a href="#" id="btnOpenLogin" title="Entrar / Sair" style="background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;text-decoration:none;display:inline-block">Entrar</a>
       </div>
     </div>
-
     <div class="section">
       <h2>Configurações</h2>
       <div class="sub">Defina o procedimento e as opções.</div>
@@ -468,7 +463,6 @@
         • <strong>Cashback</strong>: recupera % em caso de perda.
       </div>
     </div>
-
     <div class="section">
       <h2>Linhas de Apostas</h2>
       <div class="sub">Insira odds e o sistema distribuirá automaticamente.</div>
@@ -492,20 +486,21 @@
           <tbody id="apostasBody"></tbody>
           <tfoot>
             <tr>
-              <td colspan="7"></td>
-              <td colspan="3" class="aposta-total">
-                <strong>Aposta total:</strong>
-                <input id="apostaTotalDisplay" type="number" step="0.01" value="100.00">
-                <button class="btn ghost" id="btnCopyAposta" disabled>📋</button>
+              <!-- ✅ Aposta total alinhado abaixo da coluna "Aposta" -->
+              <td colspan="6"></td>
+              <td colspan="5" style="text-align: left; padding-left: 8px;">
+                <div class="aposta-total">
+                  <strong>Aposta total:</strong>
+                  <input id="apostaTotalDisplay" type="number" step="0.01" value="100.00">
+                  <button class="btn ghost" id="btnCopyAposta" disabled>📋</button>
+                </div>
               </td>
-              <td></td>
             </tr>
           </tfoot>
         </table>
         <!-- BLOCO .aposta-fixed REMOVIDO -->
       </div>
     </div>
-
     <div class="section">
       <h2>Resultados</h2>
       <div class="results-wrap">
@@ -528,10 +523,8 @@
         </div>
       </div>
     </div>
-
     <div id="adminPanel" class="section" style="display:none"></div>
   </div>
-
   <div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
     <div class="modal" role="document">
       <h3 id="modalTitle">Entrar</h3>
@@ -548,7 +541,6 @@
       </div>
     </div>
   </div>
-
   <script>
     const state = {
       qtdCasas: 2,
@@ -562,16 +554,13 @@
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
     const money = v => Number(v || 0).toFixed(2);
-
     function isLoggedIn() {
       return localStorage.getItem('superodd_logged_in') === 'true';
     }
-
     function logout() {
       localStorage.removeItem('superodd_logged_in');
       window.location.href = 'login.html';
     }
-
     function updateNavbar() {
       const btn = $('#btnOpenLogin');
       if (isLoggedIn()) {
@@ -582,7 +571,6 @@
         btn.onclick = e => { e.preventDefault(); window.location.href = 'login.html'; };
       }
     }
-
     function updateInputsState() {
       const logged = isLoggedIn();
       $('#procedimento').disabled = !logged;
@@ -594,12 +582,10 @@
       $('#btnAddPlanilha').disabled = !logged;
       $('#apostaTotalDisplay').disabled = !logged;
       // REMOVIDO: $('#apostaTotalFixed').disabled = !logged;
-      
       $$('#apostasBody input, #apostasBody button, .comissao-checkbox, .freebet-checkbox').forEach(el => {
         el.disabled = !logged;
       });
     }
-
     function createRow(i) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -619,7 +605,6 @@
         </td>
         <td class="col-lucro"><span class="lucro-output">0.00</span></td>
       `;
-
       const typeBtn = tr.querySelector('.type-btn');
       typeBtn.addEventListener('click', () => {
         if (!isLoggedIn()) return;
@@ -635,7 +620,6 @@
         }
         updateCalculations();
       });
-
       const inputs = tr.querySelectorAll('input:not(.comissao-checkbox):not(.freebet-checkbox)');
       inputs.forEach(input => {
         input.addEventListener('input', (ev) => {
@@ -649,7 +633,6 @@
           updateCalculations();
         });
       });
-
       const checkbox = tr.querySelector('.comissao-checkbox');
       checkbox.addEventListener('change', () => {
         if (!isLoggedIn()) return;
@@ -663,16 +646,13 @@
         }
         updateCalculations();
       });
-
       const freebetCheckbox = tr.querySelector('.freebet-checkbox');
       freebetCheckbox.addEventListener('change', () => {
         if (!isLoggedIn()) return;
         updateCalculations();
       });
-
       return tr;
     }
-
     function recalculateTotalFromIndividuals() {
       const rows = $$('#apostasBody tr');
       let total = 0;
@@ -684,7 +664,6 @@
       $('#apostaTotalDisplay').value = (total / qtdContas).toFixed(2);
       // REMOVIDO: $('#apostaTotalFixed').value = (total / qtdContas).toFixed(2);
     }
-
     function renderRows() {
       const tbody = $('#apostasBody');
       tbody.innerHTML = '';
@@ -695,7 +674,6 @@
       updateFreebetCashbackFields();
       updateInputsState();
     }
-
     function renderTableColumns() {
       const cols = {
         colFreebet: state.showFreebet,
@@ -707,7 +685,6 @@
       $$('.col-cashback').forEach(el => el.classList.toggle('hidden', !cols.colCashback));
       $$('.col-comissao').forEach(el => el.classList.toggle('hidden', !cols.colComissao));
       $$('.col-aumento').forEach(el => el.classList.toggle('hidden', !cols.colAumento));
-
       const visibleCols = [
         '.col-casa',
         '.col-tipo',
@@ -724,7 +701,6 @@
         const els = $$(cls);
         return els.length > 0 && !els[0].classList.contains('hidden');
       }).length;
-
       const width = Math.floor(100 / visibleCols) + '%';
       $$('.col-casa, .col-tipo, .col-odd, .col-comissao, .col-oddfinal, .col-aumento, .col-aposta, .col-freebet, .col-cashback, .col-c, .col-lucro').forEach(el => {
         if (!el.classList.contains('hidden')) {
@@ -732,7 +708,6 @@
         }
       });
     }
-
     function updateFreebetCashbackFields() {
       const rows = $$('#apostasBody tr');
       rows.forEach(row => {
@@ -745,28 +720,23 @@
         }
       });
     }
-
     function getEffectiveOdd(odd, comissao = 0, aumento = 0) {
       let oddAjustada = odd * (1 + aumento / 100);
       oddAjustada = oddAjustada * (1 - comissao / 100);
       return Math.max(1.001, oddAjustada);
     }
-
     function calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks) {
       const n = apostas.length;
       const profits = [];
-
       for (let winIndex = 0; winIndex < n; winIndex++) {
         let totalRetorno = 0;
         let totalRisco = 0;
-
         for (let i = 0; i < n; i++) {
           const aposta = apostas[i];
           const odd = odds[i];
           const isFreebet = freebets[i];
           const cashback = cashbacks[i] || 0;
           const isLayHere = isLay[i];
-
           if (isLayHere) {
             if (i === winIndex) {
               const perda = (odd - 1) * aposta;
@@ -788,25 +758,19 @@
             }
           }
         }
-
         const lucro = totalRetorno - totalRisco;
         profits.push(lucro);
       }
-
       return profits;
     }
-
     function updateCalculations() {
       if (!isLoggedIn()) return;
-
       const totalDisplay = $('#apostaTotalDisplay');
       let totalValue = parseFloat(totalDisplay.value) || 100;
       const qtdContas = parseFloat($('#qtdContas').value) || 1;
       const totalReal = totalValue * qtdContas;
       const rows = $$('#apostasBody tr');
-
       let odds = [], freebets = [], cashbacks = [], isLay = [];
-
       rows.forEach((row, i) => {
         const odd = parseFloat(row.querySelector('.odd-input').value) || 2.0;
         const comissao = state.showComissao ? parseFloat(row.querySelector('.comissao-input').value) || 0 : 0;
@@ -815,191 +779,171 @@
         const cashback = state.showCashback ? parseFloat(row.querySelector('.cashback-input').value) || 0 : 0;
         const tipoBtn = row.querySelector('.type-btn');
         const lay = tipoBtn.classList.contains('lay');
-
         odds[i] = getEffectiveOdd(odd, comissao, aumento);
         freebets[i] = isFreebet;
         cashbacks[i] = cashback;
         isLay[i] = lay;
-
         row.querySelector('.odd-final').textContent = odds[i].toFixed(3);
       });
-
       let apostas = Array(rows.length).fill(0);
-
+      // Ler os valores atuais das apostas
+      rows.forEach((row, i) => {
+        apostas[i] = parseFloat(row.querySelector('.aposta-input').value) || 0;
+      });
       if (state.controlIndex !== null) {
-        // ✅ Modo "C": igualar lucro em todos os cenários
+        // ✅ Modo "C": usar a linha marcada como referência SEM alterar seu valor
         const refIndex = state.controlIndex;
+        const refAposta = apostas[refIndex];
         const refOdd = odds[refIndex];
         const refIsLay = isLay[refIndex];
         const refIsFreebet = freebets[refIndex];
-
-        // Vamos encontrar o lucro alvo que iguala todos os cenários
-        // Usamos o método de resolver: lucro1 = lucro2 = ... = L
-        // Para BACK normal: L = odd_i * x_i - sum_{j≠i} x_j
-        // Para BACK freebet: L = (odd_i - 1) * x_i - sum_{j≠i} x_j
-        // Para LAY: L = sum_{j≠i} x_j - (odd_i - 1) * x_i
-
-        // Montamos sistema linear: A * x = b, onde b = [L, L, ..., L]
-        // Mas podemos resolver diretamente:
-        // Seja S = soma de todas as apostas.
-        // Para cada i: retorno_i - (S - aposta_i) = L  => retorno_i + aposta_i - S = L
-        // => S = retorno_i + aposta_i - L
-
-        // Em vez disso, usamos abordagem iterativa: fixamos L e resolvemos.
-
-        // Abordagem direta: igualar lucro entre ref e outros
-        // Suponha que queremos lucro L em todos os cenários.
-        // Para refIndex:
-        let L;
+        // Calcular o lucro que essa linha geraria
+        let refLucro;
         if (refIsLay) {
-          // L = (S - x_ref) - (odd_ref - 1) * x_ref = S - odd_ref * x_ref
-          // => S = L + odd_ref * x_ref
-        } else {
-          if (refIsFreebet) {
-            // L = (odd_ref - 1) * x_ref - (S - x_ref) = odd_ref * x_ref - S
-            // => S = odd_ref * x_ref - L
-          } else {
-            // L = odd_ref * x_ref - (S - x_ref) = (odd_ref + 1) * x_ref - S
-            // => S = (odd_ref + 1) * x_ref - L
-          }
-        }
-
-        // Em vez de resolver simbolicamente, usamos a fórmula de arbitragem com ajuste de lucro
-        // Vamos calcular as apostas relativas para igualar lucro
-
-        let denominators = [];
-        for (let i = 0; i < rows.length; i++) {
-          if (isLay[i]) {
-            denominators[i] = odds[i] - 1;
-          } else {
-            if (freebets[i]) {
-              denominators[i] = odds[i] - 1;
-            } else {
-              denominators[i] = 1;
-            }
-          }
-        }
-
-        // Calculamos os fatores de alocação
-        let factors = [];
-        for (let i = 0; i < rows.length; i++) {
-          if (i === refIndex) {
-            factors[i] = 1;
-          } else {
-            if (isLay[i]) {
-              // lucro_i = S - odds[i] * x_i
-              // lucro_ref = ... 
-              // Igualando: S - odds[i]*x_i = lucro_ref
-              // Mas S = sum x_j
-              // Complexo. Usamos método numérico simples:
-              // Assumimos que o lucro deve ser o mesmo, então:
-              // Para ref (BACK normal): L = odds[ref]*x_ref - (S - x_ref)
-              // Para i (BACK normal): L = odds[i]*x_i - (S - x_i)
-              // => odds[ref]*x_ref + x_ref = odds[i]*x_i + x_i
-              // => x_i = x_ref * (odds[ref] + 1) / (odds[i] + 1)
-              if (!refIsLay && !refIsFreebet) {
-                if (!isLay[i] && !freebets[i]) {
-                  factors[i] = (odds[refIndex] + 1) / (odds[i] + 1);
-                } else if (!isLay[i] && freebets[i]) {
-                  // ref: L = (odd_r+1)*x_r - S
-                  // i:   L = (odd_i-1)*x_i - (S - x_i) = odd_i*x_i - S
-                  // => (odd_r+1)*x_r = odd_i*x_i
-                  factors[i] = (odds[refIndex] + 1) / odds[i];
-                } else if (isLay[i]) {
-                  // i: L = (S - x_i) - (odd_i - 1)*x_i = S - odd_i*x_i
-                  // ref: L = (odd_r+1)*x_r - S
-                  // => (odd_r+1)*x_r - S = S - odd_i*x_i
-                  // => (odd_r+1)*x_r + odd_i*x_i = 2S = 2(x_r + x_i + ...)
-                  // Aproximamos ignorando outros termos (só 2 casas)
-                  if (rows.length === 2) {
-                    // (odd_r+1)*x_r + odd_i*x_i = 2(x_r + x_i)
-                    // => x_i * (odd_i - 2) = x_r * (2 - odd_r - 1) = x_r*(1 - odd_r)
-                    // => x_i = x_r * (odd_r - 1) / (odd_i - 2)
-                    factors[i] = (odds[refIndex] - 1) / (odds[i] - 2);
-                  } else {
-                    factors[i] = 1; // fallback
-                  }
-                }
-              } else if (!refIsLay && refIsFreebet) {
-                if (!isLay[i] && !freebets[i]) {
-                  // ref: L = odd_r*x_r - S
-                  // i:   L = (odd_i+1)*x_i - S
-                  // => odd_r*x_r = (odd_i+1)*x_i
-                  factors[i] = odds[refIndex] / (odds[i] + 1);
-                } else if (!isLay[i] && freebets[i]) {
-                  // ref: L = odd_r*x_r - S
-                  // i:   L = odd_i*x_i - S
-                  // => x_i = x_r * odd_r / odd_i
-                  factors[i] = odds[refIndex] / odds[i];
-                } else if (isLay[i]) {
-                  if (rows.length === 2) {
-                    // ref: L = odd_r*x_r - (x_r + x_i) = (odd_r - 1)*x_r - x_i
-                    // i:   L = x_r - (odd_i - 1)*x_i
-                    // => (odd_r - 1)*x_r - x_i = x_r - (odd_i - 1)*x_i
-                    // => x_r*(odd_r - 2) = x_i*(2 - odd_i)
-                    // => x_i = x_r * (odd_r - 2) / (2 - odd_i)
-                    factors[i] = (odds[refIndex] - 2) / (2 - odds[i]);
-                  } else {
-                    factors[i] = 1;
-                  }
-                }
-              } else if (refIsLay) {
-                if (!isLay[i] && !freebets[i]) {
-                  if (rows.length === 2) {
-                    // ref: L = x_i - (odd_r - 1)*x_r
-                    // i:   L = (odd_i+1)*x_i - x_r
-                    // => x_i - (odd_r - 1)*x_r = (odd_i+1)*x_i - x_r
-                    // => - (odd_r - 1)*x_r + x_r = (odd_i+1)*x_i - x_i
-                    // => x_r*(2 - odd_r) = x_i*odd_i
-                    // => x_i = x_r * (2 - odd_r) / odd_i
-                    factors[i] = (2 - odds[refIndex]) / odds[i];
-                  } else {
-                    factors[i] = 1;
-                  }
-                } else {
-                  factors[i] = 1;
-                }
+          // Se for LAY, o lucro depende das outras apostas, então precisamos de outro método
+          // Em vez disso, vamos igualar o lucro entre todos os cenários usando sistema linear
+          // Para simplificar, assumimos que queremos o mesmo lucro L em todos os cenários
+          // Vamos resolver: para cada i, lucro_i = L
+          // Construímos equações e resolvemos numericamente
+          // Abordagem: ajustar todas as apostas exceto a de referência
+          let L_target;
+          // Primeiro, estimar L com base na referência e nas demais apostas atuais
+          const tempProfits = calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks);
+          L_target = tempProfits[refIndex];
+          // Agora ajustar as outras apostas para que todos os lucros = L_target
+          for (let i = 0; i < rows.length; i++) {
+            if (i === refIndex) continue;
+            const odd_i = odds[i];
+            const isLay_i = isLay[i];
+            const isFree_i = freebets[i];
+            let neededAposta;
+            if (isLay_i) {
+              // lucro_i = (S - x_i) - (odd_i - 1) * x_i = S - odd_i * x_i = L_target
+              // Mas S = x_ref + x_i + soma_outros
+              // Complexo. Usamos aproximação: fixamos as outras apostas e resolvemos para x_i
+              let S_without_i = apostas.reduce((sum, val, idx) => idx === i ? sum : sum + val, 0);
+              // lucro_i = S_without_i - (odd_i - 1) * x_i = L_target
+              // => x_i = (S_without_i - L_target) / (odd_i - 1)
+              if (odd_i > 1) {
+                neededAposta = (S_without_i - L_target) / (odd_i - 1);
+              } else {
+                neededAposta = 0;
               }
             } else {
-              factors[i] = 1;
+              if (isFree_i) {
+                // lucro_i = (odd_i - 1) * x_i - (S - x_i) = odd_i * x_i - S = L_target
+                // => x_i = (L_target + S) / odd_i
+                // Mas S = x_i + S_without_i => x_i = (L_target + x_i + S_without_i) / odd_i
+                // => x_i * odd_i = L_target + x_i + S_without_i
+                // => x_i (odd_i - 1) = L_target + S_without_i
+                if (odd_i > 1) {
+                  neededAposta = (L_target + S_without_i) / (odd_i - 1);
+                } else {
+                  neededAposta = 0;
+                }
+              } else {
+                // lucro_i = odd_i * x_i - (S - x_i) = (odd_i + 1) * x_i - S = L_target
+                // => x_i = (L_target + S) / (odd_i + 1)
+                // S = x_i + S_without_i => x_i = (L_target + x_i + S_without_i) / (odd_i + 1)
+                // => x_i (odd_i + 1) = L_target + x_i + S_without_i
+                // => x_i * odd_i = L_target + S_without_i
+                neededAposta = (L_target + S_without_i) / odd_i;
+              }
+            }
+            if (neededAposta > 0) {
+              apostas[i] = neededAposta;
+            }
+          }
+        } else {
+          // BACK normal ou freebet
+          if (refIsFreebet) {
+            refLucro = (refOdd - 1) * refAposta;
+          } else {
+            refLucro = refOdd * refAposta - refAposta; // = (refOdd - 1) * refAposta
+          }
+          // Agora ajustar as outras linhas para terem o mesmo lucro
+          for (let i = 0; i < rows.length; i++) {
+            if (i === refIndex) continue;
+            const odd_i = odds[i];
+            const isLay_i = isLay[i];
+            const isFree_i = freebets[i];
+            if (isLay_i) {
+              // lucro_i = (S - x_i) - (odd_i - 1) * x_i = S - odd_i * x_i
+              // Mas S = refAposta + x_i + soma_outros
+              // Aproximamos ignorando soma_outros (só 2 casas) ou usamos iteração
+              // Para N casas, usamos: lucro_i = refLucro
+              // => S - odd_i * x_i = refLucro
+              // => (refAposta + x_i + soma_outros) - odd_i * x_i = refLucro
+              // => refAposta + soma_outros - refLucro = x_i (odd_i - 1)
+              // Mas soma_outros inclui outras variáveis → complexo
+              // Solução prática: resolver para 2 casas, ou manter valor atual para N>2
+              if (rows.length === 2) {
+                // S = refAposta + x_i
+                // lucro_i = refAposta - (odd_i - 1) * x_i = refLucro
+                // => x_i = (refAposta - refLucro) / (odd_i - 1)
+                if (odd_i > 1) {
+                  apostas[i] = (refAposta - refLucro) / (odd_i - 1);
+                } else {
+                  apostas[i] = 0;
+                }
+              }
+              // Para N>2, não ajustamos automaticamente (deixar para modo avançado)
+            } else {
+              if (isFree_i) {
+                // lucro_i = (odd_i - 1) * x_i - (S - x_i) = odd_i * x_i - S
+                // Queremos: odd_i * x_i - S = refLucro
+                // S = refAposta + x_i + soma_outros
+                // => odd_i * x_i - refAposta - x_i - soma_outros = refLucro
+                // => x_i (odd_i - 1) = refLucro + refAposta + soma_outros
+                // Novamente complexo para N>2
+                if (rows.length === 2) {
+                  // S = refAposta + x_i
+                  // lucro_i = (odd_i - 1) * x_i - refAposta = refLucro
+                  // => x_i = (refLucro + refAposta) / (odd_i - 1)
+                  if (odd_i > 1) {
+                    apostas[i] = (refLucro + refAposta) / (odd_i - 1);
+                  } else {
+                    apostas[i] = 0;
+                  }
+                }
+              } else {
+                // BACK normal
+                // lucro_i = odd_i * x_i - (S - x_i) = (odd_i + 1) * x_i - S = refLucro
+                if (rows.length === 2) {
+                  // S = refAposta + x_i
+                  // (odd_i + 1) * x_i - refAposta - x_i = refLucro
+                  // => odd_i * x_i = refLucro + refAposta
+                  apostas[i] = (refLucro + refAposta) / odd_i;
+                }
+              }
             }
           }
         }
-
-        // Normalizamos para o total desejado
-        let sumFactors = factors.reduce((a,b) => a + b, 0);
-        for (let i = 0; i < rows.length; i++) {
-          apostas[i] = (totalReal * factors[i]) / sumFactors;
-        }
-
-        // Atualiza inputs
+        // Atualizar inputs (exceto a linha de referência, que permanece inalterada)
         rows.forEach((row, i) => {
-          row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
+          if (i !== refIndex) {
+            row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
+          }
         });
-
-        // Atualiza total display
-        const novoTotal = apostas.reduce((a,b) => a + b, 0);
-        totalDisplay.value = (novoTotal / qtdContas).toFixed(2);
-
+        // Recalcular total de aposta (soma de todos os valores reais)
+        let somaTotal = 0;
+        rows.forEach((row, i) => {
+          const val = parseFloat(row.querySelector('.aposta-input').value) || 0;
+          somaTotal += val;
+        });
+        totalDisplay.value = somaTotal.toFixed(2);
       } else {
         // Modo normal (sem "C")
         if (state.manualMode) {
-          rows.forEach((row, i) => {
-            apostas[i] = parseFloat(row.querySelector('.aposta-input').value) || 0;
-          });
+          // Já carregado acima
         } else {
-          // Calcula alocação proporcional com base em inversos
+          // Modo automático: distribuir proporcionalmente
           let inversos = [];
           for (let i = 0; i < rows.length; i++) {
             if (isLay[i]) {
               inversos[i] = odds[i] - 1;
             } else {
               if (freebets[i]) {
-                // Para freebet, o "retorno líquido" por unidade de stake é (odd - 1)
-                // Mas o risco é 1, então o inverso efetivo é 1 / (odd - 1) para alocação?
-                // Na verdade, para igualar lucro, usamos:
-                // stake_i = L / (odd_i - 1)
-                // Então o peso é 1 / (odd_i - 1)
                 inversos[i] = 1 / (odds[i] - 1);
               } else {
                 inversos[i] = 1 / odds[i];
@@ -1007,53 +951,59 @@
             }
           }
           const soma = inversos.reduce((a,b) => a + b, 0);
-          apostas = inversos.map(inv => (totalReal * inv) / soma);
-          rows.forEach((row, i) => {
-            row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
-          });
+          if (soma > 0) {
+            apostas = inversos.map(inv => (totalReal * inv) / soma);
+            rows.forEach((row, i) => {
+              row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
+            });
+          }
         }
       }
-
-      // Recalcular total para exibição (excluindo freebets do stake real)
+      // Recalcular lucros com os valores finais
+      // Atualizar array de apostas com os valores dos inputs
+      rows.forEach((row, i) => {
+        apostas[i] = parseFloat(row.querySelector('.aposta-input').value) || 0;
+      });
+      // Stake real (exclui freebets)
       let stakeReal = 0;
       for (let i = 0; i < rows.length; i++) {
         if (!freebets[i]) {
-          stakeReal += apostas[i];
+          stakeReal += apostas[i] * qtdContas;
         }
       }
-
-      const scenarioProfits = calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks);
+      const scenarioProfits = calculateScenarioProfits(
+        apostas.map(a => a * qtdContas),
+        odds,
+        isLay,
+        freebets,
+        cashbacks
+      );
       const minLucro = Math.min(...scenarioProfits);
-      const totalAposta = apostas.reduce((a,b) => a + b, 0);
-
       rows.forEach((row, i) => {
         row.querySelector('.lucro-output').textContent = money(scenarioProfits[i]);
       });
-
       $('#stakeTotal').textContent = `R$ ${money(stakeReal)}`;
       const porc = stakeReal > 0 ? ((minLucro / stakeReal) * 100).toFixed(2) : '0.00';
       $('#porcentagem').textContent = `${porc} %`;
       $('#lucroTotal').textContent = `R$ ${money(minLucro)}`;
-
       const results = $('#resultsBody');
       results.innerHTML = '';
       rows.forEach((row, i) => {
         const tr = document.createElement('tr');
+        const apostaReal = apostas[i] * qtdContas;
         tr.innerHTML = `
           <td>${row.querySelector('.casa-input').value}</td>
           <td>${odds[i].toFixed(3)}</td>
-          <td>R$ ${money(apostas[i])}</td>
+          <td>R$ ${money(apostaReal)}</td>
           <td>${isLay[i] ? 'LAY' : (freebets[i] ? 'BACK (Freebet)' : 'BACK')}</td>
           <td class="lucro">R$ ${money(scenarioProfits[i])}</td>
         `;
         results.appendChild(tr);
       });
     }
-
     function init() {
       updateNavbar();
       updateInputsState();
-      
       const toggles = {
         switchFreebet: 'showFreebet',
         switchCashback: 'showCashback',
@@ -1071,38 +1021,32 @@
           updateCalculations();
         });
       });
-
       $('#qtdCasas').addEventListener('change', () => {
         if (!isLoggedIn()) return;
         state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
         renderRows();
         updateCalculations();
       });
-
       $('#qtdContas').addEventListener('input', () => {
         if (isLoggedIn()) updateCalculations();
       });
-
       $('#apostaTotalDisplay').addEventListener('input', () => {
         if (!isLoggedIn()) return;
         state.controlIndex = null;
-        state.manualMode = false;
+        state.manualMode = true;
         $$('.comissao-checkbox').forEach(cb => cb.checked = false);
+        recalculateTotalFromIndividuals();
         updateCalculations();
       });
-
       $('#btnCopyAposta').addEventListener('click', () => {
         if (!isLoggedIn()) return;
         navigator.clipboard.writeText($('#apostaTotalDisplay').value).then(() => {});
       });
-
       state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
       renderRows();
       if (isLoggedIn()) updateCalculations();
-
       setInterval(updateInputsState, 800);
     }
-
     document.addEventListener('DOMContentLoaded', init);
     const modal = $('#modal');
     modal.addEventListener('click', e => { if (e.target === modal) modal.style.display = 'none'; });
