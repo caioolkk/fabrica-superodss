@@ -964,11 +964,40 @@
       let stakeReal = 0;
       for (let i=0;i<n;i++) if (!freebets[i]) stakeReal += apostasFinalReal[i];
 
-      const profits = calculateScenarioProfits(apostasFinalReal, odds, isLay, freebets, cashbacks);
-      const minProfit = Math.min(...profits);
-
+            const profits = calculateScenarioProfits(apostasFinalReal, odds, isLay, freebets, cashbacks);
+            const minProfit = Math.min(...lucrosLiquidos);
+      // Lucro líquido = profits[i] (já é líquido), mas você pediu (resultado - aposta total)
+      // Então vamos recalcular o "resultado bruto" antes da subtração do risco
+      const lucrosLiquidos = [];
+      for (let w = 0; w < n; w++) {
+        let retornoBruto = 0;
+        for (let i = 0; i < n; i++) {
+          const stake = apostasFinalReal[i] || 0;
+          const odd = odds[i];
+          const lay = isLay[i];
+          const free = freebets[i];
+          if (lay) {
+            if (i === w) {
+              // perde liability, mas não há retorno bruto aqui (retorno bruto = 0)
+              // então não soma nada
+            } else {
+              retornoBruto += stake; // ganha a stake do lay
+            }
+          } else {
+            if (i === w) {
+              if (free) {
+                retornoBruto += (odd - 1) * stake; // só o lucro, pois stake era grátis
+              } else {
+                retornoBruto += odd * stake; // recebe stake + lucro
+              }
+            }
+            // se perde, não há retorno bruto
+          }
+        }
+        lucrosLiquidos[w] = retornoBruto - stakeReal;
+      }
       rows.forEach((row,i) => {
-        row.querySelector('.lucro-output').textContent = money(profits[i]);
+        row.querySelector('.lucro-output').textContent = money(lucrosLiquidos[i]);
       });
 
       $('#stakeTotal').textContent = `R$ ${money(stakeReal)}`;
@@ -982,11 +1011,11 @@
       rows.forEach((row,i) => {
         const tr = document.createElement('tr');
         const apostaReal = apostasFinalReal[i];
-        tr.innerHTML = `<td>${row.querySelector('.casa-input').value}</td>
-                        <td>${odds[i].toFixed(3)}</td>
-                        <td>R$ ${money(apostaReal)}</td>
-                        <td>${isLay[i] ? 'LAY' : (freebets[i] ? 'BACK (Freebet)' : 'BACK')}</td>
-                        <td class="lucro">R$ ${money(profits[i])}</td>`;
+          tr.innerHTML = `<td>${row.querySelector('.casa-input').value}</td>
+            <td>${odds[i].toFixed(3)}</td>
+            <td>R$ ${money(apostaReal)}</td>
+            <td>${isLay[i] ? 'LAY' : (freebets[i] ? 'BACK (Freebet)' : 'BACK')}</td>
+            <td class="lucro">R$ ${money(lucrosLiquidos[i])}</td>`;
         results.appendChild(tr);
       });
     }
