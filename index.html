@@ -669,10 +669,7 @@
       const qtdContas = parseFloat($('#qtdContas').value) || 1;
       rows.forEach(row => {
         const aposta = parseFloat(row.querySelector('.aposta-input').value) || 0;
-        const isFreebet = state.showFreebet && row.querySelector('.freebet-checkbox').checked;
-        if (!isFreebet) {
-          total += aposta;
-        }
+        total += aposta;
       });
       $('#apostaTotalDisplay').value = (total / (qtdContas || 1)).toFixed(2);
     }
@@ -930,25 +927,16 @@
             row.querySelector('.aposta-input').value = (isFinite(perAcc) ? perAcc : 0).toFixed(2);
           });
 
-          // update total display (per account) — exclude freebets
-          const sumPerAcc = rows.reduce((acc, row, idx) => {
-          const aposta = parseFloat(row.querySelector('.aposta-input').value) || 0;
-          const isFreebet = state.showFreebet && freebets[idx];
-          return acc + (isFreebet ? 0 : aposta);
-        }, 0);
-        $('#apostaTotalDisplay').value = sumPerAcc.toFixed(2);
+          // update total display (per account)
+          const sumPerAcc = rows.reduce((acc,row) => acc + (parseFloat(row.querySelector('.aposta-input').value)||0), 0);
+          $('#apostaTotalDisplay').value = sumPerAcc.toFixed(2);
         }
       } else {
         // no controlIndex
         if (state.manualMode) {
           // keep manual aposta inputs, just update totals
-                    // update total display per account — exclude freebets
-          const sumPerAcc = rows.reduce((acc, row, idx) => {
-            const aposta = parseFloat(row.querySelector('.aposta-input').value) || 0;
-            const isFreebet = state.showFreebet && freebets[idx];
-            return acc + (isFreebet ? 0 : aposta);
-          }, 0);
-          $('#apostaTotalDisplay').value = sumPerAcc.toFixed(2);
+          const sum = rows.reduce((acc,row) => acc + (parseFloat(row.querySelector('.aposta-input').value)||0), 0);
+          $('#apostaTotalDisplay').value = sum.toFixed(2);
           stakesReal = rows.map(row => (parseFloat(row.querySelector('.aposta-input').value)||0) * qtdContas);
         } else {
           // automatic distribution by inverses
@@ -963,11 +951,8 @@
             row.querySelector('.aposta-input').value = (stakesReal[idx] / (qtdContas||1)).toFixed(2);
           });
           // update total display per account
-          const sumPerAcc = rows.reduce((acc, row, idx) => {
-            const aposta = parseFloat(row.querySelector('.aposta-input').value) || 0;
-            const isFreebet = state.showFreebet && freebets[idx];
-            return acc + (isFreebet ? 0 : aposta);
-          }, 0);
+          const sumPerAcc = rows.reduce((acc,row) => acc + (parseFloat(row.querySelector('.aposta-input').value)||0), 0);
+          $('#apostaTotalDisplay').value = sumPerAcc.toFixed(2);
         }
       }
 
@@ -979,40 +964,11 @@
       let stakeReal = 0;
       for (let i=0;i<n;i++) if (!freebets[i]) stakeReal += apostasFinalReal[i];
 
-            const profits = calculateScenarioProfits(apostasFinalReal, odds, isLay, freebets, cashbacks);
-      const minProfit = Math.min(...lucrosLiquidos);
-      // Lucro líquido = profits[i] (já é líquido), mas você pediu (resultado - aposta total)
-      // Então vamos recalcular o "resultado bruto" antes da subtração do risco
-      const lucrosLiquidos = [];
-      for (let w = 0; w < n; w++) {
-        let retornoBruto = 0;
-        for (let i = 0; i < n; i++) {
-          const stake = apostasFinalReal[i] || 0;
-          const odd = odds[i];
-          const lay = isLay[i];
-          const free = freebets[i];
-          if (lay) {
-            if (i === w) {
-              // perde liability, mas não há retorno bruto aqui (retorno bruto = 0)
-              // então não soma nada
-            } else {
-              retornoBruto += stake; // ganha a stake do lay
-            }
-          } else {
-            if (i === w) {
-              if (free) {
-                retornoBruto += (odd - 1) * stake; // só o lucro, pois stake era grátis
-              } else {
-                retornoBruto += odd * stake; // recebe stake + lucro
-              }
-            }
-            // se perde, não há retorno bruto
-          }
-        }
-        lucrosLiquidos[w] = retornoBruto - stakeReal;
-      }
+      const profits = calculateScenarioProfits(apostasFinalReal, odds, isLay, freebets, cashbacks);
+      const minProfit = Math.min(...profits);
+
       rows.forEach((row,i) => {
-        row.querySelector('.lucro-output').textContent = money(lucrosLiquidos[i]);
+        row.querySelector('.lucro-output').textContent = money(profits[i]);
       });
 
       $('#stakeTotal').textContent = `R$ ${money(stakeReal)}`;
@@ -1026,11 +982,11 @@
       rows.forEach((row,i) => {
         const tr = document.createElement('tr');
         const apostaReal = apostasFinalReal[i];
-          tr.innerHTML = `<td>${row.querySelector('.casa-input').value}</td>
-            <td>${odds[i].toFixed(3)}</td>
-            <td>R$ ${money(apostaReal)}</td>
-            <td>${isLay[i] ? 'LAY' : (freebets[i] ? 'BACK (Freebet)' : 'BACK')}</td>
-            <td class="lucro">R$ ${money(lucrosLiquidos[i])}</td>`;
+        tr.innerHTML = `<td>${row.querySelector('.casa-input').value}</td>
+                        <td>${odds[i].toFixed(3)}</td>
+                        <td>R$ ${money(apostaReal)}</td>
+                        <td>${isLay[i] ? 'LAY' : (freebets[i] ? 'BACK (Freebet)' : 'BACK')}</td>
+                        <td class="lucro">R$ ${money(lucrosLiquidos[i])}</td>`;
         results.appendChild(tr);
       });
     }
