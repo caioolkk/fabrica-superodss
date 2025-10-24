@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Fábrica Super Odd — Calculadora</title>
   <link rel="icon" href="image/logo.png" type="image/png">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css  ">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css    ">
   <style>
     :root{
       --primary: #1f2b3a;
@@ -298,31 +298,10 @@
     .admin-box{margin-top:10px;padding:12px;border-radius:8px;border:1px dashed #e6eef0;background:#fbfeff}
     .admin-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .file-input{display:none}
-    /* NOVAS REGRAS: controle fixo de aposta total (agora ligado à table-wrap, canto inferior esquerdo da área de apostas) */
-    .aposta-fixed {
-      position:absolute; /* preso ao .table-wrap (que é relative) */
-      left:12px;
-      bottom:12px;
-      z-index:120;
-      background:var(--card);
-      border-radius:12px;
-      padding:10px 12px;
-      box-shadow:0 8px 24px rgba(2,6,23,0.12);
-      display:flex;
-      gap:8px;
-      align-items:center;
-      border:1px solid #e6eef0;
-      min-width:220px;
-      align-items:center;
-    }
-    .aposta-fixed strong{font-size:14px;margin-right:6px}
-    .aposta-fixed input{width:110px;padding:8px;border-radius:8px;border:1px solid #e6f0e9}
-    .aposta-fixed .btn{padding:8px 10px;border-radius:8px}
-    /* esconder TFOOT antigo (mantido por compatibilidade/responsividade) */
-    tfoot tr td.aposta-total { display:none; }
+    /* REMOVIDA A REGRA QUE ESCONDIA O TFOOT EM DESKTOP */
+    /* .aposta-fixed foi removido do HTML */
     @media (max-width:1024px){
       /* ajustes leves em tablets - manter aposta dentro da table-wrap mas com largura menor se necessário */
-      .aposta-fixed { left:8px; bottom:8px; min-width:200px; padding:8px; }
     }
     @media (max-width:768px){
       .grid2{grid-template-columns:1fr}
@@ -414,18 +393,6 @@
         text-align: right;
         font-size:14px;
       }
-
-      /* Em mobile colocamos a aposta-fixed como elemento estático logo abaixo da tabela (visual consistente) */
-      .aposta-fixed {
-        position: static !important;
-        box-shadow:none;
-        border:none;
-        margin-top:12px;
-        width:100%;
-        justify-content:space-between;
-        padding:10px 0;
-      }
-      .aposta-fixed input { width: 110px; }
 
       /* Reorganizar results para mobile: resumo abaixo da tabela de resultados */
       .results-left { order: 0; width:100% }
@@ -528,7 +495,6 @@
               <td colspan="7"></td>
               <td colspan="3" class="aposta-total">
                 <strong>Aposta total:</strong>
-                <!-- Mantemos este input por compatibilidade com mobile (visível em <=768) -->
                 <input id="apostaTotalDisplay" type="number" step="0.01" value="100.00">
                 <button class="btn ghost" id="btnCopyAposta" disabled>📋</button>
               </td>
@@ -536,16 +502,7 @@
             </tr>
           </tfoot>
         </table>
-
-        <!-- Controlo fixo de Aposta Total agora DENTRO da table-wrap
-             posicionado no canto inferior esquerdo da área Linhas de Apostas (desktop).
-             Em mobile ele vira estático e aparece logo abaixo da tabela. -->
-        <div class="aposta-fixed" id="apostaFixedBox" aria-hidden="false">
-          <strong>Aposta total:</strong>
-          <input id="apostaTotalFixed" type="number" step="0.01" value="100.00" aria-label="Aposta total fixa">
-          <button class="btn ghost" id="btnCopyApostaFixed" disabled>📋</button>
-        </div>
-
+        <!-- BLOCO .aposta-fixed REMOVIDO -->
       </div>
     </div>
 
@@ -599,8 +556,8 @@
       showAumento: false,
       showFreebet: false,
       showCashback: false,
-      controlIndex: null, // null = não está usando C, número = índice da linha usada como referência
-      manualMode: false // se true => usar apostas individuais (não sobrescrever); se false => distribuir com base em aposta total
+      controlIndex: null,
+      manualMode: false
     };
     const $ = sel => document.querySelector(sel);
     const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -632,11 +589,11 @@
       $('#qtdCasas').disabled = !logged;
       $('#qtdContas').disabled = !logged;
       $('#btnCopyAposta').disabled = !logged;
-      $('#btnCopyApostaFixed').disabled = !logged;
+      // REMOVIDO: $('#btnCopyApostaFixed').disabled = !logged;
       $('#btnShare').disabled = !logged;
       $('#btnAddPlanilha').disabled = !logged;
       $('#apostaTotalDisplay').disabled = !logged;
-      $('#apostaTotalFixed').disabled = !logged;
+      // REMOVIDO: $('#apostaTotalFixed').disabled = !logged;
       
       $$('#apostasBody input, #apostasBody button, .comissao-checkbox').forEach(el => {
         el.disabled = !logged;
@@ -681,13 +638,10 @@
       inputs.forEach(input => {
         input.addEventListener('input', (ev) => {
           if (!isLoggedIn()) return;
-          // Se o usuário editar uma aposta individual, ativamos modo manual
           if (input.classList.contains('aposta-input')) {
             state.manualMode = true;
-            // sair do modo C se estiver
             state.controlIndex = null;
             $$('.comissao-checkbox').forEach(cb => cb.checked = false);
-            // Atualiza o total com base nas apostas individuais
             recalculateTotalFromIndividuals();
           }
           updateCalculations();
@@ -698,11 +652,9 @@
       checkbox.addEventListener('change', () => {
         if (!isLoggedIn()) return;
         if (checkbox.checked) {
-          // Desmarcar outros
           $$('.comissao-checkbox').forEach(cb => cb.checked = false);
           checkbox.checked = true;
           state.controlIndex = i;
-          // desligar manualMode: no modo C, recomputamos com base na referência
           state.manualMode = false;
         } else {
           state.controlIndex = null;
@@ -721,9 +673,8 @@
         const aposta = parseFloat(row.querySelector('.aposta-input').value) || 0;
         total += aposta;
       });
-      // Sincroniza ambos os displays
       $('#apostaTotalDisplay').value = (total / qtdContas).toFixed(2);
-      $('#apostaTotalFixed').value = (total / qtdContas).toFixed(2);
+      // REMOVIDO: $('#apostaTotalFixed').value = (total / qtdContas).toFixed(2);
     }
 
     function renderRows() {
@@ -749,7 +700,6 @@
       $$('.col-comissao').forEach(el => el.classList.toggle('hidden', !cols.colComissao));
       $$('.col-aumento').forEach(el => el.classList.toggle('hidden', !cols.colAumento));
 
-      // Atualizar larguras dinamicamente (exceto Aposta Total no tfoot)
       const visibleCols = [
         '.col-casa',
         '.col-tipo',
@@ -866,44 +816,38 @@
 
       let apostas = Array(rows.length).fill(0);
 
-      // Lógica:
-      // 1) Se modo C ativo => usar referência (mantido)
-      // 2) Else se state.manualMode === true => usar as apostas individuais do input (não sobrescrever), e atualizar total
-      // 3) Else => distribuir com base no totalDisplay
       if (state.controlIndex === null) {
         if (state.manualMode) {
-          // Pegar apostas diretamente dos inputs
           rows.forEach((row, i) => {
             apostas[i] = parseFloat(row.querySelector('.aposta-input').value) || 0;
           });
         } else {
-          // Modo automático normal: distribuir com base no total
           const inversos = odds.map((odd, i) => isLay[i] ? (odd - 1) : (1 / odd));
           const soma = inversos.reduce((a,b) => a + b, 0);
           apostas = inversos.map(inv => (totalReal * inv) / soma);
-          // Atualizar inputs individuais (sobrescrever apenas se não estiver em manual mode)
           rows.forEach((row, i) => {
             row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
           });
         }
       } else {
-        // Modo C: usar linha como referência (mantido)
         const refIndex = state.controlIndex;
         const refAposta = parseFloat(rows[refIndex].querySelector('.aposta-input').value) || 0;
+        // 🔴 ALTERAÇÃO ÚNICA: multiplicar por qtdContas para obter o valor real da aposta
+        const refApostaReal = refAposta * qtdContas;
         const refOdd = odds[refIndex];
         const refIsLay = isLay[refIndex];
         const refFreebet = freebets[refIndex];
 
         let refLucro;
         if (refIsLay) {
-          refLucro = refAposta - refFreebet;
+          refLucro = refApostaReal - refFreebet;
         } else {
-          refLucro = (refAposta * refOdd) - refAposta;
+          refLucro = (refApostaReal * refOdd) - refApostaReal;
         }
 
         for (let i = 0; i < rows.length; i++) {
           if (i === refIndex) {
-            apostas[i] = refAposta;
+            apostas[i] = refApostaReal;
             continue;
           }
 
@@ -914,31 +858,29 @@
           if (isLayHere) {
             apostas[i] = refLucro + freebet;
           } else {
-            // ALTERAÇÃO ÚNICA: garantir que (odd - 1) nunca seja <= 0
-            const divisor = Math.max(odd - 1, 0.001);
-            apostas[i] = refLucro / divisor;
+            if (odd > 1) {
+              apostas[i] = refLucro / (odd - 1);
+            } else {
+              apostas[i] = 0;
+            }
           }
         }
 
-        // Atualizar inputs individuais
         rows.forEach((row, i) => {
           row.querySelector('.aposta-input').value = (apostas[i] / qtdContas).toFixed(2);
         });
 
-        // Atualizar total
         const novoTotal = apostas.reduce((a,b) => a + b, 0);
         totalDisplay.value = (novoTotal / qtdContas).toFixed(2);
-        $('#apostaTotalFixed').value = (novoTotal / qtdContas).toFixed(2);
+        // REMOVIDO: $('#apostaTotalFixed').value = (novoTotal / qtdContas).toFixed(2);
       }
 
-      // Caso manualMode ativo e controlIndex null, sincronizar displays
       if (state.manualMode && state.controlIndex === null) {
         const soma = apostas.reduce((a,b) => a + b, 0);
         $('#apostaTotalDisplay').value = (soma / qtdContas).toFixed(2);
-        $('#apostaTotalFixed').value = (soma / qtdContas).toFixed(2);
+        // REMOVIDO: $('#apostaTotalFixed').value = (soma / qtdContas).toFixed(2);
       }
 
-      // Calcular lucros
       const scenarioProfits = calculateScenarioProfits(apostas, odds, isLay, freebets, cashbacks, comissoes);
       const minLucro = Math.min(...scenarioProfits);
       const totalAposta = apostas.reduce((a,b) => a + b, 0);
@@ -1000,48 +942,30 @@
         if (isLoggedIn()) updateCalculations();
       });
 
-      // Quando o usuário edita o campo Aposta Total: voltar para modo automático (manualMode = false)
       $('#apostaTotalDisplay').addEventListener('input', () => {
         if (!isLoggedIn()) return;
         state.controlIndex = null;
         state.manualMode = false;
         $$('.comissao-checkbox').forEach(cb => cb.checked = false);
-        // Sincroniza fixed
-        $('#apostaTotalFixed').value = $('#apostaTotalDisplay').value;
+        // REMOVIDO: $('#apostaTotalFixed').value = $('#apostaTotalDisplay').value;
         updateCalculations();
       });
 
-      // Campo fixo: mesmo comportamento (edita o total, sai do modo manual)
-      $('#apostaTotalFixed').addEventListener('input', () => {
-        if (!isLoggedIn()) return;
-        state.controlIndex = null;
-        state.manualMode = false;
-        $$('.comissao-checkbox').forEach(cb => cb.checked = false);
-        $('#apostaTotalDisplay').value = $('#apostaTotalFixed').value;
-        updateCalculations();
-      });
+      // REMOVIDO O EVENTO DO #apostaTotalFixed
 
-      // Botões de copiar
       $('#btnCopyAposta').addEventListener('click', () => {
         if (!isLoggedIn()) return;
-        navigator.clipboard.writeText($('#apostaTotalDisplay').value).then(() => {
-          // opcional: feedback
-        });
-      });
-      $('#btnCopyApostaFixed').addEventListener('click', () => {
-        if (!isLoggedIn()) return;
-        navigator.clipboard.writeText($('#apostaTotalFixed').value).then(() => {});
+        navigator.clipboard.writeText($('#apostaTotalDisplay').value).then(() => {});
       });
 
-      // Sincroniza displays (on load)
-      $('#apostaTotalFixed').value = $('#apostaTotalDisplay').value;
+      // REMOVIDO: $('#btnCopyApostaFixed').addEventListener
 
-      // Inicialização padrão
+      // REMOVIDO: sincronização com #apostaTotalFixed
+
       state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
       renderRows();
       if (isLoggedIn()) updateCalculations();
 
-      // Observe quando o login mudar (simples polling para atualizar estado dos inputs)
       setInterval(updateInputsState, 800);
     }
 
