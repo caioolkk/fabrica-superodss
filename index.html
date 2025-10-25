@@ -990,7 +990,7 @@
 
   <script>
     /* ======================================================
-       FÁBRICA SUPER ODD — CÁLCULO SUREBET FINAL CORRIGIDO
+       FÁBRICA SUPER ODD — CÁLCULO SUREBET FINAL CORRIGIDO + FREEBET GLOBAL
        ====================================================== */
 
     const state = {
@@ -1054,12 +1054,10 @@
     <td class="col-lucro"><span class="lucro-output">0.00</span></td>
   `;
 
-      // Edição facilitada
       tr.querySelectorAll('input[type="number"]').forEach(inp => {
         inp.addEventListener('focus', () => inp.select());
       });
 
-      // BACK/LAY toggle
       tr.querySelector('.type-btn').addEventListener('click', e => {
         if (!isLoggedIn()) return;
         const btn = e.target;
@@ -1069,7 +1067,6 @@
         updateCalculations();
       });
 
-      // Inputs listeners
       tr.querySelectorAll('input').forEach(inp => {
         inp.addEventListener('input', () => {
           if (!isLoggedIn()) return;
@@ -1083,7 +1080,6 @@
         });
       });
 
-      // Controle "C"
       tr.querySelector('.comissao-checkbox').addEventListener('change', e => {
         if (!isLoggedIn()) return;
         const cb = e.target;
@@ -1093,7 +1089,6 @@
         updateCalculations();
       });
 
-      // Freebet checkbox
       tr.querySelector('.freebet-checkbox').addEventListener('change', () => {
         if (!isLoggedIn()) return;
         recalcApostaTotal();
@@ -1125,7 +1120,6 @@
 
     /* ===== FUNÇÕES AUXILIARES ===== */
     function getOddFinal(odd, com = 0, aum = 0) {
-      // comissão aplicada só no lucro e aumento só no lucro
       const oddCom = ((odd - 1) * (1 - com / 100)) + 1;
       const oddFinal = oddCom * (1 + aum / 100);
       return Math.max(1.001, oddFinal);
@@ -1166,14 +1160,12 @@
 
       let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
 
-      /* === DISTRIBUIÇÃO NORMAL === */
       if (!state.manualMode && state.controlIndex === null) {
         const invs = oddsOriginal.map(o => 1 / o);
         const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
         stakes = invs.map(inv => (totalReal * inv) / sumInv / qtdContas);
       }
 
-      /* === MODO "C" === */
       if (state.controlIndex !== null) {
         const ref = state.controlIndex;
         const stakeRef = stakes[ref];
@@ -1181,13 +1173,11 @@
         let stakeTotal = 0;
         for (let i = 0; i < n; i++) if (!freebets[i]) stakeTotal += stakes[i];
         const lucroBase = (oddRef * stakeRef) - stakeTotal;
-
         for (let i = 0; i < n; i++) {
           if (i !== ref) {
             stakes[i] = (stakeRef * oddRef) / oddsOriginal[i];
           }
         }
-
         stakeTotal = 0;
         for (let i = 0; i < n; i++) if (!freebets[i]) stakeTotal += stakes[i];
         $('#apostaTotalDisplay').value = stakeTotal.toFixed(2);
@@ -1200,16 +1190,15 @@
         return acc + (freebets[i] ? 0 : stakesReal[i]);
       }, 0);
 
-      /* === CÁLCULO DE LUCRO LÍQUIDO === */
+      const totalFreebets = stakesReal.reduce((acc, val, i) => acc + (freebets[i] ? val : 0), 0);
+
       const lucros = [];
       for (let w = 0; w < n; w++) {
         const ganho = oddsFinal[w] * stakesReal[w];
-        const stakeFree = freebets[w] ? stakesReal[w] : 0;
-        const lucro = ganho - stakeTotalReal - stakeFree;
+        const lucro = ganho - stakeTotalReal - totalFreebets;
         lucros[w] = lucro;
       }
 
-      /* === ATUALIZA UI === */
       rows.forEach((r, i) => {
         const el = r.querySelector('.lucro-output');
         el.textContent = lucros[i].toFixed(2);
@@ -1262,6 +1251,7 @@
     }
     document.addEventListener('DOMContentLoaded', init);
   </script>
+
 
 
 
