@@ -1136,7 +1136,7 @@
       $('#apostaTotalDisplay').value = total.toFixed(2);
     }
 
-    /* ===== CÁLCULO PRINCIPAL — BOTÃO "C" COM IGUALAÇÃO DE LUCROS + FREEBET (VERSÃO CORRIGIDA) ===== */
+    /* ===== CÁLCULO PRINCIPAL — BOTÃO "C" COM IGUALAÇÃO DE LUCROS + FREEBET ===== */
     function updateCalculations() {
       if (!isLoggedIn()) return;
 
@@ -1158,18 +1158,14 @@
         r.querySelector('.odd-final').textContent = oddsFinal[i].toFixed(3);
       });
 
-      // stakes por conta (inicial, podem vir do input ou distribuição padrão)
       let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
 
-      // Distribuição padrão (quando não manual e sem C)
       if (!state.manualMode && state.controlIndex === null) {
         const invs = oddsOriginal.map(o => 1 / (o || 1));
         const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
         stakes = invs.map(inv => (totalReal * inv) / sumInv / (qtdContas || 1));
       }
 
-      // MODO "C" — IGUALAÇÃO DE LUCROS (FUNCIONA COM OU SEM FREEBET)
-      // Modo "C" — IGUALAÇÃO DE LUCROS (com ou sem FREEBET)
       if (state.controlIndex !== null) {
         const w = state.controlIndex;
         const stakeW = stakes[w];
@@ -1177,7 +1173,6 @@
         const temFreebet = freebets.some(fb => fb);
 
         if (!temFreebet) {
-          // === Caso SEM Freebet: fórmula direta de surebet ===
           for (let i = 0; i < n; i++) {
             if (i === w) continue;
             const oddI = oddsOriginal[i];
@@ -1186,7 +1181,6 @@
             stakes[i] = (stakeW * (oddW - 1)) / denom;
           }
         } else {
-          // === Caso COM Freebet: mantém sua lógica atual ===
           let perdasW = 0;
           for (let i = 0; i < n; i++) {
             if (i !== w && !freebets[i]) perdasW += stakes[i];
@@ -1197,10 +1191,7 @@
             if (i === w) continue;
             const oddI = oddsOriginal[i];
             const denominator = oddI - 1;
-            if (denominator <= 0) {
-              stakes[i] = 0;
-              continue;
-            }
+            if (denominator <= 0) continue;
 
             let perdasI = 0;
             for (let j = 0; j < n; j++) {
@@ -1209,67 +1200,52 @@
 
             stakes[i] = (lucroW + perdasI) / denominator;
           }
-
-          perdasW = 0;
-          for (let i = 0; i < n; i++) {
-            if (i !== w && !freebets[i]) perdasW += stakes[i];
-          }
         }
 
         const stakeTotal = stakes.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
         $('#apostaTotalDisplay').value = stakeTotal.toFixed(2);
       }
 
-
-
-
-
-      // Atualiza inputs de aposta (formatado)
       rows.forEach((r, i) => r.querySelector('.aposta-input').value = (stakes[i] || 0).toFixed(2));
 
-      // stakes reais (multiplicadas por qtdContas)
       const stakesReal = stakes.map(s => (s || 0) * (qtdContas || 1));
-
-      // === CÁLCULO DO LUCRO POR CENÁRIO — LÓGICA EXATA COMO NO SEU PRIMEIRO PRINT ===
       const lucros = [];
+
       for (let w = 0; w < n; w++) {
         const ganho = (oddsFinal[w] || 0) * (stakesReal[w] || 0);
         const stakeVencedora = stakesReal[w] || 0;
 
-        // Perdas: somente as apostas reais das casas que PERDERAM (exclui freebets)
         let perdas = 0;
         for (let i = 0; i < n; i++) {
-          if (i === w) continue;
-          if (!freebets[i]) perdas += stakesReal[i] || 0;
+          if (i !== w && !freebets[i]) perdas += stakesReal[i] || 0;
         }
 
-        // Lucro puro = Ganho - Stake da casa vencedora - Perdas
         const lucroPuro = ganho - stakeVencedora - perdas;
         lucros[w] = lucroPuro;
       }
 
-      // Atualiza UI por linha
       rows.forEach((r, i) => {
         const el = r.querySelector('.lucro-output');
         el.textContent = (lucros[i] || 0).toFixed(2);
         el.style.color = (lucros[i] || 0) >= 0 ? "#22bb33" : "#cc3333";
       });
 
-      // Resumos
       const totalStakeReal = stakesReal.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
       const minLucro = Math.min(...lucros);
       const perc = totalStakeReal ? (minLucro / totalStakeReal) * 100 : 0;
+
+      // === 🚀 MODIFICAÇÃO CIRÚRGICA AQUI ===
+      const totalFreebetStakes = stakesReal.reduce((acc, val, i) => acc + (freebets[i] ? val : 0), 0);
+      const lucroLiquidoAjustado = minLucro - totalFreebetStakes;
+      // ======================================
+
       $('#stakeTotal').textContent = money(totalStakeReal);
-      $('#lucroTotal').textContent = money(minLucro);
+      $('#lucroTotal').textContent = money(lucroLiquidoAjustado);
       $('#porcentagem').textContent = perc.toFixed(2) + " %";
 
-      // Atualiza resultados na tabela inferior
       updateResultsTable(lucros, stakesReal, oddsFinal);
     }
 
-
-
-    // Função auxiliar para atualizar a tabela de resultados
     function updateResultsTable(lucros, stakesReal, oddsFinal) {
       const tbody = $('#resultsBody');
       tbody.innerHTML = '';
