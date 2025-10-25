@@ -1278,11 +1278,13 @@
         const ganho = (oddsFinal[w] || 0) * (stakesReal[w] || 0);
         const stakeVencedora = stakesReal[w] || 0;
 
-        // Perdas: somente as apostas reais das casas que PERDERAM (exclui freebets)
+        // Perdas: somente as apostas reais das casas que PERDERAM (exclui freebets E exclui a casa marcada com "C")
         let perdas = 0;
         for (let i = 0; i < n; i++) {
-          if (i === w) continue;
-          if (!freebets[i]) perdas += stakesReal[i] || 0;
+          if (i === w) continue; // casa vencedora
+          if (freebets[i]) continue; // freebet não conta como perda
+          if (state.controlIndex !== null && i === state.controlIndex) continue; // casa com "C" não perde!
+          perdas += stakesReal[i] || 0;
         }
 
         // Lucro puro = Ganho - Stake da casa vencedora - Perdas
