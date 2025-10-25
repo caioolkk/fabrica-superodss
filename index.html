@@ -1173,87 +1173,58 @@
         const w = state.controlIndex;
         const stakeW = stakes[w] || 0;
         const oddW = oddsOriginal[w] || 1;
-
         const temFreebet = freebets.some(fb => fb);
-        const MAX_IT = 200;
+
+        const MAX_IT = 300;
         const TOL = 1e-7;
         let iter = 0;
         let converged = false;
 
-        if (!temFreebet) {
-          // === CASO SEM FREEBET ===
-          // Método matemático direto (sem necessidade de iteração)
-          // Calcular lucro da casa de referência
+        while (iter < MAX_IT && !converged) {
+          iter++;
+
+          // calcular perdas da casa vencedora
           let perdasW = 0;
           for (let i = 0; i < n; i++) {
-            if (i !== w) perdasW += stakes[i];
+            if (i === w) continue;
+            if (temFreebet && freebets[i]) continue;
+            perdasW += stakes[i];
           }
+
+          // lucro da casa vencedora
           const lucroW = (oddW * stakeW) - stakeW - perdasW;
 
-          // Ajustar stakes das outras casas para igualar lucro
+          let maxDelta = 0;
+
+          // recalcular stakes das outras casas
           for (let i = 0; i < n; i++) {
             if (i === w) continue;
+            if (temFreebet && freebets[i]) continue;
+
             const oddI = oddsOriginal[i];
             const denom = oddI - 1;
             if (denom <= 0) continue;
 
             let perdasI = 0;
             for (let j = 0; j < n; j++) {
-              if (j !== i && j !== w) perdasI += stakes[j];
+              if (j === i || j === w) continue;
+              if (temFreebet && freebets[j]) continue;
+              perdasI += stakes[j];
             }
 
-            stakes[i] = (lucroW + perdasI) / denom;
+            const newStake = Math.max(0, (lucroW + perdasI) / denom);
+            maxDelta = Math.max(maxDelta, Math.abs(newStake - stakes[i]));
+            stakes[i] = newStake;
           }
 
-          // Atualizar total exibido
-          const stakeTotal = stakes.reduce((acc, val) => acc + val, 0);
-          $('#apostaTotalDisplay').value = stakeTotal.toFixed(2);
-
-        } else {
-          // === CASO COM FREEBET ===
-          // Método iterativo (mantém comportamento anterior)
-          while (iter < MAX_IT && !converged) {
-            iter++;
-
-            let perdasW = 0;
-            for (let i = 0; i < n; i++) {
-              if (i === w) continue;
-              if (freebets[i]) continue;
-              perdasW += stakes[i];
-            }
-
-            const lucroW = (oddW * stakeW) - stakeW - perdasW;
-
-            let maxDelta = 0;
-
-            for (let i = 0; i < n; i++) {
-              if (i === w || freebets[i]) continue;
-
-              const oddI = oddsOriginal[i];
-              const denom = oddI - 1;
-              if (denom <= 0) continue;
-
-              let perdasI = 0;
-              for (let j = 0; j < n; j++) {
-                if (j === i || j === w || freebets[j]) continue;
-                perdasI += stakes[j];
-              }
-
-              const newSi = Math.max(0, (lucroW + perdasI) / denom);
-              maxDelta = Math.max(maxDelta, Math.abs(newSi - stakes[i]));
-              stakes[i] = newSi;
-            }
-
-            if (maxDelta < TOL) converged = true;
-          }
-
-          const stakeTotal = stakes.reduce(
-            (acc, val, i) => acc + (freebets[i] ? 0 : val),
-            0
-          );
-          $('#apostaTotalDisplay').value = stakeTotal.toFixed(2);
+          if (maxDelta < TOL) converged = true;
         }
+
+        // Atualizar aposta total (só apostas reais)
+        const totalStake = stakes.reduce((acc, val, i) => acc + (temFreebet && freebets[i] ? 0 : val), 0);
+        $('#apostaTotalDisplay').value = totalStake.toFixed(2);
       }
+
 
 
       // Atualiza inputs de aposta (formatado)
