@@ -1136,61 +1136,56 @@
       $('#apostaTotalDisplay').value = total.toFixed(2);
     }
 
-    /* ===== CÁLCULO PRINCIPAL — BOTÃO "C" COM IGUALAÇÃO DE LUCROS + FREEBET (VERSÃO CORRIGIDA) ===== */
     function updateCalculations() {
-      if (!isLoggedIn()) return;
+      const rows = document.querySelectorAll("#linhasApostas tbody tr");
+      const state = {
+        odds: [],
+        stakes: [],
+        freebets: [],
+        controlIndex: null,
+        tipos: [],
+        comissoes: [],
+      };
 
-      const totalDisplay = parseFloat($('#apostaTotalDisplay').value) || 100;
-      const qtdContas = parseFloat($('#qtdContas').value) || 1;
-      const totalReal = totalDisplay * qtdContas;
-      const rows = $$('#apostasBody tr');
-      const n = rows.length;
+      rows.forEach((row, i) => {
+        const odd = parseFloat(row.querySelector(".odd").value.replace(",", ".")) || 0;
+        const stake = parseFloat(row.querySelector(".stake").value.replace(",", ".")) || 0;
+        const isFreebet = row.querySelector(".freebet").checked;
+        const isControl = row.querySelector(".controle").checked;
+        const tipo = row.querySelector(".tipo").value;
+        const comissao = parseFloat(row.querySelector(".comissao").value.replace(",", ".")) || 0;
 
-      const oddsOriginal = [], oddsFinal = [], comissoes = [], aumentos = [], freebets = [];
-      rows.forEach((r, i) => {
-        const oddRaw = parseFloat(r.querySelector('.odd-input').value) || 2;
-        const com = state.showComissao ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
-        const aum = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value) || 0 : 0;
-        oddsOriginal[i] = oddRaw;
-        oddsFinal[i] = getOddFinal(oddRaw, com, aum);
-        comissoes[i] = com; aumentos[i] = aum;
-        freebets[i] = !!(state.showFreebet && r.querySelector('.freebet-checkbox').checked);
-        r.querySelector('.odd-final').textContent = oddsFinal[i].toFixed(3);
+        state.odds.push(odd);
+        state.stakes.push(stake);
+        state.freebets.push(isFreebet);
+        state.tipos.push(tipo);
+        state.comissoes.push(comissao);
+        if (isControl) state.controlIndex = i;
       });
 
-      // stakes por conta (inicial, podem vir do input ou distribuição padrão)
-      let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
+      const n = state.odds.length;
+      if (n < 2) return;
 
-      // Distribuição padrão (quando não manual e sem C)
-      if (!state.manualMode && state.controlIndex === null) {
-        const invs = oddsOriginal.map(o => 1 / (o || 1));
-        const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
-        stakes = invs.map(inv => (totalReal * inv) / sumInv / (qtdContas || 1));
-      }
+      const { odds, stakes, freebets, controlIndex } = state;
 
-      // MODO "C" — IGUALAÇÃO DE LUCROS (FUNCIONA COM OU SEM FREEBET)
-      if (state.controlIndex !== null) {
-        const w = state.controlIndex;
-        const oddW = oddsOriginal[w];
+      // === Correção do modo "C" ===
+      if (controlIndex !== null) {
+        const w = controlIndex;
+        const oddW = odds[w];
         const stakeW = stakes[w];
         const temFreebet = freebets.some(fb => fb);
 
         if (!temFreebet) {
-          // === CASO SEM FREEBET: fórmula exata de equalização de lucros ===
-          // S_i = S_w * (O_w - 1) / (O_i - 1)
+          // ✅ Sem Freebet — fórmula exata para igualar lucros
           for (let i = 0; i < n; i++) {
             if (i === w) continue;
-            const oddI = oddsOriginal[i];
+            const oddI = odds[i];
             const denom = oddI - 1;
             if (denom <= 0) continue;
             stakes[i] = (stakeW * (oddW - 1)) / denom;
           }
-
-          const totalStake = stakes.reduce((acc, v) => acc + v, 0);
-          $('#apostaTotalDisplay').value = totalStake.toFixed(2);
-
         } else {
-          // === CASO COM FREEBET: modo iterativo (mantém o que já funciona) ===
+          // ✅ Com Freebet — mantém lógica antiga que já funcionava
           const MAX_IT = 200;
           const TOL = 1e-7;
           let iter = 0;
@@ -1212,7 +1207,7 @@
 
             for (let i = 0; i < n; i++) {
               if (i === w || freebets[i]) continue;
-              const oddI = oddsOriginal[i];
+              const oddI = odds[i];
               const denom = oddI - 1;
               if (denom <= 0) continue;
 
@@ -1229,57 +1224,44 @@
 
             if (maxDelta < TOL) converged = true;
           }
-
-          const totalStake = stakes.reduce((acc, v, i) => acc + (freebets[i] ? 0 : v), 0);
-          $('#apostaTotalDisplay').value = totalStake.toFixed(2);
-        }
-      }
-
-
-
-
-      // Atualiza inputs de aposta (formatado)
-      rows.forEach((r, i) => r.querySelector('.aposta-input').value = (stakes[i] || 0).toFixed(2));
-
-      // stakes reais (multiplicadas por qtdContas)
-      const stakesReal = stakes.map(s => (s || 0) * (qtdContas || 1));
-
-      // === CÁLCULO DO LUCRO POR CENÁRIO — LÓGICA EXATA COMO NO SEU PRIMEIRO PRINT ===
-      const lucros = [];
-      for (let w = 0; w < n; w++) {
-        const ganho = (oddsFinal[w] || 0) * (stakesReal[w] || 0);
-        const stakeVencedora = stakesReal[w] || 0;
-
-        // Perdas: somente as apostas reais das casas que PERDERAM (exclui freebets)
-        let perdas = 0;
-        for (let i = 0; i < n; i++) {
-          if (i === w) continue;
-          if (!freebets[i]) perdas += stakesReal[i] || 0;
         }
 
-        // Lucro puro = Ganho - Stake da casa vencedora - Perdas
-        const lucroPuro = ganho - stakeVencedora - perdas;
-        lucros[w] = lucroPuro;
+        // Atualiza os inputs com as stakes corrigidas
+        rows.forEach((row, i) => {
+          row.querySelector(".stake").value = stakes[i].toFixed(2).replace(".", ",");
+        });
       }
 
-      // Atualiza UI por linha
-      rows.forEach((r, i) => {
-        const el = r.querySelector('.lucro-output');
-        el.textContent = (lucros[i] || 0).toFixed(2);
-        el.style.color = (lucros[i] || 0) >= 0 ? "#22bb33" : "#cc3333";
+      // === Recalcula lucros ===
+      let totalStake = 0;
+      for (let i = 0; i < n; i++) {
+        if (!freebets[i]) totalStake += stakes[i];
+      }
+
+      rows.forEach((row, i) => {
+        const odd = odds[i];
+        const stake = stakes[i];
+        const freebet = freebets[i];
+        const comissao = state.comissoes[i] / 100;
+
+        let lucro = 0;
+        if (odd > 0) {
+          if (freebet) {
+            lucro = stake * (odd - 1) * (1 - comissao);
+          } else {
+            lucro = stake * (odd - 1) * (1 - comissao) - (totalStake - stake);
+          }
+        }
+
+        const lucroEl = row.querySelector(".lucro");
+        lucroEl.textContent = lucro.toFixed(2);
+        lucroEl.style.color = lucro >= 0 ? "green" : "red";
       });
 
-      // Resumos
-      const totalStakeReal = stakesReal.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
-      const minLucro = Math.min(...lucros);
-      const perc = totalStakeReal ? (minLucro / totalStakeReal) * 100 : 0;
-      $('#stakeTotal').textContent = money(totalStakeReal);
-      $('#lucroTotal').textContent = money(minLucro);
-      $('#porcentagem').textContent = perc.toFixed(2) + " %";
-
-      // Atualiza resultados na tabela inferior
-      updateResultsTable(lucros, stakesReal, oddsFinal);
+      // Atualiza aposta total
+      document.querySelector("#apostaTotalDisplay").value = totalStake.toFixed(2).replace(".", ",");
     }
+
 
 
 
