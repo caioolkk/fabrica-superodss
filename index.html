@@ -1136,7 +1136,7 @@
       $('#apostaTotalDisplay').value = total.toFixed(2);
     }
 
-    /* ===== CÁLCULO PRINCIPAL — BOTÃO "C" COM FREEBET ===== */
+    /* ===== CÁLCULO PRINCIPAL — LÓGICA EXATA COMO NO SEU PRIMEIRO PRINT ===== */
     function updateCalculations() {
       if (!isLoggedIn()) return;
 
@@ -1264,23 +1264,6 @@
       updateResultsTable(lucros, stakesReal, oddsFinal);
     }
 
-    // Função auxiliar para atualizar a tabela de resultados
-    function updateResultsTable(lucros, stakesReal, oddsFinal) {
-      const tbody = $('#resultsBody');
-      tbody.innerHTML = '';
-      const rows = $$('#apostasBody tr');
-      rows.forEach((r, i) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-      <td>${r.querySelector('.casa-input').value}</td>
-      <td>${oddsFinal[i].toFixed(3)}</td>
-      <td>${stakesReal[i].toFixed(2)}</td>
-      <td>${r.querySelector('.type-btn').textContent}</td>
-      <td style="color: ${lucros[i] >= 0 ? '#22bb33' : '#cc3333'}">${lucros[i].toFixed(2)}</td>
-    `;
-        tbody.appendChild(row);
-      });
-    }
     // Função auxiliar para atualizar a tabela de resultados
     function updateResultsTable(lucros, stakesReal, oddsFinal) {
       const tbody = $('#resultsBody');
