@@ -989,69 +989,398 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const oddsInputs = document.querySelectorAll(".odd");
-      const commissionInputs = document.querySelectorAll(".commission");
-      const finalOdds = document.querySelectorAll(".odd-final");
-      const stakeInputs = document.querySelectorAll(".stake");
-      const freebetChecks = document.querySelectorAll(".freebet");
-      const lucroDisplays = document.querySelectorAll(".lucro");
-      const apostaTotalInput = document.getElementById("totalStake");
+    /* ======================================================
+       FÁBRICA SUPER ODD — SCRIPT COMPLETO ATUALIZADO
+       Mantém todas as features: criação de linhas, toggles,
+       distribuição padrão, modo "C" (igualar lucros), freebet,
+       cashback, comissão, resultados e resumo.
+       ====================================================== */
 
-      function updateFinalOdds() {
-        for (let i = 0; i < oddsInputs.length; i++) {
-          const odd = parseFloat(oddsInputs[i].value.replace(",", ".")) || 0;
-          const commission = parseFloat(commissionInputs[i].value.replace(",", ".")) || 0;
-          const finalOdd = odd - (odd - 1) * (commission / 100);
-          finalOdds[i].textContent = finalOdd.toFixed(3);
-        }
+    const state = {
+      qtdCasas: 2,
+      showComissao: true,
+      showAumento: false,
+      showFreebet: false,
+      showCashback: false,
+      controlIndex: null,
+      manualMode: false
+    };
+
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const money = v => "R$ " + (Number(v || 0).toFixed(2));
+
+    function isLoggedIn() {
+      return localStorage.getItem('superodd_logged_in') === 'true';
+    }
+
+    /* ===== LOGIN ===== */
+    function updateNavbar() {
+      const btn = $('#btnOpenLogin');
+      if (!btn) return;
+      if (isLoggedIn()) {
+        btn.textContent = 'Sair';
+        btn.onclick = e => { e.preventDefault(); localStorage.removeItem('superodd_logged_in'); location.reload(); };
+      } else {
+        btn.textContent = 'Entrar';
+        btn.onclick = e => { e.preventDefault(); window.location.href = 'login.html'; };
+      }
+    }
+
+    function updateInputsState() {
+      const logged = isLoggedIn();
+      const disable = !logged;
+      const selectors = [
+        '#procedimento', '#qtdCasas', '#qtdContas', '#btnCopyAposta',
+        '#btnShare', '#btnAddPlanilha', '#apostaTotalDisplay'
+      ];
+      selectors.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) el.disabled = disable;
+      });
+      $$('#apostasBody input, #apostasBody button, .chk input').forEach(el => el.disabled = disable);
+    }
+
+    /* ===== CRIAÇÃO DE LINHAS ===== */
+    function createRow(i) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+    <td class="col-casa"><input class="casa-input" type="text" value="Casa ${i + 1}" inputmode="text"></td>
+    <td class="col-tipo"><button class="type-btn back">BACK</button></td>
+    <td class="col-odd"><input class="odd-input" type="number" step="0.001" min="1.001" value="2.000" inputmode="decimal"></td>
+    <td class="col-comissao"><input class="comissao-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
+    <td class="col-oddfinal"><span class="odd-final">2.000</span></td>
+    <td class="col-aumento"><input class="aumento-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
+    <td class="col-aposta"><input class="aposta-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
+    <td class="col-freebet">
+      <label class="chk"><input class="freebet-checkbox" type="checkbox"><span class="chkbox"></span></label>
+    </td>
+    <td class="col-cashback"><input class="cashback-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
+    <td class="col-c">
+      <label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label>
+    </td>
+    <td class="col-lucro"><span class="lucro-output">0.00</span></td>
+  `;
+
+      // UX: select number on focus
+      tr.querySelectorAll('input[type="number"]').forEach(inp => {
+        inp.addEventListener('focus', () => inp.select());
+      });
+
+      // Tipo BACK/LAY
+      tr.querySelector('.type-btn').addEventListener('click', e => {
+        if (!isLoggedIn()) return;
+        const btn = e.target;
+        btn.classList.toggle('lay');
+        btn.classList.toggle('back');
+        btn.textContent = btn.classList.contains('lay') ? 'LAY' : 'BACK';
+        updateCalculations();
+      });
+
+      // Inputs
+      tr.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', () => {
+          if (!isLoggedIn()) return;
+          if (inp.classList.contains('aposta-input')) {
+            state.manualMode = true;
+            state.controlIndex = null;
+            $$('.comissao-checkbox').forEach(c => c.checked = false);
+            recalcApostaTotal();
+          }
+          updateCalculations();
+        });
+      });
+
+      // Checkbox 'C' (comissão) -> controla index
+      tr.querySelector('.comissao-checkbox').addEventListener('change', e => {
+        if (!isLoggedIn()) return;
+        const cb = e.target;
+        $$('.comissao-checkbox').forEach(x => { if (x !== cb) x.checked = false; });
+        state.controlIndex = cb.checked ? [...$('#apostasBody').children].indexOf(tr) : null;
+        state.manualMode = false;
+        updateCalculations();
+      });
+
+      // Freebet change
+      tr.querySelector('.freebet-checkbox').addEventListener('change', () => {
+        if (!isLoggedIn()) return;
+        recalcApostaTotal();
+        updateCalculations();
+      });
+
+      return tr;
+    }
+
+    /* ===== RENDER ===== */
+    function renderRows() {
+      const tbody = $('#apostasBody');
+      tbody.innerHTML = '';
+      for (let i = 0; i < state.qtdCasas; i++) tbody.appendChild(createRow(i));
+      renderTableColumns(); updateInputsState();
+    }
+
+    function renderTableColumns() {
+      const map = {
+        '.col-freebet': state.showFreebet,
+        '.col-cashback': state.showCashback,
+        '.col-comissao': state.showComissao,
+        '.col-aumento': state.showAumento
+      };
+      Object.entries(map).forEach(([sel, visible]) => {
+        $$(sel).forEach(el => el.classList.toggle('hidden', !visible));
+      });
+    }
+
+    /* ===== FUNÇÕES AUXILIARES ===== */
+    function getOddFinal(odd, com = 0, aum = 0) {
+      // aplica comissão e aumento/markup
+      const oddCom = ((odd - 1) * (1 - com / 100)) + 1;
+      const oddFinal = oddCom * (1 + aum / 100);
+      return Math.max(1.001, oddFinal);
+    }
+
+    function recalcApostaTotal() {
+      const rows = $$('#apostasBody tr');
+      let total = 0;
+      rows.forEach(row => {
+        const val = parseFloat(row.querySelector('.aposta-input').value) || 0;
+        const isFree = row.querySelector('.freebet-checkbox').checked;
+        if (!isFree) total += val;
+      });
+      $('#apostaTotalDisplay').value = total.toFixed(2);
+    }
+
+    /* ===== CÁLCULO PRINCIPAL (INCLUI IGUALAÇÃO "C" E FREEBET) ===== */
+    function updateCalculations() {
+      // Se sistema estiver bloqueado por login, não calcula
+      if (!isLoggedIn()) return;
+
+      const totalDisplay = parseFloat($('#apostaTotalDisplay').value) || 100;
+      const qtdContas = parseFloat($('#qtdContas') ? $('#qtdContas').value : 1) || 1;
+      const totalReal = totalDisplay * qtdContas;
+      const rows = $$('#apostasBody tr');
+      const n = rows.length;
+
+      const oddsOriginal = [], oddsFinal = [], comissoes = [], aumentos = [], freebets = [];
+      rows.forEach((r, i) => {
+        const oddRaw = parseFloat(r.querySelector('.odd-input').value) || 2;
+        const com = state.showComissao ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
+        const aum = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value) || 0 : 0;
+        oddsOriginal[i] = oddRaw;
+        oddsFinal[i] = getOddFinal(oddRaw, com, aum);
+        comissoes[i] = com; aumentos[i] = aum;
+        freebets[i] = !!(state.showFreebet && r.querySelector('.freebet-checkbox').checked);
+        r.querySelector('.odd-final').textContent = oddsFinal[i].toFixed(3);
+      });
+
+      // stakes por conta (inicial)
+      let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
+
+      // Distribuição padrão quando não manual e sem "C":
+      if (!state.manualMode && state.controlIndex === null) {
+        // usar 1/odd para distribuir de forma a equalizar payout (comportamento padrão comum)
+        const invs = oddsOriginal.map(o => 1 / (o || 1));
+        const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
+        stakes = invs.map(inv => (totalReal * inv) / sumInv / (qtdContas || 1));
       }
 
-      function calcular() {
-        const totalStake = parseFloat(apostaTotalInput.value.replace(",", ".")) || 0;
-        const odds = Array.from(finalOdds).map(o => parseFloat(o.textContent) || 0);
-        const freebets = Array.from(freebetChecks).map(f => f.checked);
-        const stakes = [];
-        const n = odds.length;
+      // MODO "C" — IGUALAÇÃO DE LUCROS (FUNCIONA COM OU SEM FREEBET)
+      if (state.controlIndex !== null) {
+        const w = state.controlIndex;
+        const stakeW = stakes[w] || 0;
+        const oddW = oddsOriginal[w];
+        const temFreebet = freebets.some(fb => fb);
 
-        if (odds.some(o => o <= 1)) return;
+        if (!temFreebet) {
+          // === Caso SEM Freebet: iguala payout (fórmula direta)
+          // S_i = S_w * (O_w) / (O_i)  -> equaliza RETORNO (S*O) em vez de lucro líquido
+          // Mas para aproximar lucro também, usamos (O_w - 1)/(O_i - 1) quando possível (lucro equal)
+          for (let i = 0; i < n; i++) {
+            if (i === w) continue;
+            const oddI = oddsOriginal[i];
+            const denom = oddI - 1;
+            if (denom > 0) {
+              stakes[i] = (stakeW * (oddW - 1)) / denom;
+            } else {
+              // fallback: proporcional a 1/odd
+              stakes[i] = (stakeW * (1 / oddI)) || 0;
+            }
+          }
+        } else {
+          // === Caso COM Freebet: itera até convergir (mantém lucros iguais entre não-freebets)
+          const MAX_IT = 500;
+          const TOL = 1e-8;
+          let iter = 0;
+          let converged = false;
 
-        // cálculo da stake proporcional para igualar lucro líquido
-        let invSum = odds.reduce((sum, o) => sum + 1 / (freebets[odds.indexOf(o)] ? (o - 1) : o), 0);
-        for (let i = 0; i < n; i++) {
-          const divisor = freebets[i] ? (odds[i] - 1) : odds[i];
-          stakes[i] = totalStake / (divisor * invSum);
-          stakeInputs[i].value = stakes[i].toFixed(2).replace(".", ",");
+          // inicializa stakes positivas
+          stakes = stakes.map(s => Math.max(0, s));
+
+          while (iter < MAX_IT && !converged) {
+            iter++;
+            // perdas da casa vencedora: soma stakes dos outros que não são freebet
+            let perdasW = 0;
+            for (let i = 0; i < n; i++) {
+              if (i === w) continue;
+              if (freebets[i]) continue;
+              perdasW += stakes[i];
+            }
+
+            const lucroW = (oddW * stakes[w]) - stakes[w] - perdasW;
+
+            let maxDelta = 0;
+            // atualiza stakes dos que não são w e não são freebet
+            for (let i = 0; i < n; i++) {
+              if (i === w || freebets[i]) continue;
+              const oddI = oddsOriginal[i];
+              const denom = oddI - 1;
+              if (denom <= 0) {
+                if (stakes[i] !== 0) {
+                  maxDelta = Math.max(maxDelta, Math.abs(stakes[i] - 0));
+                  stakes[i] = 0;
+                }
+                continue;
+              }
+
+              // perdas que a casa i teria (exclui i, w e freebets)
+              let perdasI = 0;
+              for (let j = 0; j < n; j++) {
+                if (j === i || j === w || freebets[j]) continue;
+                perdasI += stakes[j];
+              }
+
+              const newStake = Math.max(0, (lucroW + perdasI) / denom);
+              maxDelta = Math.max(maxDelta, Math.abs(newStake - (stakes[i] || 0)));
+              stakes[i] = newStake;
+            }
+
+            if (maxDelta < TOL) converged = true;
+          }
+          // após convergência, stakes atualizadas; aposta total recalculada abaixo
         }
 
-        // cálculo dos lucros
-        let baseLucro = null;
-        for (let i = 0; i < n; i++) {
-          const lucro = freebets[i]
-            ? stakes[i] * (odds[i] - 1)
-            : stakes[i] * odds[i] - totalStake;
-          lucroDisplays[i].textContent = lucro.toFixed(2).replace(".", ",");
-          lucroDisplays[i].style.color = lucro >= 0 ? "green" : "red";
-
-          if (baseLucro === null) baseLucro = lucro;
-        }
+        const totalStakeNoFree = stakes.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
+        $('#apostaTotalDisplay').value = totalStakeNoFree.toFixed(2);
       }
 
-      oddsInputs.forEach(i => i.addEventListener("input", () => { updateFinalOdds(); calcular(); }));
-      commissionInputs.forEach(i => i.addEventListener("input", () => { updateFinalOdds(); calcular(); }));
-      stakeInputs.forEach(i => i.addEventListener("input", calcular));
-      freebetChecks.forEach(i => i.addEventListener("change", calcular));
-      apostaTotalInput.addEventListener("input", calcular);
+      // Atualiza inputs de aposta (formatado)
+      rows.forEach((r, i) => {
+        const val = (stakes[i] || 0);
+        r.querySelector('.aposta-input').value = val.toFixed(2);
+      });
 
-      updateFinalOdds();
-      calcular();
-    });
+      // stakes reais (multiplicadas por qtdContas)
+      const stakesReal = stakes.map(s => (s || 0) * (qtdContas || 1));
+
+      // === CÁLCULO DO LUCRO POR CENÁRIO ===
+      const lucros = [];
+      for (let w = 0; w < n; w++) {
+        const ganho = (oddsFinal[w] || 0) * (stakesReal[w] || 0);
+        const stakeVencedora = stakesReal[w] || 0;
+
+        // Perdas: somente as apostas reais das casas que PERDERAM (exclui freebets)
+        let perdas = 0;
+        for (let i = 0; i < n; i++) {
+          if (i === w) continue;
+          if (!freebets[i]) perdas += stakesReal[i] || 0;
+        }
+
+        // Lucro puro = Ganho - Stake da casa vencedora - Perdas
+        const lucroPuro = ganho - stakeVencedora - perdas;
+        lucros[w] = lucroPuro;
+      }
+
+      // Atualiza UI por linha
+      rows.forEach((r, i) => {
+        const el = r.querySelector('.lucro-output');
+        el.textContent = (lucros[i] || 0).toFixed(2);
+        el.style.color = (lucros[i] || 0) >= 0 ? "#22bb33" : "#cc3333";
+      });
+
+      // Resumos
+      const totalStakeReal = stakesReal.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
+      const minLucro = Math.min(...lucros);
+      const perc = totalStakeReal ? (minLucro / totalStakeReal) * 100 : 0;
+      $('#stakeTotal').textContent = money(totalStakeReal);
+      $('#lucroTotal').textContent = money(minLucro);
+      $('#porcentagem').textContent = perc.toFixed(2) + " %";
+
+      // Atualiza resultados na tabela inferior
+      updateResultsTable(lucros, stakesReal, oddsFinal);
+    }
+
+    // Função auxiliar para atualizar a tabela de resultados
+    function updateResultsTable(lucros, stakesReal, oddsFinal) {
+      const tbody = $('#resultsBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+      const rows = $$('#apostasBody tr');
+      rows.forEach((r, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+      <td>${r.querySelector('.casa-input').value}</td>
+      <td>${oddsFinal[i].toFixed(3)}</td>
+      <td>${stakesReal[i].toFixed(2)}</td>
+      <td>${r.querySelector('.type-btn').textContent}</td>
+      <td style="color: ${lucros[i] >= 0 ? '#22bb33' : '#cc3333'}">${lucros[i].toFixed(2)}</td>
+    `;
+        tbody.appendChild(row);
+      });
+    }
+
+    /* ===== INIT ===== */
+    function init() {
+      updateNavbar();
+      updateInputsState();
+
+      $('#qtdCasas')?.addEventListener('change', () => {
+        if (!isLoggedIn()) return;
+        state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
+        renderRows();
+        updateCalculations();
+      });
+
+      $('#qtdContas')?.addEventListener('input', () => {
+        if (isLoggedIn()) updateCalculations();
+      });
+
+      $('#apostaTotalDisplay')?.addEventListener('input', () => {
+        if (!isLoggedIn()) return;
+        state.manualMode = true;
+        state.controlIndex = null;
+        $$('.comissao-checkbox').forEach(c => c.checked = false);
+        updateCalculations();
+      });
+
+      ['switchFreebet', 'switchCashback', 'switchComissao', 'switchAumento'].forEach(id => {
+        const el = $('#' + id);
+        const key = {
+          switchFreebet: 'showFreebet',
+          switchCashback: 'showCashback',
+          switchComissao: 'showComissao',
+          switchAumento: 'showAumento'
+        }[id];
+        el?.addEventListener('click', () => {
+          if (!isLoggedIn()) return;
+          el.classList.toggle('on');
+          state[key] = el.classList.contains('on');
+          renderTableColumns();
+          updateCalculations();
+        });
+      });
+
+      $('#btnCopyAposta')?.addEventListener('click', () => {
+        if (!isLoggedIn()) return;
+        navigator.clipboard.writeText($('#apostaTotalDisplay').value);
+      });
+
+      renderRows();
+      if (isLoggedIn()) updateCalculations();
+      setInterval(updateInputsState, 800);
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
   </script>
-
-
-
-
-
 </body>
 
 </html>
