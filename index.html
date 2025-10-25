@@ -1175,6 +1175,9 @@
         const stakeW = stakes[w] || 0;
         const oddW = oddsOriginal[w] || 1;
 
+        // Verifica se existe pelo menos uma freebet ativa
+        const temFreebet = freebets.some(fb => fb);
+
         // Vamos iterar para resolver as equações acopladas:
         // S_i * (oddI - 1) = lucroW + perdasI
         // onde perdasI = soma das stakes (reais) das outras casas perdedoras (exceto freebets e exceto w)
