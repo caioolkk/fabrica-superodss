@@ -1136,7 +1136,7 @@
       $('#apostaTotalDisplay').value = total.toFixed(2);
     }
 
-    /* ===== CÁLCULO PRINCIPAL — LÓGICA EXATA COMO NO SEU PRIMEIRO PRINT ===== */
+    /* ===== CÁLCULO PRINCIPAL — BOTÃO "C" COM FREEBET ===== */
     function updateCalculations() {
       if (!isLoggedIn()) return;
 
@@ -1167,14 +1167,56 @@
         stakes = invs.map(inv => (totalReal * inv) / sumInv / qtdContas);
       }
 
-      // Modo "C"
+      // Modo "C" — CORRIGIDO PARA FREEBET
       if (state.controlIndex !== null) {
-        const ref = state.controlIndex;
-        const stakeRef = stakes[ref];
-        const oddRef = oddsOriginal[ref];
+        const w = state.controlIndex;
+        const stakeW = stakes[w];
+        const oddW = oddsOriginal[w];
+        const isWFree = freebets[w];
+
+        // Calcular lucro da casa de referência
+        let perdasW = 0;
         for (let i = 0; i < n; i++) {
-          if (i !== ref) stakes[i] = (stakeRef * oddRef) / oddsOriginal[i];
+          if (i !== w && !freebets[i]) perdasW += stakes[i];
         }
+        const lucroW = (oddW * stakeW) - stakeW - perdasW;
+
+        // Ajustar stakes das outras casas para igualar o lucro
+        for (let i = 0; i < n; i++) {
+          if (i === w) continue;
+
+          const oddI = oddsOriginal[i];
+          const isIFree = freebets[i];
+
+          // Perdas para casa i (sem incluir stakeI)
+          let perdasI = 0;
+          for (let j = 0; j < n; j++) {
+            if (j !== i && j !== w && !freebets[j]) perdasI += stakes[j];
+          }
+
+          // Se i é freebet:
+          // lucroI = (oddI * stakeI) - stakeI - perdasI
+          // => stakeI = (lucroW + perdasI) / (oddI - 1)
+
+          // Se i não é freebet:
+          // lucroI = (oddI * stakeI) - stakeI - perdasI
+          // => stakeI = (lucroW + perdasI) / (oddI - 1)
+
+          const denominator = oddI - 1;
+          if (denominator > 0) {
+            stakes[i] = (lucroW + perdasI) / denominator;
+          } else {
+            stakes[i] = 0;
+          }
+        }
+
+        // Recalcular perdasW com as novas stakes
+        perdasW = 0;
+        for (let i = 0; i < n; i++) {
+          if (i !== w && !freebets[i]) perdasW += stakes[i];
+        }
+
+        // Atualizar aposta total
         const stakeTotal = stakes.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
         $('#apostaTotalDisplay').value = stakeTotal.toFixed(2);
       }
@@ -1220,24 +1262,6 @@
 
       // Atualiza resultados na tabela inferior
       updateResultsTable(lucros, stakesReal, oddsFinal);
-    }
-
-    // Função auxiliar para atualizar a tabela de resultados
-    function updateResultsTable(lucros, stakesReal, oddsFinal) {
-      const tbody = $('#resultsBody');
-      tbody.innerHTML = '';
-      const rows = $$('#apostasBody tr');
-      rows.forEach((r, i) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-      <td>${r.querySelector('.casa-input').value}</td>
-      <td>${oddsFinal[i].toFixed(3)}</td>
-      <td>${stakesReal[i].toFixed(2)}</td>
-      <td>${r.querySelector('.type-btn').textContent}</td>
-      <td style="color: ${lucros[i] >= 0 ? '#22bb33' : '#cc3333'}">${lucros[i].toFixed(2)}</td>
-    `;
-        tbody.appendChild(row);
-      });
     }
 
     // Função auxiliar para atualizar a tabela de resultados
