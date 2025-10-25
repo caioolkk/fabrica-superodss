@@ -990,7 +990,7 @@
 
   <script>
     /* ======================================================
-       FÁBRICA SUPER ODD — CALCULADORA (VERSÃO OTIMIZADA)
+       FÁBRICA SUPER ODD — JS FINAL (C fix, Freebet, total sync, inputs)
        ====================================================== */
 
     const state = {
@@ -999,21 +999,22 @@
       showAumento: false,
       showFreebet: false,
       showCashback: false,
-      controlIndex: null,
-      manualMode: false
+      controlIndex: null,    // index da casa com "C" marcada (null = nenhum)
+      manualMode: false      // true se usuário editou stakes individuais
     };
 
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
-    const money = v => "R$ " + (Number(v || 0).toFixed(2));
+    const moneyFmt = v => "R$ " + (Number(v || 0).toFixed(2));
 
+    // ------------------ UTILITÁRIOS ------------------
     function isLoggedIn() {
       return localStorage.getItem('superodd_logged_in') === 'true';
     }
 
-    /* ===== LOGIN ===== */
     function updateNavbar() {
       const btn = $('#btnOpenLogin');
+      if (!btn) return;
       if (isLoggedIn()) {
         btn.textContent = 'Sair';
         btn.onclick = e => { e.preventDefault(); localStorage.removeItem('superodd_logged_in'); location.reload(); };
@@ -1029,86 +1030,435 @@
       [
         '#procedimento', '#qtdCasas', '#qtdContas', '#btnCopyAposta',
         '#btnShare', '#btnAddPlanilha', '#apostaTotalDisplay'
-      ].forEach(sel => $(sel).disabled = disable);
-      $$('#apostasBody input, #apostasBody button, .chk input').forEach(el => el.disabled = disable);
+      ].forEach(sel => { const el = $(sel); if (el) el.disabled = disable; });
+      $$('#apostasBody input, #apostasBody button, .chk input').forEach(el => { el.disabled = disable; });
     }
 
-    /* ===== CRIAÇÃO DE LINHAS ===== */
+    // ------------------ ALGEBRA: Eliminação Gaussiana ------------------
+    function solveLinearSystem(A, b) {
+      // A: array of arrays (n x n), b: array (n)
+      const n = A.length;
+      if (n === 0) return [];
+      // build augmented matrix
+      const M = A.map((row, i) => row.concat([b[i]]));
+      for (let k = 0; k < n; k++) {
+        // pivot
+        let i_max = k;
+        let maxv = Math.abs(M[k][k]);
+        for (let i = k + 1; i < n; i++) {
+          const v = Math.abs(M[i][k]);
+          if (v > maxv) { maxv = v; i_max = i; }
+        }
+        if (Math.abs(M[i_max][k]) < 1e-12) return null; // singular
+        if (i_max !== k) { const tmp = M[k]; M[k] = M[i_max]; M[i_max] = tmp; }
+        const pivot = M[k][k];
+        for (let j = k; j <= n; j++) M[k][j] /= pivot;
+        for (let i = 0; i < n; i++) {
+          if (i === k) continue;
+          const f = M[i][k];
+          if (Math.abs(f) < 1e-14) continue;
+          for (let j = k; j <= n; j++) M[i][j] -= f * M[k][j];
+        }
+      }
+      return M.map(row => row[n]);
+    }
+
+    // ------------------ COEFICIENTES: impacto de cada stake no lucro de um cenário
+    // retorna multiplicador (quanto 1 unidade de stake_i afeta lucro quando outcome=w)
+    function coefForStake(i, outcome, odds, isLay, freebets, cashbacks) {
+      const odd = odds[i];
+      const lay = isLay[i];
+      const free = freebets[i];
+      const cashback = cashbacks[i] || 0;
+
+      if (lay) {
+        // LAY: se sua seleção ganha (i === outcome) -> você perde responsabilidade (-(odd-1)*stake)
+        if (i === outcome) return - (odd - 1);
+        // se outra seleção ganha -> seu lay ganha a stake ( +1 * stake )
+        return 1;
+      } else {
+        // BACK:
+        if (i === outcome) {
+          // vence: freebet -> ganha (odd-1)*stake ; normal -> odd*stake
+          return free ? (odd - 1) : odd;
+        } else {
+          // perde: freebet -> custo 0 ; normal -> perde stake, mas cashback devolve %
+          return free ? 0 : - (1 - (cashback || 0) / 100);
+        }
+      }
+    }
+
+    // ------------------ Construir lucros dado stakes reais (multiplicados por qtdContas)
+    function calculateScenarioProfits(apostasReal, odds, isLay, freebets, cashbacks, comissoes) {
+      const n = apostasReal.length;
+      const profits = new Array(n).fill(0);
+      for (let w = 0; w < n; w++) {
+        let lucro = 0;
+        for (let i = 0; i < n; i++) {
+          const stake = apostasReal[i] || 0;
+          const odd = odds[i];
+          const lay = isLay[i];
+          const free = freebets[i];
+          const cashback = cashbacks[i] || 0;
+
+          if (lay) {
+            if (i === w) {
+              // perdemos a responsabilidade
+              lucro -= (odd - 1) * stake;
+            } else {
+              // ganhamos a stake do lay
+              lucro += stake;
+            }
+          } else {
+            // BACK
+            if (i === w) {
+              // venceu
+              lucro += free ? (odd - 1) * stake : odd * stake;
+            } else {
+              // perdeu
+              lucro -= free ? 0 : stake * (1 - (cashback || 0) / 100);
+            }
+          }
+        }
+        // aplicar comissão sobre lucro se definido para a casa vendedora (comissão incide sobre lucro do cenário vencedor)
+        if (comissoes && comissoes[w] > 0) lucro = lucro * (1 - comissoes[w] / 100);
+        profits[w] = lucro;
+      }
+      return profits;
+    }
+
+    // ------------------ FUNÇÃO PRINCIPAL DE CÁLCULO E REGRAS
+    function updateCalculations() {
+      if (!isLoggedIn()) return;
+
+      // inputs
+      const totalPerAccount = parseFloat($('#apostaTotalDisplay').value.replace(',', '.')) || 0;
+      const qtdContas = parseFloat($('#qtdContas').value.replace(',', '.')) || 1;
+      const totalRealWanted = totalPerAccount * qtdContas;
+
+      const rows = $$('#apostasBody tr');
+      const n = rows.length;
+
+      // arrays de parâmetros
+      const odds = [], isLay = [], comissoes = [], aumentos = [], freebets = [], cashbacks = [];
+
+      rows.forEach((row, i) => {
+        const oddRaw = parseFloat((row.querySelector('.odd-input').value || '2').toString().replace(',', '.')) || 2;
+        const com = state.showComissao ? parseFloat((row.querySelector('.comissao-input').value || '0').toString().replace(',', '.')) || 0 : 0;
+        const aum = state.showAumento ? parseFloat((row.querySelector('.aumento-input').value || '0').toString().replace(',', '.')) || 0 : 0;
+        const effOdd = Math.max(1.001, oddRaw * (1 + aum / 100) * (1 - com / 100));
+        odds[i] = effOdd;
+        comissoes[i] = com;
+        aumentos[i] = aum;
+        isLay[i] = row.querySelector('.type-btn').classList.contains('lay');
+        freebets[i] = state.showFreebet && row.querySelector('.freebet-checkbox').checked;
+        cashbacks[i] = state.showCashback ? parseFloat((row.querySelector('.cashback-input').value || '0').toString().replace(',', '.')) || 0 : 0;
+
+        // update odd final UI
+        const oddFinalEl = row.querySelector('.odd-final');
+        if (oddFinalEl) oddFinalEl.textContent = effOdd.toFixed(3);
+      });
+
+      // --- stakes por conta (como user vê nos inputs)
+      let stakesPerAccount = rows.map(row => parseFloat((row.querySelector('.aposta-input').value || '0').toString().replace(',', '.')) || 0);
+
+      // --- Se usuário não está em manualMode e não escolheu C -> distribuir a partir do totalRealWanted
+      const anyFreeCount = freebets.reduce((s, f, i) => s + (f ? 1 : 0), 0);
+      const nonFreeIndices = [];
+      for (let i = 0; i < n; i++) if (!freebets[i]) nonFreeIndices.push(i);
+
+      if (!state.manualMode && state.controlIndex === null) {
+        // distribuir totalRealWanted entre casas que *pagam* (não-freebet) com pesos invs
+        const invs = [];
+        for (let i = 0; i < n; i++) {
+          if (freebets[i]) invs[i] = 0;
+          else invs[i] = isLay[i] ? (odds[i] - 1) : (1 / odds[i]);
+        }
+        const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
+        // stakes reais (multiplicado por qtdContas) = totalRealWanted * inv / sumInv
+        for (let i = 0; i < n; i++) {
+          const stakeReal = (totalRealWanted * invs[i]) / sumInv;
+          stakesPerAccount[i] = (stakeReal / (qtdContas || 1));
+        }
+      }
+
+      // --- Se C está ativo -> resolver sistema linear mantendo stakeRef fixo
+      if (state.controlIndex !== null) {
+        const ref = state.controlIndex;
+        // stakeRefReal = stakeRef_perAccount * qtdContas (pegamos o valor que está na input, como você pediu)
+        let stakeRefPerAccount = parseFloat((rows[ref].querySelector('.aposta-input').value || '0').toString().replace(',', '.')) || 0;
+        let stakeRefReal = stakeRefPerAccount * (qtdContas || 1);
+
+        // se stakeRefReal == 0, vamos tentar usar uma distribuição inicial para obter base
+        if (!isFinite(stakeRefReal) || stakeRefReal === 0) {
+          // criar distribuição por inversos para garantir referência positiva
+          const invsInit = odds.map((o, i) => isLay[i] ? (o - 1) : (1 / o));
+          const sumInvInit = invsInit.reduce((a, b) => a + b, 0) || 1;
+          const stakesInitReal = invsInit.map(inv => (totalRealWanted * inv) / sumInvInit);
+          stakeRefReal = stakesInitReal[ref];
+          // escrever como perAccount para referência visual
+          rows[ref].querySelector('.aposta-input').value = (stakeRefReal / (qtdContas || 1)).toFixed(2);
+          stakeRefPerAccount = stakeRefReal / (qtdContas || 1);
+        }
+
+        // Variáveis desconhecidas: stakesReal de índices != ref
+        const varIdx = [];
+        for (let i = 0; i < n; i++) if (i !== ref) varIdx.push(i);
+        const m = varIdx.length;
+
+        if (m === 0) {
+          // somente 1 casa -> nada para resolver
+        } else {
+          // montar sistema A x = b
+          const A = [];
+          const b = [];
+          // coef: para cada equação (outcome != ref) queremos lucro_outcome - lucro_ref = 0
+          for (let eq_i = 0; eq_i < m; eq_i++) {
+            const outcome = varIdx[eq_i];
+            const rowA = new Array(m).fill(0);
+            for (let var_j = 0; var_j < m; var_j++) {
+              const stakeIdx = varIdx[var_j];
+              const coef_j = coefForStake(stakeIdx, outcome, odds, isLay, freebets, cashbacks);
+              const coef_ref = coefForStake(stakeIdx, ref, odds, isLay, freebets, cashbacks);
+              rowA[var_j] = coef_j - coef_ref;
+            }
+            // RHS: contribuição da stakeRef (known) moved to RHS
+            const coef_refStake_outcome = coefForStake(ref, outcome, odds, isLay, freebets, cashbacks);
+            const coef_refStake_ref = coefForStake(ref, ref, odds, isLay, freebets, cashbacks);
+            const rhs = - (coef_refStake_outcome - coef_refStake_ref) * stakeRefReal;
+            A.push(rowA);
+            b.push(rhs);
+          }
+
+          const sol = solveLinearSystem(A, b);
+          let valid = true;
+          if (sol && sol.length === m) {
+            // map solution into stakesReal
+            const newStakesReal = new Array(n).fill(0);
+            newStakesReal[ref] = stakeRefReal;
+            for (let k = 0; k < m; k++) {
+              const idx = varIdx[k];
+              const val = sol[k];
+              if (!isFinite(val) || isNaN(val) || val < -1e-8) { valid = false; break; }
+              newStakesReal[idx] = Math.max(0, val);
+            }
+            if (valid) {
+              // ajustar escala para bater com totalRealWanted (manter proporção)
+              const soma = newStakesReal.reduce((a, b) => a + b, 0) || 1;
+              const scale = (totalRealWanted || soma) / soma;
+              for (let i = 0; i < n; i++) newStakesReal[i] *= scale;
+              // escrever de volta em per-account inputs
+              for (let i = 0; i < n; i++) {
+                rows[i].querySelector('.aposta-input').value = (newStakesReal[i] / (qtdContas || 1)).toFixed(2);
+              }
+            } else {
+              // fallback: distribuir com inversos, mantendo stakeRefReal
+              const invs = [];
+              for (let i = 0; i < n; i++) {
+                if (i === ref) continue;
+                invs.push(isLay[i] ? (odds[i] - 1) : (1 / odds[i]));
+              }
+              const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
+              const remaining = Math.max(0, totalRealWanted - stakeRefReal);
+              for (let u = 0; u < varIdx.length; u++) {
+                const idx = varIdx[u];
+                const stakeReal = remaining * invs[u] / sumInv;
+                rows[idx].querySelector('.aposta-input').value = (stakeReal / (qtdContas || 1)).toFixed(2);
+              }
+              rows[ref].querySelector('.aposta-input').value = (stakeRefReal / (qtdContas || 1)).toFixed(2);
+            }
+          } else {
+            // fallback: same as above
+            const invs = [];
+            for (let i = 0; i < n; i++) {
+              if (i === ref) continue;
+              invs.push(isLay[i] ? (odds[i] - 1) : (1 / odds[i]));
+            }
+            const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
+            const remaining = Math.max(0, totalRealWanted - stakeRefReal);
+            for (let u = 0; u < varIdx.length; u++) {
+              const idx = varIdx[u];
+              const stakeReal = remaining * invs[u] / sumInv;
+              rows[idx].querySelector('.aposta-input').value = (stakeReal / (qtdContas || 1)).toFixed(2);
+            }
+            rows[ref].querySelector('.aposta-input').value = (stakeRefReal / (qtdContas || 1)).toFixed(2);
+          }
+        }
+        // garantir que a input do ref permaneça exatamente igual àquela que o user havia fixado (por segurança)
+        rows[ref].querySelector('.aposta-input').value = (stakeRefReal / (qtdContas || 1)).toFixed(2);
+      }
+
+      // após resolver C (se aplicável) ou distribuição/edição manual, ler stakes atualizados
+      stakesPerAccount = rows.map(row => parseFloat((row.querySelector('.aposta-input').value || '0').toString().replace(',', '.')) || 0);
+      const stakesReal = stakesPerAccount.map(s => s * (qtdContas || 1));
+
+      // CALCULAR stakeTotalReal (não conta freebets)
+      const stakeTotalReal = stakesReal.reduce((acc, v, i) => acc + (freebets[i] ? 0 : v), 0);
+
+      // CALCULAR lucros por cenário (usando a regra: lucro = retorno_cenario - stake_total_real)
+      // usamos a função calculateScenarioProfits que já aplica comissões/cashback dentro do retorno líquido.
+      const profits = calculateScenarioProfits(stakesReal, odds, isLay, freebets, cashbacks, comissoes);
+
+      // porém a definição de lucro do seu HTML é "Resultado da casa - Stake Total" (já refletida em profits)
+      // atualizar UI: coluna Lucro por linha
+      rows.forEach((r, i) => {
+        const el = r.querySelector('.lucro-output');
+        if (el) {
+          const value = (profits[i] || 0);
+          el.textContent = value.toFixed(2);
+          el.style.color = value >= 0 ? '#22bb33' : '#cc3333';
+        }
+      });
+
+      // atualizar cards da direita
+      $('#stakeTotal').textContent = moneyFmt(stakeTotalReal);
+      const minProfit = Math.min(...profits);
+      $('#lucroTotal').textContent = moneyFmt(minProfit);
+      const perc = stakeTotalReal !== 0 ? (minProfit / stakeTotalReal) * 100 : 0;
+      $('#porcentagem').textContent = perc.toFixed(2) + ' %';
+    }
+
+    // ------------------ helpers: quando usuário edita stake individual -> recalcula Aposta Total
+    function recalcApostaTotalFromIndividualInputs() {
+      const rows = $$('#apostasBody tr');
+      let total = 0;
+      rows.forEach((r, i) => {
+        const isFree = state.showFreebet && r.querySelector('.freebet-checkbox').checked;
+        const val = parseFloat((r.querySelector('.aposta-input').value || '0').toString().replace(',', '.')) || 0;
+        if (!isFree) total += val;
+      });
+      $('#apostaTotalDisplay').value = total.toFixed(2);
+    }
+
+    // ------------------ Quando usuário altera ApostaTotal -> distribuir automaticamente
+    function distributeTotalToStakes() {
+      const totalPerAccount = parseFloat($('#apostaTotalDisplay').value.replace(',', '.')) || 0;
+      const qtdContas = parseFloat($('#qtdContas').value.replace(',', '.')) || 1;
+      const totalReal = totalPerAccount * (qtdContas || 1);
+
+      const rows = $$('#apostasBody tr');
+      const n = rows.length;
+
+      // recomputar odds/lay/free
+      const odds = [], isLay = [], freebets = [];
+      rows.forEach((row, i) => {
+        const oddRaw = parseFloat((row.querySelector('.odd-input').value || '2').toString().replace(',', '.')) || 2;
+        const com = state.showComissao ? parseFloat((row.querySelector('.comissao-input').value || '0').toString().replace(',', '.')) || 0 : 0;
+        const aum = state.showAumento ? parseFloat((row.querySelector('.aumento-input').value || '0').toString().replace(',', '.')) || 0 : 0;
+        const effOdd = Math.max(1.001, oddRaw * (1 + aum / 100) * (1 - com / 100));
+        odds[i] = effOdd;
+        isLay[i] = row.querySelector('.type-btn').classList.contains('lay');
+        freebets[i] = state.showFreebet && row.querySelector('.freebet-checkbox').checked;
+      });
+
+      // pesos (invs) apenas para casas pagas
+      const invs = odds.map((o, i) => freebets[i] ? 0 : (isLay[i] ? (o - 1) : (1 / o)));
+      const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
+
+      for (let i = 0; i < n; i++) {
+        const stakeReal = (totalReal * invs[i]) / sumInv;
+        rows[i].querySelector('.aposta-input').value = (stakeReal / (qtdContas || 1)).toFixed(2);
+      }
+    }
+
+    // ------------------ Criação de linhas + behavior de inputs (melhoria UX)
     function createRow(i) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
     <td class="col-casa"><input class="casa-input" type="text" value="Casa ${i + 1}" inputmode="text"></td>
     <td class="col-tipo"><button class="type-btn back">BACK</button></td>
-    <td class="col-odd"><input class="odd-input" type="number" step="0.001" min="1.001" value="2.000" inputmode="decimal"></td>
-    <td class="col-comissao"><input class="comissao-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
+    <td class="col-odd"><input class="odd-input" type="text" inputmode="decimal" value="2.000"></td>
+    <td class="col-comissao"><input class="comissao-input" type="text" inputmode="decimal" value="0.00"></td>
     <td class="col-oddfinal"><span class="odd-final">2.000</span></td>
-    <td class="col-aumento"><input class="aumento-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
-    <td class="col-aposta"><input class="aposta-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
-    <td class="col-freebet">
-      <label class="chk"><input class="freebet-checkbox" type="checkbox"><span class="chkbox"></span></label>
-    </td>
-    <td class="col-cashback"><input class="cashback-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
-    <td class="col-c">
-      <label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label>
-    </td>
+    <td class="col-aumento"><input class="aumento-input" type="text" inputmode="decimal" value="0.00"></td>
+    <td class="col-aposta"><input class="aposta-input" type="text" inputmode="decimal" value="0.00"></td>
+    <td class="col-freebet"><label class="chk"><input class="freebet-checkbox" type="checkbox"><span class="chkbox"></span></label></td>
+    <td class="col-cashback"><input class="cashback-input" type="text" inputmode="decimal" value="0.00"></td>
+    <td class="col-c"><label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label></td>
     <td class="col-lucro"><span class="lucro-output">0.00</span></td>
   `;
 
-      // Select text on click for easier editing
-      tr.querySelectorAll('input[type="number"]').forEach(inp => {
-        inp.addEventListener('focus', () => inp.select());
+      // foco: selecionar todo, trocar vírgula por ponto automaticamente
+      tr.querySelectorAll('input[type="text"]').forEach(inp => {
+        inp.addEventListener('focus', () => { try { inp.select(); } catch (e) { } });
+        inp.addEventListener('input', () => {
+          // trocar vírgula por ponto para facilitar digitação
+          if (inp.value.includes(',')) inp.value = inp.value.replace(/,/g, '.');
+        });
       });
 
-      // BACK/LAY toggle
-      tr.querySelector('.type-btn').addEventListener('click', e => {
+      // toggle back/lay
+      const tb = tr.querySelector('.type-btn');
+      tb.addEventListener('click', (e) => {
         if (!isLoggedIn()) return;
-        const btn = e.target;
-        btn.classList.toggle('lay');
-        btn.classList.toggle('back');
-        btn.textContent = btn.classList.contains('lay') ? 'LAY' : 'BACK';
+        tb.classList.toggle('lay');
+        tb.classList.toggle('back');
+        tb.textContent = tb.classList.contains('lay') ? 'LAY' : 'BACK';
+        // se alterou tipo, recalcular (pode mudar distribuição)
+        if (!state.manualMode) distributeTotalToStakes();
         updateCalculations();
       });
 
-      // Inputs listeners
-      tr.querySelectorAll('input').forEach(inp => {
-        inp.addEventListener('input', () => {
+      // listeners importantes
+      // a) quando user digita stake individual -> manualMode true, atualiza aposta total
+      const stakeInput = tr.querySelector('.aposta-input');
+      stakeInput.addEventListener('input', () => {
+        if (!isLoggedIn()) return;
+        // permitir vírgula -> trocar para ponto
+        if (stakeInput.value.includes(',')) stakeInput.value = stakeInput.value.replace(/,/g, '.');
+        state.manualMode = true;
+        state.controlIndex = null;
+        // desmarca C's
+        $$('.comissao-checkbox').forEach(x => x.checked = false);
+        recalcApostaTotalFromIndividualInputs();
+        updateCalculations();
+      });
+
+      // b) mudanças em odds/comissao/aumento/cashback/freebet
+      ['.odd-input', '.comissao-input', '.aumento-input', '.cashback-input'].forEach(sel => {
+        const el = tr.querySelector(sel);
+        if (!el) return;
+        el.addEventListener('input', () => {
           if (!isLoggedIn()) return;
-          if (inp.classList.contains('aposta-input')) {
-            state.manualMode = true;
-            state.controlIndex = null;
-            $$('.comissao-checkbox').forEach(c => c.checked = false);
-            recalcApostaTotal();
-          }
+          if (el.value.includes(',')) el.value = el.value.replace(/,/g, '.');
+          // se não estiver em manualMode, redeploy distribuição
+          if (!state.manualMode) distributeTotalToStakes();
           updateCalculations();
         });
       });
 
-      // Controle "C"
-      tr.querySelector('.comissao-checkbox').addEventListener('change', e => {
+      // c) freebet checkbox
+      const freebox = tr.querySelector('.freebet-checkbox');
+      freebox.addEventListener('change', () => {
         if (!isLoggedIn()) return;
-        const cb = e.target;
-        $$('.comissao-checkbox').forEach(x => { if (x !== cb) x.checked = false; });
-        state.controlIndex = cb.checked ? [...$('#apostasBody').children].indexOf(tr) : null;
-        state.manualMode = false;
+        // quando freebet toggle, recalcula aposta total (já que freebet exclui do custo)
+        recalcApostaTotalFromIndividualInputs();
+        // se não manualMode e total foi alterado, redistribuir
+        if (!state.manualMode) distributeTotalToStakes();
         updateCalculations();
       });
 
-      // Freebet checkbox
-      tr.querySelector('.freebet-checkbox').addEventListener('change', () => {
+      // d) controle "C"
+      const cbox = tr.querySelector('.comissao-checkbox');
+      cbox.addEventListener('change', () => {
         if (!isLoggedIn()) return;
-        recalcApostaTotal();
+        $$('.comissao-checkbox').forEach(x => { if (x !== cbox) x.checked = false; });
+        state.controlIndex = cbox.checked ? [...$('#apostasBody').children].indexOf(tr) : null;
+        state.manualMode = false; // desativa manual mode ao escolher C
+        // manter stake da casa marcada intacta (já está), e recalcular as outras
         updateCalculations();
       });
 
       return tr;
     }
 
-    /* ===== RENDER ===== */
+    // ------------------ render rows & columns
     function renderRows() {
       const tbody = $('#apostasBody');
       tbody.innerHTML = '';
       for (let i = 0; i < state.qtdCasas; i++) tbody.appendChild(createRow(i));
-      renderTableColumns(); updateInputsState();
+      renderTableColumns();
+      updateInputsState();
     }
 
     function renderTableColumns() {
@@ -1123,136 +1473,15 @@
       });
     }
 
-    /* ===== FUNÇÕES ===== */
-    function getEffectiveOdd(odd, com = 0, aum = 0) {
-      return Math.max(1.001, odd * (1 + aum / 100) * (1 - com / 100));
-    }
-
-    function recalcApostaTotal() {
-      // Soma apenas apostas reais (sem freebet)
-      const rows = $$('#apostasBody tr');
-      let total = 0;
-      rows.forEach(row => {
-        const val = parseFloat(row.querySelector('.aposta-input').value) || 0;
-        const isFree = row.querySelector('.freebet-checkbox').checked;
-        if (!isFree) total += val;
-      });
-      $('#apostaTotalDisplay').value = total.toFixed(2);
-    }
-
-    /* ===== CÁLCULOS ===== */
-    function updateCalculations() {
-      if (!isLoggedIn()) return;
-
-      const totalPerAccount = parseFloat($('#apostaTotalDisplay').value) || 100;
-      const qtdContas = parseFloat($('#qtdContas').value) || 1;
-      const totalReal = totalPerAccount * qtdContas;
-      const rows = $$('#apostasBody tr');
-      const n = rows.length;
-
-      const odds = [], isLay = [], comissoes = [], aumentos = [], freebets = [], cashbacks = [];
-      rows.forEach((r, i) => {
-        const o = parseFloat(r.querySelector('.odd-input').value) || 2;
-        const com = state.showComissao ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
-        const aum = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value) || 0 : 0;
-        const eff = getEffectiveOdd(o, com, aum);
-        odds[i] = eff; comissoes[i] = com; aumentos[i] = aum;
-        isLay[i] = r.querySelector('.type-btn').classList.contains('lay');
-        freebets[i] = state.showFreebet && r.querySelector('.freebet-checkbox').checked;
-        cashbacks[i] = state.showCashback ? parseFloat(r.querySelector('.cashback-input').value) || 0 : 0;
-        r.querySelector('.odd-final').textContent = eff.toFixed(3);
-      });
-
-      // stakes individuais
-      let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
-
-      if (!state.manualMode && state.controlIndex === null) {
-        const invs = odds.map((o, i) => isLay[i] ? (o - 1) : (1 / o));
-        const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
-        stakes = invs.map(inv => (totalReal * inv) / sumInv / qtdContas);
-      }
-
-      // Botão C
-      if (state.controlIndex !== null) {
-        const ref = state.controlIndex;
-        const stakeRef = parseFloat(rows[ref].querySelector('.aposta-input').value) || totalReal / n;
-        const oddRef = odds[ref];
-        const newStakes = [];
-        for (let i = 0; i < n; i++) {
-          if (i === ref) { newStakes[i] = stakeRef; }
-          else { newStakes[i] = (stakeRef * oddRef) / odds[i]; }
-        }
-        const soma = newStakes.reduce((a, b) => a + b, 0);
-        const fator = (totalReal / qtdContas) / soma;
-        stakes = newStakes.map(s => s * fator);
-      }
-
-      rows.forEach((r, i) => r.querySelector('.aposta-input').value = stakes[i].toFixed(2));
-
-      const stakesReal = stakes.map(s => s * qtdContas);
-      const stakeTotalReal = stakesReal.reduce((acc, _, i) => {
-        return acc + (freebets[i] ? 0 : stakesReal[i]);
-      }, 0);
-
-      // Cálculo de lucros líquidos
-      const lucros = [];
-      for (let w = 0; w < n; w++) {
-        let retorno = 0, perda = 0;
-        for (let i = 0; i < n; i++) {
-          const stake = stakesReal[i];
-          const odd = odds[i];
-          const free = freebets[i];
-          const cashback = cashbacks[i];
-          const lay = isLay[i];
-          if (i === w) {
-            if (lay) {
-              retorno -= (odd - 1) * stake;
-            } else {
-              retorno += free ? (odd - 1) * stake : odd * stake;
-            }
-          } else {
-            if (lay) {
-              retorno += stake;
-            } else {
-              perda += free ? 0 : stake * (1 - cashback / 100);
-            }
-          }
-        }
-        let lucro = retorno - perda;
-        if (state.showComissao && comissoes[w] > 0) lucro *= (1 - comissoes[w] / 100);
-        lucros[w] = lucro;
-      }
-
-      // Atualizar UI
-      rows.forEach((r, i) => {
-        const el = r.querySelector('.lucro-output');
-        el.textContent = lucros[i].toFixed(2);
-        el.style.color = lucros[i] >= 0 ? "#22bb33" : "#cc3333";
-      });
-
-      const minLucro = Math.min(...lucros);
-      const perc = (minLucro / stakeTotalReal) * 100;
-      $('#stakeTotal').textContent = money(stakeTotalReal);
-      $('#lucroTotal').textContent = money(minLucro);
-      $('#porcentagem').textContent = perc.toFixed(2) + " %";
-    }
-
-    /* ===== INIT ===== */
+    // ------------------ Inicialização
     function init() {
-      updateNavbar(); updateInputsState();
-      $('#qtdCasas').addEventListener('change', () => {
-        if (!isLoggedIn()) return;
-        state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
-        renderRows(); updateCalculations();
-      });
-      $('#qtdContas').addEventListener('input', () => { if (isLoggedIn()) updateCalculations(); });
-      $('#apostaTotalDisplay').addEventListener('input', () => {
-        if (!isLoggedIn()) return;
-        state.manualMode = true; state.controlIndex = null;
-        updateCalculations();
-      });
+      updateNavbar();
+      updateInputsState();
+
+      // toggles
       ['switchFreebet', 'switchCashback', 'switchComissao', 'switchAumento'].forEach(id => {
         const el = $('#' + id);
+        if (!el) return;
         const key = {
           switchFreebet: 'showFreebet',
           switchCashback: 'showCashback',
@@ -1263,19 +1492,62 @@
           if (!isLoggedIn()) return;
           el.classList.toggle('on');
           state[key] = el.classList.contains('on');
-          renderTableColumns(); updateCalculations();
+          // quando showFreebet muda, recalc total and distribution
+          if (!state.manualMode) {
+            distributeTotalToStakes();
+          } else {
+            // se em manual mode, apenas recalcular total (pois freebet muda stakeTotal)
+            recalcApostaTotalFromIndividualInputs();
+          }
+          renderTableColumns();
+          updateCalculations();
         });
       });
-      $('#btnCopyAposta').addEventListener('click', () => {
+
+      $('#qtdCasas').addEventListener('change', () => {
+        if (!isLoggedIn()) return;
+        state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
+        renderRows();
+        if (!state.manualMode) distributeTotalToStakes();
+        updateCalculations();
+      });
+
+      $('#qtdContas').addEventListener('input', () => {
+        if (!isLoggedIn()) return;
+        // multiplicador alterado -> recalcular tudo
+        updateCalculations();
+      });
+
+      // quando editar aposta total -> distribuir automaticamente entre casas pagas
+      $('#apostaTotalDisplay').addEventListener('input', () => {
+        if (!isLoggedIn()) return;
+        // permitir vírgula
+        const el = $('#apostaTotalDisplay');
+        if (el.value.includes(',')) el.value = el.value.replace(/,/g, '.');
+        // ao editar total, considerar que user quer redistribuir
+        state.manualMode = false;
+        state.controlIndex = null;
+        distributeTotalToStakes();
+        updateCalculations();
+      });
+
+      $('#btnCopyAposta')?.addEventListener('click', () => {
         if (!isLoggedIn()) return;
         navigator.clipboard.writeText($('#apostaTotalDisplay').value);
       });
+
       renderRows();
+      // set default distribuição inicial
+      if (!state.manualMode) distributeTotalToStakes();
       if (isLoggedIn()) updateCalculations();
+
+      // keep input state updated in background (login/logout)
       setInterval(updateInputsState, 800);
     }
+
     document.addEventListener('DOMContentLoaded', init);
   </script>
+
 
 
 
