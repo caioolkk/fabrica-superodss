@@ -1136,48 +1136,153 @@
       $('#apostaTotalDisplay').value = total.toFixed(2);
     }
 
+    /* ===== CÁLCULO PRINCIPAL — BOTÃO "C" COM IGUALAÇÃO DE LUCROS + FREEBET (VERSÃO CORRIGIDA) ===== */
     function updateCalculations() {
-      const rows = document.querySelectorAll(".linha-aposta");
-      if (!rows.length) return;
+      if (!isLoggedIn()) return;
 
-      // Soma apenas stakes reais (sem freebet)
-      const totalStakeReal = Array.from(rows).reduce((sum, row) => {
-        const stake = parseFloat(row.querySelector(".aposta-input").value) || 0;
-        const isFreebet = row.querySelector(".freebet-checkbox")?.checked;
-        return sum + (isFreebet ? 0 : stake);
-      }, 0);
+      const totalDisplay = parseFloat($('#apostaTotalDisplay').value) || 100;
+      const qtdContas = parseFloat($('#qtdContas').value) || 1;
+      const totalReal = totalDisplay * qtdContas;
+      const rows = $$('#apostasBody tr');
+      const n = rows.length;
 
-      // Atualiza lucro de cada casa
-      rows.forEach((row) => {
-        const odd = parseFloat(row.querySelector(".odd-final").textContent) || 0;
-        const stake = parseFloat(row.querySelector(".aposta-input").value) || 0;
-        const isFreebet = row.querySelector(".freebet-checkbox")?.checked;
-
-        let lucro = 0;
-
-        // Se for casa com freebet e ela vencer
-        if (isFreebet) {
-          lucro = (odd * stake) - stake - totalStakeReal;
-        }
-        // Se for casa sem freebet e ela vencer
-        else {
-          lucro = (odd * stake) - totalStakeReal;
-        }
-
-        // Atualiza lucro na interface
-        const output = row.querySelector(".lucro-output");
-        if (output) output.textContent = lucro.toFixed(2);
+      const oddsOriginal = [], oddsFinal = [], comissoes = [], aumentos = [], freebets = [];
+      rows.forEach((r, i) => {
+        const oddRaw = parseFloat(r.querySelector('.odd-input').value) || 2;
+        const com = state.showComissao ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
+        const aum = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value) || 0 : 0;
+        oddsOriginal[i] = oddRaw;
+        oddsFinal[i] = getOddFinal(oddRaw, com, aum);
+        comissoes[i] = com; aumentos[i] = aum;
+        freebets[i] = !!(state.showFreebet && r.querySelector('.freebet-checkbox').checked);
+        r.querySelector('.odd-final').textContent = oddsFinal[i].toFixed(3);
       });
 
-      // Atualiza lucro total (soma de lucros visíveis)
-      const totalLucro = Array.from(rows).reduce((sum, row) => {
-        const val = parseFloat(row.querySelector(".lucro-output").textContent) || 0;
-        return sum + val;
-      }, 0);
+      // stakes por conta (inicial, podem vir do input ou distribuição padrão)
+      let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
 
-      const totalEl = document.querySelector("#lucro-total");
-      if (totalEl) totalEl.textContent = totalLucro.toFixed(2);
+      // Distribuição padrão (quando não manual e sem C)
+      if (!state.manualMode && state.controlIndex === null) {
+        const invs = oddsOriginal.map(o => 1 / (o || 1));
+        const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
+        stakes = invs.map(inv => (totalReal * inv) / sumInv / (qtdContas || 1));
+      }
+
+      // MODO "C" — IGUALAÇÃO DE LUCROS COM FREEBET (iterativo)
+      if (state.controlIndex !== null) {
+        const w = state.controlIndex;
+        // fixa stake da casa C (por conta)
+        const stakeW = stakes[w] || 0;
+        const oddW = oddsOriginal[w] || 1;
+
+        // Vamos iterar para resolver as equações acopladas:
+        // S_i * (oddI - 1) = lucroW + perdasI
+        // onde perdasI = soma das stakes (reais) das outras casas perdedoras (exceto freebets e exceto w)
+        // e lucroW = oddW*stakeW - stakeW - perdasW (perdasW = soma stakes reais das outras casas perdedoras)
+        // Iteramos atualizando stakes das casas NOT freebet (não alteramos stakes marcadas freebet).
+
+        const MAX_IT = 200;
+        const TOL = 1e-7;
+        let iter = 0;
+        let converged = false;
+
+        // assegura que freebet houses não serão recalculadas (manter seus stakes como estão)
+        const updatable = Array.from({ length: n }, (_, i) => !freebets[i] && i !== w);
+
+        while (iter < MAX_IT && !converged) {
+          iter++;
+          // calcular perdasW (soma stakes reais das outras casas que perdem contra w, excluindo freebets)
+          let perdasW = 0;
+          for (let i = 0; i < n; i++) {
+            if (i === w) continue;
+            if (freebets[i]) continue; // freebets não contam como perda real
+            perdasW += stakes[i];
+          }
+          // lucro da casa de referência (por conta)
+          const lucroW = (oddW * stakeW) - stakeW - perdasW;
+
+          let maxDelta = 0;
+
+          // atualizar cada stake i (exceto w e exceto freebets)
+          for (let i = 0; i < n; i++) {
+            if (!updatable[i]) continue;
+            const oddI = oddsOriginal[i] || 1;
+            const denom = (oddI - 1);
+            if (denom <= 0) {
+              // odd inválida para cálculo -> zera stake
+              const old = stakes[i];
+              stakes[i] = 0;
+              maxDelta = Math.max(maxDelta, Math.abs(old - stakes[i]));
+              continue;
+            }
+
+            // calcular perdasI (soma stakes de todas as outras casas exceto i e exceto w, excluindo freebets)
+            let perdasI = 0;
+            for (let j = 0; j < n; j++) {
+              if (j === i || j === w) continue;
+              if (freebets[j]) continue;
+              perdasI += stakes[j];
+            }
+
+            // resolver S_i = (lucroW + perdasI) / (oddI - 1)
+            const newSi = Math.max(0, (lucroW + perdasI) / denom);
+            const oldSi = stakes[i];
+            stakes[i] = newSi;
+            maxDelta = Math.max(maxDelta, Math.abs(newSi - oldSi));
+          }
+
+          if (maxDelta < TOL) converged = true;
+        }
+
+        // Recalcular perdasW final com stakes convergidas
+        const stakeTotalPerAccount = stakes.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
+        $('#apostaTotalDisplay').value = stakeTotalPerAccount.toFixed(2);
+        // (nota: stakeW permanece o valor fixado inicialmente)
+      }
+
+      // Atualiza inputs de aposta (formatado)
+      rows.forEach((r, i) => r.querySelector('.aposta-input').value = (stakes[i] || 0).toFixed(2));
+
+      // stakes reais (multiplicadas por qtdContas)
+      const stakesReal = stakes.map(s => (s || 0) * (qtdContas || 1));
+
+      // === CÁLCULO DO LUCRO POR CENÁRIO — LÓGICA EXATA COMO NO SEU PRIMEIRO PRINT ===
+      const lucros = [];
+      for (let w = 0; w < n; w++) {
+        const ganho = (oddsFinal[w] || 0) * (stakesReal[w] || 0);
+        const stakeVencedora = stakesReal[w] || 0;
+
+        // Perdas: somente as apostas reais das casas que PERDERAM (exclui freebets)
+        let perdas = 0;
+        for (let i = 0; i < n; i++) {
+          if (i === w) continue;
+          if (!freebets[i]) perdas += stakesReal[i] || 0;
+        }
+
+        // Lucro puro = Ganho - Stake da casa vencedora - Perdas
+        const lucroPuro = ganho - stakeVencedora - perdas;
+        lucros[w] = lucroPuro;
+      }
+
+      // Atualiza UI por linha
+      rows.forEach((r, i) => {
+        const el = r.querySelector('.lucro-output');
+        el.textContent = (lucros[i] || 0).toFixed(2);
+        el.style.color = (lucros[i] || 0) >= 0 ? "#22bb33" : "#cc3333";
+      });
+
+      // Resumos
+      const totalStakeReal = stakesReal.reduce((acc, val, i) => acc + (freebets[i] ? 0 : val), 0);
+      const minLucro = Math.min(...lucros);
+      const perc = totalStakeReal ? (minLucro / totalStakeReal) * 100 : 0;
+      $('#stakeTotal').textContent = money(totalStakeReal);
+      $('#lucroTotal').textContent = money(minLucro);
+      $('#porcentagem').textContent = perc.toFixed(2) + " %";
+
+      // Atualiza resultados na tabela inferior
+      updateResultsTable(lucros, stakesReal, oddsFinal);
     }
+
 
 
     // Função auxiliar para atualizar a tabela de resultados
