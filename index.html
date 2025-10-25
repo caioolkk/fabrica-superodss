@@ -990,7 +990,7 @@
 
   <script>
     /* ======================================================
-       FÁBRICA SUPER ODD — CÁLCULO SUREBET DEFINITIVO
+       FÁBRICA SUPER ODD — CÁLCULO SUREBET FINAL CORRIGIDO
        ====================================================== */
 
     const state = {
@@ -1054,11 +1054,9 @@
     <td class="col-lucro"><span class="lucro-output">0.00</span></td>
   `;
 
-      // Melhor edição: selecionar tudo ao clicar
+      // Edição facilitada
       tr.querySelectorAll('input[type="number"]').forEach(inp => {
-        inp.addEventListener('focus', () => {
-          inp.setSelectionRange(0, inp.value.length);
-        });
+        inp.addEventListener('focus', () => inp.select());
       });
 
       // BACK/LAY toggle
@@ -1126,8 +1124,11 @@
     }
 
     /* ===== FUNÇÕES AUXILIARES ===== */
-    function getEffectiveOdd(odd, com = 0, aum = 0) {
-      return Math.max(1.001, odd * (1 + aum / 100) * (1 - com / 100));
+    function getOddFinal(odd, com = 0, aum = 0) {
+      // comissão aplicada só no lucro e aumento só no lucro
+      const oddCom = ((odd - 1) * (1 - com / 100)) + 1;
+      const oddFinal = oddCom * (1 + aum / 100);
+      return Math.max(1.001, oddFinal);
     }
 
     function recalcApostaTotal() {
@@ -1151,24 +1152,23 @@
       const rows = $$('#apostasBody tr');
       const n = rows.length;
 
-      const odds = [], isLay = [], comissoes = [], aumentos = [], freebets = [], cashbacks = [];
+      const oddsOriginal = [], oddsFinal = [], comissoes = [], aumentos = [], freebets = [];
       rows.forEach((r, i) => {
-        const o = parseFloat(r.querySelector('.odd-input').value) || 2;
+        const oddRaw = parseFloat(r.querySelector('.odd-input').value) || 2;
         const com = state.showComissao ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
         const aum = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value) || 0 : 0;
-        const eff = getEffectiveOdd(o, com, aum);
-        odds[i] = eff; comissoes[i] = com; aumentos[i] = aum;
-        isLay[i] = r.querySelector('.type-btn').classList.contains('lay');
+        oddsOriginal[i] = oddRaw;
+        oddsFinal[i] = getOddFinal(oddRaw, com, aum);
+        comissoes[i] = com; aumentos[i] = aum;
         freebets[i] = state.showFreebet && r.querySelector('.freebet-checkbox').checked;
-        cashbacks[i] = state.showCashback ? parseFloat(r.querySelector('.cashback-input').value) || 0 : 0;
-        r.querySelector('.odd-final').textContent = eff.toFixed(3);
+        r.querySelector('.odd-final').textContent = oddsFinal[i].toFixed(3);
       });
 
       let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
 
       /* === DISTRIBUIÇÃO NORMAL === */
       if (!state.manualMode && state.controlIndex === null) {
-        const invs = odds.map((o, i) => isLay[i] ? (o - 1) : (1 / o));
+        const invs = oddsOriginal.map(o => 1 / o);
         const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
         stakes = invs.map(inv => (totalReal * inv) / sumInv / qtdContas);
       }
@@ -1177,18 +1177,17 @@
       if (state.controlIndex !== null) {
         const ref = state.controlIndex;
         const stakeRef = stakes[ref];
-        const oddRef = odds[ref];
-        // Calcula lucro base fixando a casa C
+        const oddRef = oddsOriginal[ref];
         let stakeTotal = 0;
         for (let i = 0; i < n; i++) if (!freebets[i]) stakeTotal += stakes[i];
         const lucroBase = (oddRef * stakeRef) - stakeTotal;
-        // Recalcula stakes das outras casas
+
         for (let i = 0; i < n; i++) {
           if (i !== ref) {
-            stakes[i] = (lucroBase + stakeTotal) / odds[i];
+            stakes[i] = (stakeRef * oddRef) / oddsOriginal[i];
           }
         }
-        // Recalcula total novamente para ajuste fino
+
         stakeTotal = 0;
         for (let i = 0; i < n; i++) if (!freebets[i]) stakeTotal += stakes[i];
         $('#apostaTotalDisplay').value = stakeTotal.toFixed(2);
@@ -1204,8 +1203,9 @@
       /* === CÁLCULO DE LUCRO LÍQUIDO === */
       const lucros = [];
       for (let w = 0; w < n; w++) {
-        const ganho = odds[w] * stakesReal[w];
-        const lucro = ganho - stakeTotalReal;
+        const ganho = oddsFinal[w] * stakesReal[w];
+        const stakeFree = freebets[w] ? stakesReal[w] : 0;
+        const lucro = ganho - stakeTotalReal - stakeFree;
         lucros[w] = lucro;
       }
 
@@ -1262,6 +1262,7 @@
     }
     document.addEventListener('DOMContentLoaded', init);
   </script>
+
 
 
 </body>
