@@ -1192,11 +1192,11 @@
 
         if (freebets[w]) {
           // Casa com Freebet ganhou
-          // Lucro = Ganho - Total das apostas reais (perdas)
-          lucros[w] = ganho - totalStakeReal;
+          // Lucro = (Odd × Stake_Freebet) - Stake_Freebet - Total_Stake_Real
+          lucros[w] = ganho - stakesReal[w] - totalStakeReal;
         } else {
           // Casa sem Freebet ganhou
-          // Lucro = Ganho - Total das apostas reais (perdas + a própria stake)
+          // Lucro = (Odd × Stake_Real) - Total_Stake_Real
           lucros[w] = ganho - totalStakeReal;
         }
       }
@@ -1216,6 +1216,24 @@
 
       // Atualiza resultados na tabela inferior
       updateResultsTable(lucros, stakesReal, oddsFinal);
+    }
+
+    // Função auxiliar para atualizar a tabela de resultados
+    function updateResultsTable(lucros, stakesReal, oddsFinal) {
+      const tbody = $('#resultsBody');
+      tbody.innerHTML = '';
+      const rows = $$('#apostasBody tr');
+      rows.forEach((r, i) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+      <td>${r.querySelector('.casa-input').value}</td>
+      <td>${oddsFinal[i].toFixed(3)}</td>
+      <td>${stakesReal[i].toFixed(2)}</td>
+      <td>${r.querySelector('.type-btn').textContent}</td>
+      <td style="color: ${lucros[i] >= 0 ? '#22bb33' : '#cc3333'}">${lucros[i].toFixed(2)}</td>
+    `;
+        tbody.appendChild(row);
+      });
     }
 
     // Função auxiliar para atualizar a tabela de resultados
