@@ -1231,11 +1231,19 @@
                     const com = comissoes[i] || 0;
                     lucro += stakes[i] * (1 - com / 100);
                   } else {
-                    lucro += (oddsFinal[i] - 1) * stakes[i];
+                    // BACK vence: se for freebet, ganha só o lucro (sem devolver stake)
+                    if (freebets[i]) {
+                      lucro += (oddsFinal[i] - 1) * stakes[i]; // Só o lucro
+                    } else {
+                      lucro += (oddsFinal[i] - 1) * stakes[i]; // Lucro líquido
+                    }
                   }
                 } else {
                   // Perdedor
-                  if (isLayBet[i]) {
+                  if (freebets[i]) {
+                    // Freebet não perde dinheiro!
+                    lucro += 0;
+                  } else if (isLayBet[i]) {
                     lucro -= stakes[i] * (oddsOriginal[i] - 1);
                   } else {
                     lucro -= stakes[i];
@@ -1252,28 +1260,48 @@
             // Ajustar stakes das outras casas para alcançar lucro alvo
             let maxAjuste = 0;
             
-            for (let i = 0; i < n; i++) {
-              if (i === w) continue;
+            // Se a casa w tem FREEBET, usar fórmula especial
+            if (freebets[w]) {
+              // Fórmula para Freebet: stakeI = lucroFreebet / oddI
+              const lucroFreebet = (oddsFinal[w] - 1) * stakeW;
               
-              const lucroAtual = lucros[i];
-              const diferenca = lucroAlvo - lucroAtual;
-              
-              if (Math.abs(diferenca) > TOLERANCE) {
-                // Ajustar stake[i] para aproximar do lucro alvo
-                const fator = isLayBet[i] ? 
-                  (oddsOriginal[i] - 1 + (1 - (comissoes[i] || 0) / 100)) :
-                  oddsFinal[i];
+              for (let i = 0; i < n; i++) {
+                if (i === w || freebets[i]) continue;
                 
-                const ajuste = diferenca / fator;
-                stakes[i] += ajuste * 0.5; // Fator de convergência
-                stakes[i] = Math.max(0, stakes[i]);
-                
-                maxAjuste = Math.max(maxAjuste, Math.abs(ajuste));
+                if (isLayBet[i]) {
+                  // Para LAY: stake = lucroFreebet / (oddOriginal - 1 + (1 - comissao/100))
+                  const comI = comissoes[i] || 0;
+                  const oddIOrig = oddsOriginal[i];
+                  stakes[i] = lucroFreebet / (oddIOrig - 1 + (1 - comI / 100));
+                } else {
+                  // Para BACK: stake = lucroFreebet / oddFinal
+                  stakes[i] = lucroFreebet / oddsFinal[i];
+                }
               }
+              break; // Não precisa iterar
+            } else {
+              // Ajuste iterativo normal (sem freebet)
+              for (let i = 0; i < n; i++) {
+                if (i === w) continue;
+                
+                const lucroAtual = lucros[i];
+                const diferenca = lucroAlvo - lucroAtual;
+                
+                if (Math.abs(diferenca) > TOLERANCE) {
+                  const fator = isLayBet[i] ? 
+                    (oddsOriginal[i] - 1 + (1 - (comissoes[i] || 0) / 100)) :
+                    oddsFinal[i];
+                  
+                  const ajuste = diferenca / fator;
+                  stakes[i] += ajuste * 0.5;
+                  stakes[i] = Math.max(0, stakes[i]);
+                  
+                  maxAjuste = Math.max(maxAjuste, Math.abs(ajuste));
+                }
+              }
+              
+              if (maxAjuste < TOLERANCE) break;
             }
-            
-            // Convergiu?
-            if (maxAjuste < TOLERANCE) break;
           }
         } else {
           // === Caso COM Freebet: itera até convergir (mantém lucros iguais entre não-freebets)
@@ -1381,23 +1409,26 @@
         
         // Cenário: Casa w vence
         for (let i = 0; i < n; i++) {
-          if (freebets[i]) continue; // Freebet não impacta
-          
           if (i === w) {
             // Esta casa venceu
-            if (isLayBet[i]) {
+            if (freebets[i]) {
+              // FREEBET vence: ganhamos só o LUCRO (não devolvemos stake pois é grátis)
+              lucroW += (oddsFinal[i] - 1) * stakesReal[i];
+            } else if (isLayBet[i]) {
               // LAY vence: ganhamos o stake apostado (com comissão deduzida)
               const com = comissoes[i] || 0;
               lucroW += stakesReal[i] * (1 - com / 100);
             } else {
-              // BACK vence: usar ODD FINAL (com aumento/comissão)
-              const oddFinalI = oddsFinal[i];
-              lucroW += (oddFinalI - 1) * stakesReal[i];
+              // BACK vence: lucro líquido
+              lucroW += (oddsFinal[i] - 1) * stakesReal[i];
             }
           } else {
             // Esta casa perdeu
-            if (isLayBet[i]) {
-              // LAY perde: perdemos liability = stake × (odd original - 1)
+            if (freebets[i]) {
+              // FREEBET perde: não perdemos nada (era grátis!)
+              lucroW += 0;
+            } else if (isLayBet[i]) {
+              // LAY perde: perdemos liability
               lucroW -= stakesReal[i] * (oddsOriginal[i] - 1);
             } else {
               // BACK perde: perdemos o stake
