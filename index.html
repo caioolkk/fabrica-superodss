@@ -1176,18 +1176,27 @@
         oddsOriginal[i] = oddRaw;
         isLayBet[i] = isLay;
         
-        // Para LAY, converter para odd equivalente BACK
+        // Para LAY, calcular ODD Final diferente (considera comissão sobre o lucro do lay)
         if (isLay) {
-          // LAY odd conversion: BackEquivalent = 1 + (1 / (LayOdd - 1))
-          const layToBack = 1 + (1 / Math.max(0.001, oddRaw - 1));
-          oddsFinal[i] = getOddFinal(layToBack, com, aum);
+          // LAY ODD Final = 1 + ((1 / (odd - 1)) × (1 - comissao/100))
+          const layProfit = (1 / Math.max(0.001, oddRaw - 1)) * (1 - com / 100);
+          oddsFinal[i] = 1 + layProfit;
         } else {
+          // BACK: aplicar comissão e aumento normalmente
           oddsFinal[i] = getOddFinal(oddRaw, com, aum);
         }
         
         comissoes[i] = com; aumentos[i] = aum;
         freebets[i] = !!(state.showFreebet && r.querySelector('.freebet-checkbox').checked);
-        r.querySelector('.odd-final').textContent = oddsFinal[i].toFixed(3);
+        
+        // Garantir que ODD Final seja exibida corretamente
+        const oddFinalDisplay = oddsFinal[i].toFixed(3);
+        const oddFinalElement = r.querySelector('.odd-final');
+        if (oddFinalElement) {
+          oddFinalElement.textContent = oddFinalDisplay;
+          // Debug: verificar se o valor está sendo atualizado
+          console.log(`Casa ${i + 1}: ODD ${oddRaw.toFixed(2)} → Final ${oddFinalDisplay} (${isLay ? 'LAY' : 'BACK'})`);
+        }
       });
 
       // stakes por conta (inicial)
@@ -1208,9 +1217,36 @@
         
         // Usar odds FINAIS para todos os cálculos de equalização
         const oddW = oddsFinal[w];
-        const temFreebet = freebets.some(fb => fb);
+        
+        // Verificar se a casa com C tem freebet
+        const casaComCTemFreebet = freebets[w];
 
-        if (!temFreebet) {
+        if (casaComCTemFreebet) {
+          // === MODO C COM FREEBET ===
+          const lucroFreebet = (oddsFinal[w] - 1) * stakeW;
+          
+          console.log('=== MODO C FREEBET ===');
+          console.log('Lucro Freebet:', lucroFreebet.toFixed(2));
+          
+          for (let i = 0; i < n; i++) {
+            if (i === w || freebets[i]) continue;
+            
+            if (isLayBet[i]) {
+              // Para LAY: stake = lucroFreebet / (oddOriginal - 1 + (1 - comissao/100))
+              const comI = comissoes[i] || 0;
+              const oddIOrig = oddsOriginal[i];
+              const denominador = oddIOrig - 1 + (1 - comI / 100);
+              stakes[i] = lucroFreebet / denominador;
+              
+              console.log(`Casa ${i + 1} (LAY): stake = ${lucroFreebet.toFixed(2)} / ${denominador.toFixed(3)} = ${stakes[i].toFixed(2)}`);
+              console.log(`  Liability = ${(stakes[i] * (oddIOrig - 1)).toFixed(2)}`);
+            } else {
+              // Para BACK: stake = lucroFreebet / oddFinal
+              stakes[i] = lucroFreebet / oddsFinal[i];
+              console.log(`Casa ${i + 1} (BACK): stake = ${lucroFreebet.toFixed(2)} / ${oddsFinal[i].toFixed(3)} = ${stakes[i].toFixed(2)}`);
+            }
+          }
+        } else if (!freebets.some(fb => fb)) {
           // === ALGORITMO ITERATIVO para equalizar lucros ===
           // Este método funciona para qualquer combinação de BACK/LAY e qualquer número de casas
           
@@ -1260,26 +1296,8 @@
             // Ajustar stakes das outras casas para alcançar lucro alvo
             let maxAjuste = 0;
             
-            // Se a casa w tem FREEBET, usar fórmula especial
-            if (freebets[w]) {
-              // Fórmula para Freebet: stakeI = lucroFreebet / oddI
-              const lucroFreebet = (oddsFinal[w] - 1) * stakeW;
-              
-              for (let i = 0; i < n; i++) {
-                if (i === w || freebets[i]) continue;
-                
-                if (isLayBet[i]) {
-                  // Para LAY: stake = lucroFreebet / (oddOriginal - 1 + (1 - comissao/100))
-                  const comI = comissoes[i] || 0;
-                  const oddIOrig = oddsOriginal[i];
-                  stakes[i] = lucroFreebet / (oddIOrig - 1 + (1 - comI / 100));
-                } else {
-                  // Para BACK: stake = lucroFreebet / oddFinal
-                  stakes[i] = lucroFreebet / oddsFinal[i];
-                }
-              }
-              break; // Não precisa iterar
-            } else {
+            // Algoritmo iterativo normal
+            {
               // Ajuste iterativo normal (sem freebet)
               for (let i = 0; i < n; i++) {
                 if (i === w) continue;
@@ -1304,7 +1322,7 @@
             }
           }
         } else {
-          // === Caso COM Freebet: itera até convergir (mantém lucros iguais entre não-freebets)
+          // === Caso com outras casas tendo Freebet (não a casa C)
           const MAX_IT = 500;
           const TOL = 1e-8;
           let iter = 0;
@@ -1443,8 +1461,13 @@
       // Atualiza UI por linha
       rows.forEach((r, i) => {
         const el = r.querySelector('.lucro-output');
-        el.textContent = (lucros[i] || 0).toFixed(2);
-        el.style.color = (lucros[i] || 0) >= 0 ? "#22bb33" : "#cc3333";
+        const lucroCalculado = lucros[i] || 0;
+        
+        // Debug
+        console.log(`Lucro Casa ${i + 1}:`, lucroCalculado.toFixed(2));
+        
+        el.textContent = lucroCalculado.toFixed(2);
+        el.style.color = lucroCalculado >= 0 ? "#22bb33" : "#cc3333";
       });
 
       // Resumos
