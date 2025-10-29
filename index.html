@@ -30,7 +30,8 @@
       color: #111;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
-      overflow-x: hidden; /* 🔒 BLOQUEIA ROLAGEM HORIZONTAL */
+      overflow-x: hidden;
+      /* 🔒 BLOQUEIA ROLAGEM HORIZONTAL */
     }
     a {
       color: inherit;
@@ -257,7 +258,7 @@
     tbody tr {
       background: #f6f7f9;
     }
-    tbody tr + tr {
+    tbody tr+tr {
       margin-top: 6px;
     }
     tbody td {
@@ -268,21 +269,44 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .col-casa { width: 16%; }
-    .col-tipo { width: 8%; }
-    .col-odd { width: 7%; }
-    .col-comissao { width: 9%; }
-    .col-oddfinal { width: 9%; }
-    .col-aumento { width: 8%; }
-    .col-aposta { width: 14%; }
-    .col-freebet { width: 10%; }
-    .col-cashback { width: 10%; }
-    .col-c { width: 7%; }
-    .col-lucro { width: 12%; }
+    .col-casa {
+      width: 16%;
+    }
+    .col-tipo {
+      width: 8%;
+    }
+    .col-odd {
+      width: 7%;
+    }
+    .col-comissao {
+      width: 9%;
+    }
+    .col-oddfinal {
+      width: 9%;
+    }
+    .col-aumento {
+      width: 8%;
+    }
+    .col-aposta {
+      width: 14%;
+    }
+    .col-freebet {
+      width: 10%;
+    }
+    .col-cashback {
+      width: 10%;
+    }
+    .col-c {
+      width: 7%;
+    }
+    .col-lucro {
+      width: 12%;
+    }
     tbody td input[type="text"],
     tbody td input[type="number"] {
       border: 1px solid #dfe7d0;
-      padding: 6px 8px; /* ↑ aumentado */
+      padding: 6px 8px;
+      /* ↑ aumentado */
       border-radius: 6px;
       background: #fff;
       font-size: 13px;
@@ -291,7 +315,8 @@
     }
     .type-btn {
       display: inline-block;
-      padding: 6px 10px; /* ↑ aumentado */
+      padding: 6px 10px;
+      /* ↑ aumentado */
       border-radius: 6px;
       font-weight: 700;
       font-size: 13px;
@@ -340,11 +365,11 @@
       opacity: 0;
       transition: opacity .14s;
     }
-    .chk input:checked + .chkbox {
+    .chk input:checked+.chkbox {
       background: var(--accent);
       border-color: var(--accent-strong);
     }
-    .chk input:checked + .chkbox::after {
+    .chk input:checked+.chkbox::after {
       opacity: 1;
     }
     .col-freebet.hidden,
@@ -456,14 +481,15 @@
       border: 1px solid #e6e9ee;
       color: var(--muted);
     }
-
     /* ===== ✅ MOBILE: LAYOUT VERTICAL (SEM FLEX ENTRE LABEL E INPUT) ===== */
     @media (max-width: 768px) {
       /* Garantir que nada extrapole */
-      body, .wrap, .section, .table-wrap {
+      body,
+      .wrap,
+      .section,
+      .table-wrap {
         overflow-x: hidden;
       }
-
       /* Tabela vira lista de cards */
       #apostasTable {
         display: block;
@@ -498,13 +524,15 @@
         font-weight: 600;
         color: #1f2937;
         font-size: 13px;
-        margin-bottom: 6px; /* ↑ espaço maior */
+        margin-bottom: 6px;
+        /* ↑ espaço maior */
       }
       /* Inputs maiores */
       #apostasTable input[type="text"],
       #apostasTable input[type="number"] {
         width: 100%;
-        padding: 10px; /* ↑ aumentado */
+        padding: 10px;
+        /* ↑ aumentado */
         border-radius: 8px;
         border: 1px solid #d1d5db;
         font-size: 14px;
@@ -559,7 +587,6 @@
         font-size: 14px;
         border-radius: 8px;
       }
-
       /* Resultados empilhados */
       .results-wrap {
         flex-direction: column;
@@ -571,245 +598,220 @@
         grid-template-columns: 1fr;
       }
     }
-
     #modal {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-.results-wrap {
-  display: flex;
-  gap: 16px;
-  flex-direction: column;
-}
-
-@media (min-width: 769px) {
-  .results-wrap {
-    flex-direction: row;
-  }
-}
-
-.results-left {
-  flex: 1;
-  background: var(--card);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: var(--shadow);
-  position: relative;
-  overflow: hidden;
-}
-
-.results-table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  table-layout: fixed;
-  min-width: 100%;
-}
-
-.results-table thead {
-  background: var(--primary);
-  color: #fff;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-.results-table th {
-  padding: 10px 6px;
-  font-weight: 700;
-  text-align: left;
-  font-size: 12px;
-  white-space: nowrap;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.results-table tbody tr {
-  background: #f6f7f9;
-  transition: background 0.2s ease;
-}
-
-.results-table tbody tr:hover {
-  background: #e9ecef;
-}
-
-.results-table tbody td {
-  padding: 8px 6px;
-  border-bottom: 1px solid rgba(16, 24, 32, 0.04);
-  vertical-align: middle;
-  font-size: 13px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.results-table tbody td:last-child {
-  text-align: right;
-  font-weight: 600;
-}
-
-.results-table tbody td:nth-child(5) {
-  color: #22bb33;
-}
-
-.results-right {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-width: 280px;
-}
-
-.results-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.btn {
-  display: inline-block;
-  background: var(--primary);
-  color: #fff;
-  border: none;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 14px;
-  cursor: pointer;
-  white-space: nowrap;
-  text-align: center;
-  transition: all 0.2s ease;
-}
-
-.btn:hover {
-  background: #1a2330;
-  transform: translateY(-1px);
-}
-
-.btn.ghost {
-  background: transparent;
-  color: var(--primary);
-  border: 1px solid var(--primary);
-}
-
-.btn.ghost:hover {
-  background: var(--primary);
-  color: #fff;
-}
-
-.summary-cards {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.summary-card {
-  background: var(--soft);
-  border-radius: 10px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-  position: relative;
-  overflow: hidden;
-}
-
-.summary-card .label {
-  font-size: 13px;
-  color: var(--muted);
-  margin-bottom: 6px;
-  font-weight: 500;
-}
-
-.summary-card .value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0b1720;
-}
-
-.summary-card .value.highlight {
-  color: var(--accent-strong);
-  font-size: 18px;
-}
-
-.aposta-total {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  gap: 8px;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-@media (max-width: 600px) {
-  .aposta-total {
-    flex-direction: column;
-    gap: 6px;
-    padding: 0 8px;
-  }
-
-  .aposta-total input,
-  .aposta-total button {
-    width: 100%;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-
-  .aposta-foot {
-    overflow-x: hidden;
-  }
-}
-
-
-
-  #apostasTable { min-width: 0 !important; table-layout: auto !important; }
-
-  #apostasTable td {
-    padding: 10px 12px !important;
-    word-break: break-word;
-    white-space: normal;
-  }
-
-  #apostasTable td::before { white-space: normal; }
-
-  #apostasTable input[type="text"],
-  #apostasTable input[type="number"],
-  #apostasTable .type-btn,
-  .aposta-total input,
-  .aposta-total button,
-  .results-right .btn,
-  .btn {
-    width: 100% !important;
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  .aposta-total,
-  .aposta-foot {
-    overflow: hidden;
-    padding: 8px 12px;
-  }
-
-  #btnCopyAposta {
-    display: inline-block;
-    padding: 10px 12px !important;
-    border-radius: 8px !important;
-    text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .results-actions .btn,
-  .results-right .btn {
-    display: block;
-    width: 100%;
-  }
-
-  .brand, .nav-actions, .grid2, .results-wrap, .results-right, .summary-cards {
-    min-width: 0;
-  }
-
-@media (max-width:768px){
-  .table-wrap::before, .results-left::before { display:none!important; }
-}
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    .results-wrap {
+      display: flex;
+      gap: 16px;
+      flex-direction: column;
+    }
+    @media (min-width: 769px) {
+      .results-wrap {
+        flex-direction: row;
+      }
+    }
+    .results-left {
+      flex: 1;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .results-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      table-layout: fixed;
+      min-width: 100%;
+    }
+    .results-table thead {
+      background: var(--primary);
+      color: #fff;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+    }
+    .results-table th {
+      padding: 10px 6px;
+      font-weight: 700;
+      text-align: left;
+      font-size: 12px;
+      white-space: nowrap;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .results-table tbody tr {
+      background: #f6f7f9;
+      transition: background 0.2s ease;
+    }
+    .results-table tbody tr:hover {
+      background: #e9ecef;
+    }
+    .results-table tbody td {
+      padding: 8px 6px;
+      border-bottom: 1px solid rgba(16, 24, 32, 0.04);
+      vertical-align: middle;
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .results-table tbody td:last-child {
+      text-align: right;
+      font-weight: 600;
+    }
+    .results-table tbody td:nth-child(5) {
+      color: #22bb33;
+    }
+    .results-right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 280px;
+    }
+    .results-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn {
+      display: inline-block;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+    .btn:hover {
+      background: #1a2330;
+      transform: translateY(-1px);
+    }
+    .btn.ghost {
+      background: transparent;
+      color: var(--primary);
+      border: 1px solid var(--primary);
+    }
+    .btn.ghost:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .summary-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .summary-card {
+      background: var(--soft);
+      border-radius: 10px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      position: relative;
+      overflow: hidden;
+    }
+    .summary-card .label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    .summary-card .value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0b1720;
+    }
+    .summary-card .value.highlight {
+      color: var(--accent-strong);
+      font-size: 18px;
+    }
+    .aposta-total {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    @media (max-width: 600px) {
+      .aposta-total {
+        flex-direction: column;
+        gap: 6px;
+        padding: 0 8px;
+      }
+      .aposta-total input,
+      .aposta-total button {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      .aposta-foot {
+        overflow-x: hidden;
+      }
+    }
+    #apostasTable {
+      min-width: 0 !important;
+      table-layout: auto !important;
+    }
+    #apostasTable td {
+      padding: 10px 12px !important;
+      word-break: break-word;
+      white-space: normal;
+    }
+    #apostasTable td::before {
+      white-space: normal;
+    }
+    #apostasTable input[type="text"],
+    #apostasTable input[type="number"],
+    #apostasTable .type-btn,
+    .aposta-total input,
+    .aposta-total button,
+    .results-right .btn,
+    .btn {
+      width: 100% !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    .aposta-total,
+    .aposta-foot {
+      overflow: hidden;
+      padding: 8px 12px;
+    }
+    #btnCopyAposta {
+      display: inline-block;
+      padding: 10px 12px !important;
+      border-radius: 8px !important;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .results-actions .btn,
+    .results-right .btn {
+      display: block;
+      width: 100%;
+    }
+    .brand,
+    .nav-actions,
+    .grid2,
+    .results-wrap,
+    .results-right,
+    .summary-cards {
+      min-width: 0;
+    }
+    @media (max-width:768px) {
+      .table-wrap::before,
+      .results-left::before {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -820,7 +822,9 @@
         <div>
           <h1>Fábrica Super Odd</h1>
           <div class="small">Calculadora de Arbitragem</div>
-          <div><a href="./planilha.html" class="irplanilha" style="color: #e9d984;"><h3>Planilha</h3></a></div>
+          <div><a href="./planilha.html" class="irplanilha" style="color: #e9d984;">
+              <h3>Planilha</h3>
+            </a></div>
         </div>
       </div>
       <div class="nav-actions">
@@ -828,7 +832,6 @@
           style="background:var(--primary);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-weight:600;text-decoration:none;display:inline-block">Entrar</a>
       </div>
     </div>
-
     <div class="section">
       <h2>Configurações</h2>
       <div class="sub">Defina o procedimento e as opções.</div>
@@ -884,7 +887,6 @@
         • <strong>Cashback</strong>: recupera % em caso de perda.
       </div>
     </div>
-
     <div class="section">
       <h2>Linhas de Apostas</h2>
       <div class="sub">Insira odds e o sistema distribuirá automaticamente.</div>
@@ -922,7 +924,6 @@
         </table>
       </div>
     </div>
-
     <div class="section">
       <h2>Resultados</h2>
       <div class="results-wrap">
@@ -964,7 +965,6 @@
     </div>
     <div id="adminPanel" class="section" style="display:none"></div>
   </div>
-
   <!-- Modal de Login -->
   <div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
     <div class="modal" role="document">
@@ -974,7 +974,8 @@
         <button class="btn" id="btnModalLogin">Login</button>
         <button class="btn ghost" id="btnModalRegister">Cadastrar</button>
       </div>
-      <div style="margin-top:8px"><label>Email</label><input id="authEmail" type="text" placeholder="seu@email.com"></div>
+      <div style="margin-top:8px"><label>Email</label><input id="authEmail" type="text" placeholder="seu@email.com">
+      </div>
       <div style="margin-top:8px"><label>Senha</label><input id="authPass" type="password" placeholder="senha"></div>
       <div style="margin-top:12px;display:flex;gap:8px">
         <button class="btn" id="btnDoAuth">Confirmar</button>
@@ -982,7 +983,6 @@
       </div>
     </div>
   </div>
-
   <script>
     const state = {
       qtdCasas: 2,
@@ -996,11 +996,9 @@
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
     const money = v => "R$ " + (Number(v || 0).toFixed(2));
-
     function isLoggedIn() {
       return localStorage.getItem('superodd_logged_in') === 'true';
     }
-
     function updateNavbar() {
       const btn = $('#btnOpenLogin');
       if (!btn) return;
@@ -1019,7 +1017,6 @@
         };
       }
     }
-
     function updateInputsState() {
       const logged = isLoggedIn();
       const disable = !logged;
@@ -1027,7 +1024,6 @@
         .forEach(sel => { const el = $(sel); if (el) el.disabled = disable; });
       $$('#apostasBody input, #apostasBody button, .chk input').forEach(el => el.disabled = disable);
     }
-
     function createRow(i) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
@@ -1050,7 +1046,7 @@
           <input class="aumento-input" type="number" step="0.01" min="0" value="0.00">
         </td>
         <td class="col-aposta" data-label="Aposta">
-          <input class="aposta-input" type="text" inputmode="decimal" placeholder="0.00">
+          <input class="aposta-input" type="number" step="0.01" value="100.00">
         </td>
         <td class="col-freebet" data-label="Freebet">
           <label class="chk"><input class="freebet-checkbox" type="checkbox"><span class="chkbox"></span></label>
@@ -1076,18 +1072,33 @@
         btn.textContent = btn.classList.contains('lay') ? 'LAY' : 'BACK';
         updateCalculations();
       });
+
+      // 🔧 Correção: remoção de formatação forçada da coluna Aposta
+      const apostaInput = tr.querySelector('.aposta-input');
+      apostaInput.addEventListener('input', () => {
+        if (!isLoggedIn()) return;
+        state.manualMode = true;
+        state.controlIndex = null;
+        $$('.comissao-checkbox').forEach(c => c.checked = false);
+        recalcApostaTotal();
+        updateCalculations();
+      });
+      apostaInput.addEventListener('blur', () => {
+        if (!isLoggedIn()) return;
+        let val = parseFloat(apostaInput.value.replace(',', '.')) || 0;
+        apostaInput.value = val.toFixed(2);
+        state.manualMode = false; // ← sair do modo manual após blur
+        updateCalculations();
+      });
+
       tr.querySelectorAll('input').forEach(inp => {
+        if (inp === apostaInput) return; // já tratado acima
         inp.addEventListener('input', () => {
           if (!isLoggedIn()) return;
-          if (inp.classList.contains('aposta-input')) {
-            state.manualMode = true;
-            state.controlIndex = null;
-            $$('.comissao-checkbox').forEach(c => c.checked = false);
-            recalcApostaTotal();
-          }
           updateCalculations();
         });
       });
+
       tr.querySelector('.comissao-checkbox').addEventListener('change', e => {
         if (!isLoggedIn()) return;
         const cb = e.target;
@@ -1103,7 +1114,6 @@
       });
       return tr;
     }
-
     function renderRows() {
       const tbody = $('#apostasBody');
       tbody.innerHTML = '';
@@ -1111,7 +1121,6 @@
       renderTableColumns();
       updateInputsState();
     }
-
     function renderTableColumns() {
       const map = {
         '.col-freebet': state.showFreebet,
@@ -1123,14 +1132,12 @@
         $$(sel).forEach(el => el.classList.toggle('hidden', !visible));
       });
     }
-
     function getOddFinal(odd, com = 0, aum = 0) {
       const lucroComComissao = (odd - 1) * (1 - com / 100);
       const lucroFinal = lucroComComissao * (1 + aum / 100);
       const oddFinal = 1 + lucroFinal;
       return Math.max(1.001, oddFinal);
     }
-
     function recalcApostaTotal() {
       const rows = $$('#apostasBody tr');
       let total = 0;
@@ -1141,7 +1148,6 @@
       });
       $('#apostaTotalDisplay').value = total.toFixed(2);
     }
-
     function updateCalculations() {
       if (!isLoggedIn()) return;
       const totalDisplay = parseFloat($('#apostaTotalDisplay').value) || 100;
@@ -1150,42 +1156,30 @@
       const rows = $$('#apostasBody tr');
       const n = rows.length;
       const oddsOriginal = [], oddsFinal = [], comissoes = [], aumentos = [], freebets = [], isLayBet = [];
-
       rows.forEach((r, i) => {
-        const oddRaw = parseFloat(r.querySelector('.odd-input').value) || 2;
-        const com = state.showComissao ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
-        const aum = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value) || 0 : 0;
-        const isLay = r.querySelector('.type-btn')?.classList.contains('lay') || false;
-        oddsOriginal[i] = oddRaw;
-        isLayBet[i] = isLay;
-        if (isLay) {
-          const layProfit = (1 / Math.max(0.001, oddRaw - 1)) * (1 - com / 100);
-          oddsFinal[i] = 1 + layProfit;
-        } else {
-          oddsFinal[i] = getOddFinal(oddRaw, com, aum);
-        }
-        comissoes[i] = com;
-        aumentos[i] = aum;
-        freebets[i] = !!(state.showFreebet && r.querySelector('.freebet-checkbox').checked);
-        const oddFinalDisplay = oddsFinal[i].toFixed(3);
-        const oddFinalElement = r.querySelector('.odd-final');
-        if (oddFinalElement) oddFinalElement.textContent = oddFinalDisplay;
+        const oddInput = parseFloat(r.querySelector('.odd-input').value) || 2.0;
+        const comInput = parseFloat(r.querySelector('.comissao-input').value) || 0;
+        const aumInput = parseFloat(r.querySelector('.aumento-input').value) || 0;
+        const oddFinal = getOddFinal(oddInput, comInput, aumInput);
+        oddsOriginal[i] = oddInput;
+        oddsFinal[i] = oddFinal;
+        comissoes[i] = comInput;
+        aumentos[i] = aumInput;
+        freebets[i] = r.querySelector('.freebet-checkbox').checked;
+        isLayBet[i] = r.querySelector('.type-btn').classList.contains('lay');
+        r.querySelector('.odd-final').textContent = oddFinal.toFixed(3);
       });
-
-      let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
-
+      let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value.replace(',', '.')) || 0);
       if (!state.manualMode && state.controlIndex === null) {
         const invs = oddsFinal.map(o => 1 / (o || 1));
         const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
         stakes = invs.map(inv => (totalReal * inv) / sumInv / (qtdContas || 1));
       }
-
       if (state.controlIndex !== null) {
         const w = state.controlIndex;
         const stakeW = stakes[w] || 0;
         const oddW = oddsFinal[w];
         const casaComCTemFreebet = freebets[w];
-
         if (casaComCTemFreebet) {
           const lucroFreebet = (oddsFinal[w] - 1) * stakeW;
           for (let i = 0; i < n; i++) {
@@ -1250,12 +1244,34 @@
         $('#apostaTotalDisplay').value = totalStakeNoFree.toFixed(2);
       }
 
+      // 🔧 Correção: não sobrescrever inputs durante digitação manual
       rows.forEach((r, i) => {
         const stakeValue = stakes[i] || 0;
+        const apostaInput = r.querySelector('.aposta-input');
         const apostaCell = r.querySelector('.col-aposta');
+
+        if (state.manualMode && state.controlIndex === null) {
+          if (isLayBet[i]) {
+            const currentLiability = parseFloat(apostaInput.value) || 0;
+            const responsibility = currentLiability / (oddsOriginal[i] - 1);
+            let responsInfo = apostaCell.querySelector('.respons-info');
+            if (!responsInfo) {
+              responsInfo = document.createElement('div');
+              responsInfo.className = 'respons-info';
+              responsInfo.style.cssText = 'font-size: 10px; color: #6b7280; margin-top: 4px;';
+              apostaCell.appendChild(responsInfo);
+            }
+            responsInfo.textContent = `Responsabilidade: ${responsibility.toFixed(2)}`;
+          } else {
+            const responsInfo = apostaCell.querySelector('.respons-info');
+            if (responsInfo) responsInfo.remove();
+          }
+          return;
+        }
+
         if (isLayBet[i]) {
           const liability = stakeValue * (oddsOriginal[i] - 1);
-          r.querySelector('.aposta-input').value = liability.toFixed(2);
+          apostaInput.value = liability.toFixed(2);
           let responsInfo = apostaCell.querySelector('.respons-info');
           if (!responsInfo) {
             responsInfo = document.createElement('div');
@@ -1265,7 +1281,7 @@
           }
           responsInfo.textContent = `Responsabilidade: ${stakeValue.toFixed(2)}`;
         } else {
-          r.querySelector('.aposta-input').value = stakeValue.toFixed(2);
+          apostaInput.value = stakeValue.toFixed(2);
           const responsInfo = apostaCell.querySelector('.respons-info');
           if (responsInfo) responsInfo.remove();
         }
@@ -1292,14 +1308,12 @@
         }
         lucros[w] = lucroW;
       }
-
       rows.forEach((r, i) => {
         const el = r.querySelector('.lucro-output');
         const lucroCalculado = lucros[i] || 0;
         el.textContent = lucroCalculado.toFixed(2);
         el.style.color = lucroCalculado >= 0 ? "#22bb33" : "#cc3333";
       });
-
       let totalStakeReal = 0;
       stakesReal.forEach((val, i) => {
         if (freebets[i]) return;
@@ -1313,7 +1327,6 @@
       $('#porcentagem').textContent = perc.toFixed(2) + " %";
       updateResultsTable(lucros, stakesReal, oddsFinal);
     }
-
     function updateResultsTable(lucros, stakesReal, oddsFinal) {
       const tbody = $('#resultsBody');
       if (!tbody) return;
@@ -1331,18 +1344,15 @@
         tbody.appendChild(row);
       });
     }
-
     function init() {
       updateNavbar();
       updateInputsState();
-
       $('#qtdCasas')?.addEventListener('change', () => {
         if (!isLoggedIn()) return;
         state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
         renderRows();
         updateCalculations();
       });
-
       $('#btnAddPlanilha')?.addEventListener('click', () => {
         if (!isLoggedIn()) return;
         const today = new Date().toISOString().split('T')[0];
@@ -1362,7 +1372,6 @@
         $('#formQtdContas').value = qtdContas;
         $('#modalAddPlanilha').classList.remove('hidden');
       });
-
       $('#cancelModal')?.addEventListener('click', () => {
         $('#modalAddPlanilha').classList.add('hidden');
       });
@@ -1371,7 +1380,6 @@
           $('#modalAddPlanilha').classList.add('hidden');
         }
       });
-
       $('#saveToPlanilha')?.addEventListener('click', async () => {
         const email = localStorage.getItem('superodd_user_email');
         if (!email) {
@@ -1407,11 +1415,9 @@
           alert('⚠️ Erro de conexão com o servidor.');
         }
       });
-
       $('#qtdContas')?.addEventListener('input', () => {
         if (isLoggedIn()) updateCalculations();
       });
-
       $('#apostaTotalDisplay')?.addEventListener('input', () => {
         if (!isLoggedIn()) return;
         state.manualMode = false;
@@ -1419,7 +1425,6 @@
         $$('.comissao-checkbox').forEach(c => c.checked = false);
         updateCalculations();
       });
-
       ['switchFreebet', 'switchCashback', 'switchComissao', 'switchAumento'].forEach(id => {
         const el = $('#' + id);
         const key = {
@@ -1436,17 +1441,14 @@
           updateCalculations();
         });
       });
-
       $('#btnCopyAposta')?.addEventListener('click', () => {
         if (!isLoggedIn()) return;
         navigator.clipboard.writeText($('#apostaTotalDisplay').value);
       });
-
       renderRows();
       if (isLoggedIn()) updateCalculations();
       setInterval(updateInputsState, 800);
     }
-
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
