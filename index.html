@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -18,118 +17,101 @@
       --shadow: 0 6px 20px rgba(18, 24, 36, 0.06);
       --watermark-opacity: 0.04;
     }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
     }
-
     html,
     body {
       height: 100%;
       background: #f6f7fb;
       color: #111;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden; /* 🔒 BLOQUEIA ROLAGEM HORIZONTAL */
     }
-
     a {
       color: inherit;
-      text-decoration: none
+      text-decoration: none;
     }
-
-    html,
-    body {
-      overflow: auto
-    }
-
     * {
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
-
     *::-webkit-scrollbar {
       display: none;
-      width: 0;
-      height: 0;
     }
-
     .wrap {
+      width: 100%;
       max-width: 1150px;
-      margin: 28px auto;
-      padding: 18px
+      margin: 16px auto;
+      padding: 0 12px;
     }
-
     .navbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: var(--card);
-      padding: 14px 18px;
+      padding: 12px;
       border-radius: 10px;
       box-shadow: var(--shadow);
-      gap: 12px
+      gap: 10px;
+      flex-wrap: wrap;
     }
-
     .brand {
       display: flex;
       align-items: center;
-      gap: 12px
+      gap: 10px;
+      min-width: 0;
     }
-
     .logo {
-      width: 44px;
-      height: 44px;
+      width: 40px;
+      height: 40px;
       border-radius: 8px;
-      background: url('image/logo.png') center/contain no-repeat
+      background: url('image/logo.png') center/contain no-repeat;
+      flex-shrink: 0;
     }
-
     .brand h1 {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
-      color: #0f1724
+      color: #0f1724;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
     .nav-actions {
       display: flex;
       align-items: center;
-      gap: 10px
+      gap: 8px;
+      flex-shrink: 0;
     }
-
-    .nav-actions button {
+    .nav-actions button,
+    .nav-actions a {
       background: var(--primary);
       color: #fff;
       border: none;
-      padding: 8px 12px;
+      padding: 6px 10px;
       border-radius: 8px;
       font-weight: 600;
-      cursor: pointer
+      font-size: 14px;
+      cursor: pointer;
+      white-space: nowrap;
     }
-
-    .nav-actions .icon-btn {
-      background: transparent;
-      color: var(--muted);
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 8px;
-      border: 1px solid #e6e9ee
-    }
-
     .section {
       background: var(--card);
       border-radius: 12px;
-      padding: 18px;
-      margin-top: 18px;
+      padding: 16px;
+      margin-top: 16px;
       box-shadow: var(--shadow);
       position: relative;
       overflow: hidden;
     }
-
     .section::before,
     .table-wrap::before,
     .results-left::before,
@@ -149,270 +131,192 @@
       filter: grayscale(1);
       mix-blend-mode: lighten;
     }
-
     .table-wrap::before,
     .results-left::before {
       inset: 0;
       background-size: 200px;
       background-repeat: repeat;
     }
-
     h2 {
-      font-size: 20px;
+      font-size: 18px;
       margin-bottom: 12px;
       color: #0b1720;
       background: var(--card);
-      padding: 12px;
-      border-radius: 10px;
+      padding: 10px;
+      border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
-      margin-top: -6px;
-      margin-left: -18px;
-      margin-right: -18px;
+      margin: -16px -16px 12px;
     }
-
     .sub {
       color: var(--muted);
       font-size: 13px;
-      margin-bottom: 8px
+      margin-bottom: 8px;
     }
-
     .grid2 {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 18px
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
     }
-
     .field {
       display: flex;
       flex-direction: column;
-      gap: 8px
+      gap: 6px;
     }
-
     label {
       font-size: 14px;
       color: #24303a;
-      font-weight: 600
+      font-weight: 600;
     }
-
     select,
     input[type="number"],
     input[type="text"] {
-      padding: 10px 12px;
+      padding: 10px;
       border-radius: 8px;
       border: 1px solid #e6f0e9;
       background: #fff;
-      outline: none
+      outline: none;
+      font-size: 14px;
+      width: 100%;
     }
-
-    select {
-      appearance: none;
-      background-image: linear-gradient(45deg, transparent 50%, #9ca3af 50%), linear-gradient(135deg, #9ca3af 50%, transparent 50%);
-      background-position: calc(100% - 12px) calc(1em + 2px), calc(100% - 7px) calc(1em + 2px);
-      background-size: 6px 6px, 6px 6px;
-      background-repeat: no-repeat
-    }
-
-    input:focus,
-    select:focus {
-      border-color: var(--accent-strong);
-      box-shadow: 0 0 0 6px rgba(233, 217, 132, 0.06)
-    }
-
     .toggles {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      align-items: center
+      align-items: center;
+      margin-top: 14px;
     }
-
     .toggle {
       display: flex;
       align-items: center;
-      gap: 10px
+      gap: 6px;
+      flex-wrap: wrap;
     }
-
+    .toggle .small {
+      white-space: nowrap;
+    }
     .switch {
       position: relative;
-      width: 44px;
-      height: 26px;
-      border-radius: 16px;
+      width: 40px;
+      height: 24px;
+      border-radius: 14px;
       background: #eee;
-      cursor: pointer
+      cursor: pointer;
     }
-
     .switch input {
-      display: none
+      display: none;
     }
-
     .knob {
       position: absolute;
-      top: 3px;
-      left: 3px;
+      top: 2px;
+      left: 2px;
       width: 20px;
       height: 20px;
       background: #fff;
       border-radius: 50%;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-      transition: all .22s
+      transition: all .22s;
     }
-
     .switch.on {
-      background: var(--accent-strong)
+      background: var(--accent-strong);
     }
-
     .switch.on .knob {
-      transform: translateX(18px)
+      transform: translateX(16px);
     }
-
     .toggle-note {
       font-size: 12px;
       color: var(--muted);
-      margin-top: 6px;
-      display: block;
+      margin-top: 8px;
+      line-height: 1.4;
     }
-
     .table-wrap {
       margin-top: 6px;
       border-radius: 10px;
-      overflow: visible;
+      overflow: auto;
       position: relative;
-      min-width: 300px;
+      width: 100%;
     }
-
     table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
-      background: transparent;
       table-layout: fixed;
+      min-width: 600px;
     }
-
     thead th {
       background: var(--primary);
       color: #fff;
-      padding: 12px 8px;
+      padding: 10px 6px;
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
       font-weight: 700;
       text-align: left;
       font-size: 12px;
       white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      border-left: 1px solid rgba(255, 255, 255, 0.06);
     }
-
-    thead th:first-child {
-      border-left: none;
-    }
-
     tbody tr {
-      background: #f6f7f9
+      background: #f6f7f9;
     }
-
-    tbody tr+tr {
-      margin-top: 8px
+    tbody tr + tr {
+      margin-top: 6px;
     }
-
     tbody td {
       padding: 8px 6px;
       border-bottom: 1px solid rgba(16, 24, 32, 0.04);
       vertical-align: middle;
+      font-size: 13px;
       overflow: hidden;
       text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 13px;
     }
-
-    /* Colunas dinâmicas */
-    .col-casa {
-      width: 14%
-    }
-
-    .col-tipo {
-      width: 7%
-    }
-
-    .col-odd {
-      width: 7%
-    }
-
-    .col-comissao {
-      width: 8%
-    }
-
-    .col-oddfinal {
-      width: 8%
-    }
-
-    .col-aumento {
-      width: 7%
-    }
-
-    .col-aposta {
-      width: 12%
-    }
-
-    .col-freebet {
-      width: 9%
-    }
-
-    .col-cashback {
-      width: 9%
-    }
-
-    .col-c {
-      width: 8%
-    }
-
-    .col-lucro {
-      width: 11%
-    }
-
+    .col-casa { width: 16%; }
+    .col-tipo { width: 8%; }
+    .col-odd { width: 7%; }
+    .col-comissao { width: 9%; }
+    .col-oddfinal { width: 9%; }
+    .col-aumento { width: 8%; }
+    .col-aposta { width: 14%; }
+    .col-freebet { width: 10%; }
+    .col-cashback { width: 10%; }
+    .col-c { width: 7%; }
+    .col-lucro { width: 12%; }
     tbody td input[type="text"],
     tbody td input[type="number"] {
       border: 1px solid #dfe7d0;
-      padding: 5px 6px;
-      border-radius: 5px;
+      padding: 6px 8px; /* ↑ aumentado */
+      border-radius: 6px;
       background: #fff;
-      font-size: 12px;
+      font-size: 13px;
       width: 100%;
       box-sizing: border-box;
     }
-
     .type-btn {
       display: inline-block;
-      padding: 4px 8px;
-      border-radius: 5px;
+      padding: 6px 10px; /* ↑ aumentado */
+      border-radius: 6px;
       font-weight: 700;
-      font-size: 12px;
+      font-size: 13px;
       cursor: pointer;
       border: none;
       width: 100%;
       text-align: center;
     }
-
     .type-btn.back {
       background: rgba(0, 0, 0, 0.05);
-      color: #0f1724
+      color: #0f1724;
     }
-
     .type-btn.lay {
       background: rgba(255, 0, 0, 0.08);
-      color: #8b1f1f
+      color: #8b1f1f;
     }
-
     .chk {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100%;
     }
-
     .chk input {
-      display: none
+      display: none;
     }
-
     .chk .chkbox {
       width: 20px;
       height: 16px;
@@ -423,7 +327,6 @@
       transition: all .18s;
       background: #fff;
     }
-
     .chk .chkbox::after {
       content: '';
       position: absolute;
@@ -437,31 +340,30 @@
       opacity: 0;
       transition: opacity .14s;
     }
-
-    .chk input:checked+.chkbox {
+    .chk input:checked + .chkbox {
       background: var(--accent);
       border-color: var(--accent-strong);
     }
-
-    .chk input:checked+.chkbox::after {
-      opacity: 1
+    .chk input:checked + .chkbox::after {
+      opacity: 1;
     }
-
     .col-freebet.hidden,
     .col-cashback.hidden,
     .col-comissao.hidden,
     .col-aumento.hidden {
       display: none !important;
     }
-
     .results-wrap {
-      margin-top: 8px;
+      margin-top: 12px;
       display: flex;
       gap: 16px;
-      align-items: flex-start;
-      flex-wrap: wrap;
+      flex-direction: column;
     }
-
+    @media (min-width: 769px) {
+      .results-wrap {
+        flex-direction: row;
+      }
+    }
     .results-left {
       flex: 1 1 600px;
       min-width: 300px;
@@ -471,13 +373,11 @@
       border: 1px solid #e9eef0;
       position: relative;
     }
-
     .results-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
     }
-
     .results-table thead th {
       background: var(--primary);
       color: #fff;
@@ -486,41 +386,35 @@
       text-align: left;
       font-size: 13px;
     }
-
     .results-table td {
       padding: 10px;
       border-bottom: 1px solid rgba(16, 24, 32, 0.04);
       background: #fff;
       font-size: 14px;
     }
-
     .results-right {
-      width: 240px;
-      min-width: 200px;
+      width: 100%;
+      max-width: 300px;
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-
     .results-actions {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-
     .results-actions .btn {
       width: 100%;
       display: block;
       text-align: center;
     }
-
     .summary-cards {
       display: grid;
       grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 12px;
     }
-
     .summary-card {
       background: var(--card);
       border-radius: 10px;
@@ -530,283 +424,401 @@
       overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
     .summary-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
-
     .summary-card .label {
       color: var(--muted);
       font-size: 12px;
       font-weight: 600;
     }
-
     .summary-card .value {
       font-weight: 800;
       margin-top: 6px;
       font-size: 16px;
       color: var(--primary);
     }
-
     .summary-card .value.highlight {
       color: var(--accent);
     }
-
-    .highlight {
-      color: var(--accent);
-      font-weight: 800
-    }
-
-    .actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 12px
-    }
-
     .btn {
-      padding: 10px 14px;
+      padding: 10px;
       border-radius: 8px;
       border: none;
       background: var(--primary);
       color: #fff;
       font-weight: 700;
-      cursor: pointer
+      cursor: pointer;
     }
-
     .btn.ghost {
       background: transparent;
       border: 1px solid #e6e9ee;
-      color: var(--muted)
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: rgba(3, 6, 12, 0.45);
-      z-index: 60;
-    }
-
-    .modal {
-      width: 360px;
-      background: #fff;
-      padding: 18px;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(2, 6, 23, 0.35);
-    }
-
-    .modal h3 {
-      margin-bottom: 10px
-    }
-
-    .modal .muted {
-      font-size: 13px;
       color: var(--muted);
-      margin-bottom: 12px
     }
 
-    .modal .row {
-      display: flex;
-      gap: 8px
-    }
-
-    .modal .small {
-      font-size: 13px;
-      color: var(--muted);
-      margin-top: 8px
-    }
-
-    .admin-box {
-      margin-top: 10px;
-      padding: 12px;
-      border-radius: 8px;
-      border: 1px dashed #e6eef0;
-      background: #fbfeff
-    }
-
-    .admin-actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-wrap: wrap
-    }
-
-    .file-input {
-      display: none
-    }
-
-    @media (max-width:768px) {
-      .grid2 {
-        grid-template-columns: 1fr
+    /* ===== ✅ MOBILE: LAYOUT VERTICAL (SEM FLEX ENTRE LABEL E INPUT) ===== */
+    @media (max-width: 768px) {
+      /* Garantir que nada extrapole */
+      body, .wrap, .section, .table-wrap {
+        overflow-x: hidden;
       }
 
-      .wrap {
-        padding: 12px
-      }
-
-      .modal {
-        width: 92%
-      }
-
-      .results-wrap {
-        flex-direction: column
-      }
-
-      .results-right {
+      /* Tabela vira lista de cards */
+      #apostasTable {
+        display: block;
         width: 100%;
-        min-width: 0;
-        flex-direction: row;
-        gap: 8px;
-        flex-wrap: wrap
       }
-
-      .results-actions {
-        flex-direction: row;
-        width: 100%
+      #apostasTable thead {
+        display: none;
       }
-
-      .results-actions .btn {
-        flex: 1
+      #apostasTable tbody {
+        display: block;
+        width: 100%;
       }
-
-      .summary-cards {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-      }
-
-      .summary-card {
-        padding: 10px;
-        border-radius: 8px;
-        font-size: 13px;
-      }
-
-      .summary-card .value {
-        font-size: 14px;
-      }
-
-      #apostasTable,
-      #apostasTable thead,
-      #apostasTable tbody,
-      #apostasTable th,
-      #apostasTable td,
       #apostasTable tr {
         display: block;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       }
-
-      #apostasTable thead tr {
-        position: absolute;
-        top: -9999px;
-        left: -9999px;
-      }
-
-      #apostasTable tr {
-        border: 1px solid #e3e7ea;
-        padding: 12px;
-        margin-bottom: 12px;
-        display: block;
-        background: #fff;
-        border-radius: 8px;
-      }
-
       #apostasTable td {
+        display: block;
+        padding: 8px 0;
         border: none;
-        position: relative;
-        padding-left: 48%;
-        white-space: normal;
-        text-align: left;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-      }
-
-      #apostasTable td::before {
-        content: attr(data-label) ": ";
-        position: absolute;
-        left: 12px;
-        width: 40%;
-        font-weight: 700;
-        text-align: left;
-        color: #24303a;
-      }
-
-      #apostasTable td input[type="text"],
-      #apostasTable td input[type="number"] {
-        max-width: 110px;
-        width: 110px;
-      }
-
-      .type-btn {
-        padding: 6px 10px;
-        font-size: 13px
-      }
-
-      .chk .chkbox {
-        width: 24px;
-        height: 18px
-      }
-
-      tfoot td {
-        display: block !important;
-        text-align: right !important;
-        padding: 12px !important;
-      }
-
-      .aposta-total {
-        justify-content: space-between;
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-
-      .aposta-total input {
-        width: 110px;
-        text-align: right;
         font-size: 14px;
-      }
-
-      .results-left {
-        order: 0;
-        width: 100%
-      }
-
-      .results-right {
-        order: 1;
         width: 100%;
+      }
+      #apostasTable td::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 13px;
+        margin-bottom: 6px; /* ↑ espaço maior */
+      }
+      /* Inputs maiores */
+      #apostasTable input[type="text"],
+      #apostasTable input[type="number"] {
+        width: 100%;
+        padding: 10px; /* ↑ aumentado */
+        border-radius: 8px;
+        border: 1px solid #d1d5db;
+        font-size: 14px;
+        background: #fff;
+        box-sizing: border-box;
+      }
+      /* Botões BACK/LAY */
+      #apostasTable .type-btn {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        text-align: center;
+        border-radius: 8px;
+      }
+      /* Checkboxes */
+      #apostasTable .chk {
         display: flex;
+        align-items: center;
+        gap: 10px;
+        justify-content: flex-start;
+      }
+      /* Rodapé */
+      #apostasTable tfoot {
+        display: block;
+        margin-top: 14px;
+      }
+      #apostasTable tfoot tr {
+        display: block;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px;
+      }
+      #apostasTable tfoot td {
+        display: block;
+        padding: 8px 0;
+      }
+      .aposta-total {
+        display: flex;
+        flex-direction: column;
         gap: 8px;
-        flex-wrap: wrap
       }
-
-      .results-actions {
+      .aposta-total input {
         width: 100%;
-        display: flex;
-        gap: 8px
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 8px;
+      }
+      #btnCopyAposta {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 8px;
       }
 
+      /* Resultados empilhados */
+      .results-wrap {
+        flex-direction: column;
+      }
+      .results-right {
+        max-width: none;
+      }
       .summary-cards {
-        grid-template-columns: repeat(3, 1fr);
-        width: 100%
-      }
-
-      .btn,
-      .type-btn {
-        touch-action: manipulation;
+        grid-template-columns: 1fr;
       }
     }
 
-    /* align aposta total under column aposta */
-    tfoot td.aposta-foot {
-      padding: 8px 6px;
-      text-align: left;
-      vertical-align: middle;
-    }
+    #modal {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.results-wrap {
+  display: flex;
+  gap: 16px;
+  flex-direction: column;
+}
+
+@media (min-width: 769px) {
+  .results-wrap {
+    flex-direction: row;
+  }
+}
+
+.results-left {
+  flex: 1;
+  background: var(--card);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: fixed;
+  min-width: 100%;
+}
+
+.results-table thead {
+  background: var(--primary);
+  color: #fff;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.results-table th {
+  padding: 10px 6px;
+  font-weight: 700;
+  text-align: left;
+  font-size: 12px;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.results-table tbody tr {
+  background: #f6f7f9;
+  transition: background 0.2s ease;
+}
+
+.results-table tbody tr:hover {
+  background: #e9ecef;
+}
+
+.results-table tbody td {
+  padding: 8px 6px;
+  border-bottom: 1px solid rgba(16, 24, 32, 0.04);
+  vertical-align: middle;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.results-table tbody td:last-child {
+  text-align: right;
+  font-weight: 600;
+}
+
+.results-table tbody td:nth-child(5) {
+  color: #22bb33;
+}
+
+.results-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 280px;
+}
+
+.results-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn {
+  display: inline-block;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background: #1a2330;
+  transform: translateY(-1px);
+}
+
+.btn.ghost {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+}
+
+.btn.ghost:hover {
+  background: var(--primary);
+  color: #fff;
+}
+
+.summary-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.summary-card {
+  background: var(--soft);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-card .label {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+
+.summary-card .value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0b1720;
+}
+
+.summary-card .value.highlight {
+  color: var(--accent-strong);
+  font-size: 18px;
+}
+
+.aposta-total {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .aposta-total {
+    flex-direction: column;
+    gap: 6px;
+    padding: 0 8px;
+  }
+
+  .aposta-total input,
+  .aposta-total button {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .aposta-foot {
+    overflow-x: hidden;
+  }
+}
+
+@media (max-width: 768px) {
+  #apostasTable, #apostasTable tbody, #apostasTable tr, #apostasTable td, #apostasTable tfoot, #apostasTable thead {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box;
+  }
+
+  #apostasTable { min-width: 0 !important; table-layout: auto !important; }
+
+  #apostasTable td {
+    padding: 10px 12px !important;
+    word-break: break-word;
+    white-space: normal;
+  }
+
+  #apostasTable td::before { white-space: normal; }
+
+  #apostasTable input[type="text"],
+  #apostasTable input[type="number"],
+  #apostasTable .type-btn,
+  .aposta-total input,
+  .aposta-total button,
+  .results-right .btn,
+  .btn {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .aposta-total,
+  .aposta-foot {
+    overflow: hidden;
+    padding: 8px 12px;
+  }
+
+  #btnCopyAposta {
+    display: inline-block;
+    padding: 10px 12px !important;
+    border-radius: 8px !important;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .results-actions .btn,
+  .results-right .btn {
+    display: block;
+    width: 100%;
+  }
+
+  .brand, .nav-actions, .grid2, .results-wrap, .results-right, .summary-cards {
+    min-width: 0;
+  }
+}
+
+@media (max-width:768px){
+  .table-wrap::before, .results-left::before { display:none!important; }
+}
   </style>
 </head>
-
 <body>
   <div class="wrap">
     <div class="navbar">
@@ -815,6 +827,7 @@
         <div>
           <h1>Fábrica Super Odd</h1>
           <div class="small">Calculadora de Arbitragem</div>
+          <div><a href="./planilha.html" class="irplanilha" style="color: #e9d984;"><h3>Planilha</h3></a></div>
         </div>
       </div>
       <div class="nav-actions">
@@ -826,15 +839,7 @@
     <div class="section">
       <h2>Configurações</h2>
       <div class="sub">Defina o procedimento e as opções.</div>
-      <div class="grid2" style="margin-top:12px">
-        <div class="field">
-          <label>Procedimento</label>
-          <select id="procedimento" disabled>
-            <option>Arbitragem Simples</option>
-            <option>Freebet</option>
-            <option>Cashback</option>
-          </select>
-        </div>
+      <div class="grid2">
         <div class="field">
           <label>Quantidade de casas</label>
           <select id="qtdCasas" disabled>
@@ -855,7 +860,7 @@
           <div class="small">Multiplica stake e lucro final</div>
         </div>
       </div>
-      <div style="margin-top:14px" class="toggles">
+      <div class="toggles">
         <div class="toggle" title="Ativa coluna 'Freebet'">
           <div id="switchFreebet" class="switch">
             <div class="knob"></div>
@@ -912,12 +917,10 @@
             <tr>
               <td colspan="6"></td>
               <td colspan="1" class="aposta-foot">
-                <div class="aposta-total" style="display: flex; align-items: center; gap: 6px;">
+                <div class="aposta-total">
                   <strong>Aposta total:</strong>
-                  <input id="apostaTotalDisplay" type="number" step="0.01" value="100.00"
-                    style="width: 90px; padding: 4px 6px; font-size: 12px;">
-                  <button class="btn ghost" id="btnCopyAposta" disabled
-                    style="padding: 4px 6px; width: auto;">📋</button>
+                  <input id="apostaTotalDisplay" type="number" step="0.01" value="100.00">
+                  <button class="btn ghost" id="btnCopyAposta" disabled>📋 Copiar</button>
                 </div>
               </td>
               <td colspan="3"></td>
@@ -966,10 +969,10 @@
         </div>
       </div>
     </div>
-
     <div id="adminPanel" class="section" style="display:none"></div>
   </div>
 
+  <!-- Modal de Login -->
   <div id="modal" class="modal-backdrop" role="dialog" aria-hidden="true">
     <div class="modal" role="document">
       <h3 id="modalTitle">Entrar</h3>
@@ -978,8 +981,7 @@
         <button class="btn" id="btnModalLogin">Login</button>
         <button class="btn ghost" id="btnModalRegister">Cadastrar</button>
       </div>
-      <div style="margin-top:8px"><label>Email</label><input id="authEmail" type="text" placeholder="seu@email.com">
-      </div>
+      <div style="margin-top:8px"><label>Email</label><input id="authEmail" type="text" placeholder="seu@email.com"></div>
       <div style="margin-top:8px"><label>Senha</label><input id="authPass" type="password" placeholder="senha"></div>
       <div style="margin-top:12px;display:flex;gap:8px">
         <button class="btn" id="btnDoAuth">Confirmar</button>
@@ -989,13 +991,6 @@
   </div>
 
   <script>
-    /* ======================================================
-       FÁBRICA SUPER ODD — SCRIPT COMPLETO ATUALIZADO
-       Mantém todas as features: criação de linhas, toggles,
-       distribuição padrão, modo "C" (igualar lucros), freebet,
-       cashback, comissão, resultados e resumo.
-       ====================================================== */
-
     const state = {
       qtdCasas: 2,
       showComissao: true,
@@ -1005,7 +1000,6 @@
       controlIndex: null,
       manualMode: false
     };
-
     const $ = s => document.querySelector(s);
     const $$ = s => Array.from(document.querySelectorAll(s));
     const money = v => "R$ " + (Number(v || 0).toFixed(2));
@@ -1014,59 +1008,73 @@
       return localStorage.getItem('superodd_logged_in') === 'true';
     }
 
-    /* ===== LOGIN ===== */
     function updateNavbar() {
       const btn = $('#btnOpenLogin');
       if (!btn) return;
       if (isLoggedIn()) {
         btn.textContent = 'Sair';
-        btn.onclick = e => { e.preventDefault(); localStorage.removeItem('superodd_logged_in'); location.reload(); };
+        btn.onclick = e => {
+          e.preventDefault();
+          localStorage.removeItem('superodd_logged_in');
+          location.reload();
+        };
       } else {
         btn.textContent = 'Entrar';
-        btn.onclick = e => { e.preventDefault(); window.location.href = 'login.html'; };
+        btn.onclick = e => {
+          e.preventDefault();
+          $('#modal').style.display = 'flex';
+        };
       }
     }
 
     function updateInputsState() {
       const logged = isLoggedIn();
       const disable = !logged;
-      const selectors = [
-        '#procedimento', '#qtdCasas', '#qtdContas', '#btnCopyAposta',
-        '#btnShare', '#btnAddPlanilha', '#apostaTotalDisplay'
-      ];
-      selectors.forEach(sel => {
-        const el = document.querySelector(sel);
-        if (el) el.disabled = disable;
-      });
+      ['#qtdCasas', '#qtdContas', '#btnCopyAposta', '#btnShare', '#btnAddPlanilha', '#apostaTotalDisplay']
+        .forEach(sel => { const el = $(sel); if (el) el.disabled = disable; });
       $$('#apostasBody input, #apostasBody button, .chk input').forEach(el => el.disabled = disable);
     }
 
-    /* ===== CRIAÇÃO DE LINHAS ===== */
     function createRow(i) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-    <td class="col-casa"><input class="casa-input" type="text" value="Casa ${i + 1}" inputmode="text"></td>
-    <td class="col-tipo"><button class="type-btn back">BACK</button></td>
-    <td class="col-odd"><input class="odd-input" type="number" step="0.001" min="1.001" value="2.000" inputmode="decimal"></td>
-    <td class="col-comissao"><input class="comissao-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
-    <td class="col-oddfinal"><span class="odd-final">2.000</span></td>
-    <td class="col-aumento"><input class="aumento-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
-    <td class="col-aposta"><input class="aposta-input" type="text" inputmode="decimal" value="0,00"></td>
-    <td class="col-freebet">
-      <label class="chk"><input class="freebet-checkbox" type="checkbox"><span class="chkbox"></span></label>
-    </td>
-    <td class="col-cashback"><input class="cashback-input" type="number" step="0.01" min="0" value="0.00" inputmode="decimal"></td>
-    <td class="col-c">
-      <label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label>
-    </td>
-    <td class="col-lucro"><span class="lucro-output">0.00</span></td>
-  `;
-
+        <td class="col-casa" data-label="Casa">
+          <input class="casa-input" type="text" value="Casa ${i + 1}">
+        </td>
+        <td class="col-tipo" data-label="Tipo">
+          <button class="type-btn back">BACK</button>
+        </td>
+        <td class="col-odd" data-label="ODD">
+          <input class="odd-input" type="number" step="0.001" min="1.001" value="2.000">
+        </td>
+        <td class="col-comissao" data-label="Comissão %">
+          <input class="comissao-input" type="number" step="0.01" min="0" value="0.00">
+        </td>
+        <td class="col-oddfinal" data-label="ODD Final">
+          <span class="odd-final">2.000</span>
+        </td>
+        <td class="col-aumento" data-label="Aumento %">
+          <input class="aumento-input" type="number" step="0.01" min="0" value="0.00">
+        </td>
+        <td class="col-aposta" data-label="Aposta">
+          <input class="aposta-input" type="text" value="0,00">
+        </td>
+        <td class="col-freebet" data-label="Freebet">
+          <label class="chk"><input class="freebet-checkbox" type="checkbox"><span class="chkbox"></span></label>
+        </td>
+        <td class="col-cashback" data-label="Cashback %">
+          <input class="cashback-input" type="number" step="0.01" min="0" value="0.00">
+        </td>
+        <td class="col-c" data-label="Travar">
+          <label class="chk"><input class="comissao-checkbox" type="checkbox"><span class="chkbox"></span></label>
+        </td>
+        <td class="col-lucro" data-label="Lucro">
+          <span class="lucro-output">0.00</span>
+        </td>
+      `;
       tr.querySelectorAll('.odd-input, .aposta-input').forEach(inp => {
         inp.addEventListener('focus', () => inp.select());
       });
-
-      // Tipo BACK/LAY
       tr.querySelector('.type-btn').addEventListener('click', e => {
         if (!isLoggedIn()) return;
         const btn = e.target;
@@ -1075,8 +1083,6 @@
         btn.textContent = btn.classList.contains('lay') ? 'LAY' : 'BACK';
         updateCalculations();
       });
-
-      // Inputs
       tr.querySelectorAll('input').forEach(inp => {
         inp.addEventListener('input', () => {
           if (!isLoggedIn()) return;
@@ -1089,8 +1095,6 @@
           updateCalculations();
         });
       });
-
-      // Checkbox 'C' (comissão) -> controla index
       tr.querySelector('.comissao-checkbox').addEventListener('change', e => {
         if (!isLoggedIn()) return;
         const cb = e.target;
@@ -1099,23 +1103,20 @@
         state.manualMode = false;
         updateCalculations();
       });
-
-      // Freebet change
       tr.querySelector('.freebet-checkbox').addEventListener('change', () => {
         if (!isLoggedIn()) return;
         recalcApostaTotal();
         updateCalculations();
       });
-
       return tr;
     }
 
-    /* ===== RENDER ===== */
     function renderRows() {
       const tbody = $('#apostasBody');
       tbody.innerHTML = '';
       for (let i = 0; i < state.qtdCasas; i++) tbody.appendChild(createRow(i));
-      renderTableColumns(); updateInputsState();
+      renderTableColumns();
+      updateInputsState();
     }
 
     function renderTableColumns() {
@@ -1130,15 +1131,9 @@
       });
     }
 
-    /* ===== FUNÇÕES AUXILIARES ===== */
     function getOddFinal(odd, com = 0, aum = 0) {
-      // Aplica comissão primeiro (reduz o lucro)
       const lucroComComissao = (odd - 1) * (1 - com / 100);
-
-      // Aplica aumento sobre o LUCRO (não sobre a odd total)
       const lucroFinal = lucroComComissao * (1 + aum / 100);
-
-      // Odd final = 1 + lucro final
       const oddFinal = 1 + lucroFinal;
       return Math.max(1.001, oddFinal);
     }
@@ -1147,351 +1142,185 @@
       const rows = $$('#apostasBody tr');
       let total = 0;
       rows.forEach(row => {
-        let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value.replace(',', '.')) || 0);
+        const val = parseFloat(row.querySelector('.aposta-input').value.replace(',', '.')) || 0;
         const isFree = row.querySelector('.freebet-checkbox').checked;
         if (!isFree) total += val;
       });
       $('#apostaTotalDisplay').value = total.toFixed(2);
     }
 
-    /* ===== CÁLCULO PRINCIPAL (INCLUI IGUALAÇÃO "C" E FREEBET) ===== */
     function updateCalculations() {
-      // Se sistema estiver bloqueado por login, não calcula
       if (!isLoggedIn()) return;
-
       const totalDisplay = parseFloat($('#apostaTotalDisplay').value) || 100;
-      const qtdContas = parseFloat($('#qtdContas') ? $('#qtdContas').value : 1) || 1;
+      const qtdContas = parseFloat($('#qtdContas')?.value) || 1;
       const totalReal = totalDisplay * qtdContas;
       const rows = $$('#apostasBody tr');
       const n = rows.length;
-
       const oddsOriginal = [], oddsFinal = [], comissoes = [], aumentos = [], freebets = [], isLayBet = [];
+
       rows.forEach((r, i) => {
         const oddRaw = parseFloat(r.querySelector('.odd-input').value) || 2;
         const com = state.showComissao ? parseFloat(r.querySelector('.comissao-input').value) || 0 : 0;
         const aum = state.showAumento ? parseFloat(r.querySelector('.aumento-input').value) || 0 : 0;
         const isLay = r.querySelector('.type-btn')?.classList.contains('lay') || false;
-
         oddsOriginal[i] = oddRaw;
         isLayBet[i] = isLay;
-
-        // Para LAY, calcular ODD Final diferente (considera comissão sobre o lucro do lay)
         if (isLay) {
-          // LAY ODD Final = 1 + ((1 / (odd - 1)) × (1 - comissao/100))
           const layProfit = (1 / Math.max(0.001, oddRaw - 1)) * (1 - com / 100);
           oddsFinal[i] = 1 + layProfit;
         } else {
-          // BACK: aplicar comissão e aumento normalmente
           oddsFinal[i] = getOddFinal(oddRaw, com, aum);
         }
-
-        comissoes[i] = com; aumentos[i] = aum;
+        comissoes[i] = com;
+        aumentos[i] = aum;
         freebets[i] = !!(state.showFreebet && r.querySelector('.freebet-checkbox').checked);
-
-        // Garantir que ODD Final seja exibida corretamente
         const oddFinalDisplay = oddsFinal[i].toFixed(3);
         const oddFinalElement = r.querySelector('.odd-final');
-        if (oddFinalElement) {
-          oddFinalElement.textContent = oddFinalDisplay;
-          // Debug: verificar se o valor está sendo atualizado
-          console.log(`Casa ${i + 1}: ODD ${oddRaw.toFixed(2)} → Final ${oddFinalDisplay} (${isLay ? 'LAY' : 'BACK'})`);
-        }
+        if (oddFinalElement) oddFinalElement.textContent = oddFinalDisplay;
       });
 
-      // stakes por conta (inicial)
       let stakes = rows.map(r => parseFloat(r.querySelector('.aposta-input').value) || 0);
 
-      // Distribuição padrão quando não manual e sem "C":
       if (!state.manualMode && state.controlIndex === null) {
-        // Usar odds FINAIS para distribuição padrão
         const invs = oddsFinal.map(o => 1 / (o || 1));
         const sumInv = invs.reduce((a, b) => a + b, 0) || 1;
         stakes = invs.map(inv => (totalReal * inv) / sumInv / (qtdContas || 1));
       }
 
-      // MODO "C" — IGUALAÇÃO DE LUCROS (FUNCIONA COM OU SEM FREEBET)
       if (state.controlIndex !== null) {
         const w = state.controlIndex;
         const stakeW = stakes[w] || 0;
-
-        // Usar odds FINAIS para todos os cálculos de equalização
         const oddW = oddsFinal[w];
-
-        // Verificar se a casa com C tem freebet
         const casaComCTemFreebet = freebets[w];
 
         if (casaComCTemFreebet) {
-          // === MODO C COM FREEBET ===
           const lucroFreebet = (oddsFinal[w] - 1) * stakeW;
-
-          console.log('=== MODO C FREEBET ===');
-          console.log('Lucro Freebet:', lucroFreebet.toFixed(2));
-
           for (let i = 0; i < n; i++) {
             if (i === w || freebets[i]) continue;
-
             if (isLayBet[i]) {
-              // Para LAY: stake = lucroFreebet / (oddOriginal - 1 + (1 - comissao/100))
               const comI = comissoes[i] || 0;
               const oddIOrig = oddsOriginal[i];
               const denominador = oddIOrig - 1 + (1 - comI / 100);
               stakes[i] = lucroFreebet / denominador;
-
-              console.log(`Casa ${i + 1} (LAY): stake = ${lucroFreebet.toFixed(2)} / ${denominador.toFixed(3)} = ${stakes[i].toFixed(2)}`);
-              console.log(`  Liability = ${(stakes[i] * (oddIOrig - 1)).toFixed(2)}`);
             } else {
-              // Para BACK: stake = lucroFreebet / oddFinal
               stakes[i] = lucroFreebet / oddsFinal[i];
-              console.log(`Casa ${i + 1} (BACK): stake = ${lucroFreebet.toFixed(2)} / ${oddsFinal[i].toFixed(3)} = ${stakes[i].toFixed(2)}`);
             }
           }
         } else if (!freebets.some(fb => fb)) {
-          // === ALGORITMO ITERATIVO para equalizar lucros ===
-          // Este método funciona para qualquer combinação de BACK/LAY e qualquer número de casas
-
           const MAX_ITER = 100;
           const TOLERANCE = 0.01;
-
           for (let iter = 0; iter < MAX_ITER; iter++) {
-            // Calcular lucro de cada cenário
             const lucros = [];
-
             for (let winIndex = 0; winIndex < n; winIndex++) {
               let lucro = 0;
-
               for (let i = 0; i < n; i++) {
                 if (i === winIndex) {
-                  // Vencedor
                   if (isLayBet[i]) {
                     const com = comissoes[i] || 0;
                     lucro += stakes[i] * (1 - com / 100);
                   } else {
-                    // BACK vence: se for freebet, ganha só o lucro (sem devolver stake)
-                    if (freebets[i]) {
-                      lucro += (oddsFinal[i] - 1) * stakes[i]; // Só o lucro
-                    } else {
-                      lucro += (oddsFinal[i] - 1) * stakes[i]; // Lucro líquido
-                    }
+                    lucro += (oddsFinal[i] - 1) * stakes[i];
                   }
                 } else {
-                  // Perdedor
-                  if (freebets[i]) {
-                    // Freebet não perde dinheiro!
-                    lucro += 0;
-                  } else if (isLayBet[i]) {
-                    lucro -= stakes[i] * (oddsOriginal[i] - 1);
-                  } else {
-                    lucro -= stakes[i];
-                  }
+                  if (freebets[i]) continue;
+                  else if (isLayBet[i]) lucro -= stakes[i] * (oddsOriginal[i] - 1);
+                  else lucro -= stakes[i];
                 }
               }
-
               lucros[winIndex] = lucro;
             }
-
-            // Encontrar lucro alvo (do cenário w)
             const lucroAlvo = lucros[w];
-
-            // Ajustar stakes das outras casas para alcançar lucro alvo
             let maxAjuste = 0;
-
-            // Algoritmo iterativo normal
-            {
-              // Ajuste iterativo normal (sem freebet)
-              for (let i = 0; i < n; i++) {
-                if (i === w) continue;
-
-                const lucroAtual = lucros[i];
-                const diferenca = lucroAlvo - lucroAtual;
-
-                if (Math.abs(diferenca) > TOLERANCE) {
-                  const fator = isLayBet[i] ?
-                    (oddsOriginal[i] - 1 + (1 - (comissoes[i] || 0) / 100)) :
-                    oddsFinal[i];
-
-                  const ajuste = diferenca / fator;
-                  stakes[i] += ajuste * 0.5;
-                  stakes[i] = Math.max(0, stakes[i]);
-
-                  maxAjuste = Math.max(maxAjuste, Math.abs(ajuste));
-                }
-              }
-
-              if (maxAjuste < TOLERANCE) break;
-            }
-          }
-        } else {
-          // === Caso com outras casas tendo Freebet (não a casa C)
-          const MAX_IT = 500;
-          const TOL = 1e-8;
-          let iter = 0;
-          let converged = false;
-
-          // inicializa stakes positivas
-          stakes = stakes.map(s => Math.max(0, s));
-
-          while (iter < MAX_IT && !converged) {
-            iter++;
-            // perdas da casa vencedora: soma stakes dos outros que não são freebet
-            let perdasW = 0;
             for (let i = 0; i < n; i++) {
               if (i === w) continue;
-              if (freebets[i]) continue;
-              perdasW += stakes[i];
-            }
-
-            const lucroW = (oddW * stakes[w]) - stakes[w] - perdasW;
-
-            let maxDelta = 0;
-            // atualiza stakes dos que não são w e não são freebet
-            for (let i = 0; i < n; i++) {
-              if (i === w || freebets[i]) continue;
-              const oddI = oddsOriginal[i];
-              const denom = oddI - 1;
-              if (denom <= 0) {
-                if (stakes[i] !== 0) {
-                  maxDelta = Math.max(maxDelta, Math.abs(stakes[i] - 0));
-                  stakes[i] = 0;
-                }
-                continue;
+              const lucroAtual = lucros[i];
+              const diferenca = lucroAlvo - lucroAtual;
+              if (Math.abs(diferenca) > TOLERANCE) {
+                const fator = isLayBet[i] ?
+                  (oddsOriginal[i] - 1 + (1 - (comissoes[i] || 0) / 100)) :
+                  oddsFinal[i];
+                const ajuste = diferenca / fator;
+                stakes[i] += ajuste * 0.5;
+                stakes[i] = Math.max(0, stakes[i]);
+                maxAjuste = Math.max(maxAjuste, Math.abs(ajuste));
               }
-
-              // perdas que a casa i teria (exclui i, w e freebets)
-              let perdasI = 0;
-              for (let j = 0; j < n; j++) {
-                if (j === i || j === w || freebets[j]) continue;
-                perdasI += stakes[j];
-              }
-
-              const newStake = Math.max(0, (lucroW + perdasI) / denom);
-              maxDelta = Math.max(maxDelta, Math.abs(newStake - (stakes[i] || 0)));
-              stakes[i] = newStake;
             }
-
-            if (maxDelta < TOL) converged = true;
+            if (maxAjuste < TOLERANCE) break;
           }
-          // após convergência, stakes atualizadas; aposta total recalculada abaixo
         }
-
-        // Aposta total: soma stakes para BACK e liabilities para LAY
         let totalStakeNoFree = 0;
         stakes.forEach((val, i) => {
           if (freebets[i]) return;
-          if (isLayBet[i]) {
-            // Para LAY, somar liability
-            totalStakeNoFree += val * (oddsOriginal[i] - 1);
-          } else {
-            // Para BACK, somar stake
-            totalStakeNoFree += val;
-          }
+          if (isLayBet[i]) totalStakeNoFree += val * (oddsOriginal[i] - 1);
+          else totalStakeNoFree += val;
         });
         $('#apostaTotalDisplay').value = totalStakeNoFree.toFixed(2);
       }
 
-      // Atualiza inputs de aposta (formatado)
       rows.forEach((r, i) => {
         const stakeValue = stakes[i] || 0;
         const apostaCell = r.querySelector('.col-aposta');
-
-        // Para LAY, mostrar LIABILITY no campo "Aposta"
         if (isLayBet[i]) {
           const liability = stakeValue * (oddsOriginal[i] - 1);
           r.querySelector('.aposta-input').value = liability.toFixed(2);
-
-          // Adicionar info da responsabilidade (stake real) se não existir
           let responsInfo = apostaCell.querySelector('.respons-info');
           if (!responsInfo) {
             responsInfo = document.createElement('div');
             responsInfo.className = 'respons-info';
-            responsInfo.style.cssText = 'font-size: 10px; color: #6b7280; margin-top: 2px;';
+            responsInfo.style.cssText = 'font-size: 10px; color: #6b7280; margin-top: 4px;';
             apostaCell.appendChild(responsInfo);
           }
           responsInfo.textContent = `Responsabilidade: ${stakeValue.toFixed(2)}`;
         } else {
           r.querySelector('.aposta-input').value = stakeValue.toFixed(2);
-
-          // Remover info de responsabilidade se existir
           const responsInfo = apostaCell.querySelector('.respons-info');
           if (responsInfo) responsInfo.remove();
         }
       });
 
-      // stakes reais (multiplicadas por qtdContas)
       const stakesReal = stakes.map(s => (s || 0) * (qtdContas || 1));
-
-      // === CÁLCULO DO LUCRO POR CENÁRIO ===
       const lucros = [];
       for (let w = 0; w < n; w++) {
         let lucroW = 0;
-
-        // Cenário: Casa w vence
         for (let i = 0; i < n; i++) {
           if (i === w) {
-            // Esta casa venceu
-            if (freebets[i]) {
-              // FREEBET vence: ganhamos só o LUCRO (não devolvemos stake pois é grátis)
-              lucroW += (oddsFinal[i] - 1) * stakesReal[i];
-            } else if (isLayBet[i]) {
-              // LAY vence: ganhamos o stake apostado (com comissão deduzida)
+            if (freebets[i]) lucroW += (oddsFinal[i] - 1) * stakesReal[i];
+            else if (isLayBet[i]) {
               const com = comissoes[i] || 0;
               lucroW += stakesReal[i] * (1 - com / 100);
             } else {
-              // BACK vence: lucro líquido
               lucroW += (oddsFinal[i] - 1) * stakesReal[i];
             }
           } else {
-            // Esta casa perdeu
-            if (freebets[i]) {
-              // FREEBET perde: não perdemos nada (era grátis!)
-              lucroW += 0;
-            } else if (isLayBet[i]) {
-              // LAY perde: perdemos liability
-              lucroW -= stakesReal[i] * (oddsOriginal[i] - 1);
-            } else {
-              // BACK perde: perdemos o stake
-              lucroW -= stakesReal[i];
-            }
+            if (freebets[i]) continue;
+            else if (isLayBet[i]) lucroW -= stakesReal[i] * (oddsOriginal[i] - 1);
+            else lucroW -= stakesReal[i];
           }
         }
-
         lucros[w] = lucroW;
       }
 
-      // Atualiza UI por linha
       rows.forEach((r, i) => {
         const el = r.querySelector('.lucro-output');
         const lucroCalculado = lucros[i] || 0;
-
-        // Debug
-        console.log(`Lucro Casa ${i + 1}:`, lucroCalculado.toFixed(2));
-
         el.textContent = lucroCalculado.toFixed(2);
         el.style.color = lucroCalculado >= 0 ? "#22bb33" : "#cc3333";
       });
 
-      // Resumos
-      // Total: soma stakes para BACK e liabilities para LAY
       let totalStakeReal = 0;
       stakesReal.forEach((val, i) => {
         if (freebets[i]) return;
-        if (isLayBet[i]) {
-          totalStakeReal += val * (oddsOriginal[i] - 1); // liability
-        } else {
-          totalStakeReal += val; // stake
-        }
+        if (isLayBet[i]) totalStakeReal += val * (oddsOriginal[i] - 1);
+        else totalStakeReal += val;
       });
-
       const minLucro = Math.min(...lucros);
       const perc = totalStakeReal ? (minLucro / totalStakeReal) * 100 : 0;
       $('#stakeTotal').textContent = money(totalStakeReal);
       $('#lucroTotal').textContent = money(minLucro);
       $('#porcentagem').textContent = perc.toFixed(2) + " %";
-
-      // Atualiza resultados na tabela inferior
       updateResultsTable(lucros, stakesReal, oddsFinal);
     }
 
-    // Função auxiliar para atualizar a tabela de resultados
     function updateResultsTable(lucros, stakesReal, oddsFinal) {
       const tbody = $('#resultsBody');
       if (!tbody) return;
@@ -1500,17 +1329,16 @@
       rows.forEach((r, i) => {
         const row = document.createElement('tr');
         row.innerHTML = `
-      <td>${r.querySelector('.casa-input').value}</td>
-      <td>${oddsFinal[i].toFixed(3)}</td>
-      <td>${stakesReal[i].toFixed(2)}</td>
-      <td>${r.querySelector('.type-btn').textContent}</td>
-      <td style="color: ${lucros[i] >= 0 ? '#22bb33' : '#cc3333'}">${lucros[i].toFixed(2)}</td>
-    `;
+          <td>${r.querySelector('.casa-input').value}</td>
+          <td>${oddsFinal[i].toFixed(3)}</td>
+          <td>${stakesReal[i].toFixed(2)}</td>
+          <td>${r.querySelector('.type-btn').textContent}</td>
+          <td style="color: ${lucros[i] >= 0 ? '#22bb33' : '#cc3333'}">${lucros[i].toFixed(2)}</td>
+        `;
         tbody.appendChild(row);
       });
     }
 
-    /* ===== INIT ===== */
     function init() {
       updateNavbar();
       updateInputsState();
@@ -1520,6 +1348,71 @@
         state.qtdCasas = parseInt($('#qtdCasas').value) || 2;
         renderRows();
         updateCalculations();
+      });
+
+      $('#btnAddPlanilha')?.addEventListener('click', () => {
+        if (!isLoggedIn()) return;
+        const today = new Date().toISOString().split('T')[0];
+        const qtdContas = parseInt($('#qtdContas').value) || 1;
+        const lucro = parseFloat($('#lucroTotal').textContent.replace('R$ ', '').replace(/\./g, '').replace(',', '.')) || 0;
+        const firstCasa = $('#apostasBody .casa-input')?.value || 'Várias casas';
+        let mercado = 'SURE';
+        if (state.showFreebet) mercado = 'FB/BÔNUS';
+        else if (state.showCashback) mercado = 'CASHBACK';
+        $('#formData').value = today;
+        $('#formCasa').value = firstCasa;
+        $('#formDescricao').value = `Arbitragem com ${state.qtdCasas} casas`;
+        $('#formObservacoes').value = '';
+        $('#formMercado').value = mercado;
+        $('#formSituacao').value = 'CONCLUÍDO';
+        $('#formLucro').value = lucro.toFixed(2).replace('.', ',');
+        $('#formQtdContas').value = qtdContas;
+        $('#modalAddPlanilha').classList.remove('hidden');
+      });
+
+      $('#cancelModal')?.addEventListener('click', () => {
+        $('#modalAddPlanilha').classList.add('hidden');
+      });
+      $('#modalAddPlanilha')?.addEventListener('click', (e) => {
+        if (e.target === $('#modalAddPlanilha')) {
+          $('#modalAddPlanilha').classList.add('hidden');
+        }
+      });
+
+      $('#saveToPlanilha')?.addEventListener('click', async () => {
+        const email = localStorage.getItem('superodd_user_email');
+        if (!email) {
+          alert('⚠️ Faça login novamente.');
+          return;
+        }
+        const payload = {
+          email,
+          data: $('#formData').value,
+          casa: $('#formCasa').value,
+          descricao: $('#formDescricao').value,
+          observacoes: $('#formObservacoes').value,
+          mercado: $('#formMercado').value,
+          situacao: $('#formSituacao').value,
+          lucro: parseFloat($('#formLucro').value.replace(',', '.')) || 0,
+          qtdContas: parseInt($('#formQtdContas').value) || 1
+        };
+        try {
+          const res = await fetch('/api/records', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const result = await res.json();
+          if (result.success) {
+            alert('✅ Registro salvo na planilha!');
+            $('#modalAddPlanilha').classList.add('hidden');
+          } else {
+            alert('❌ Erro: ' + (result.message || 'Falha ao salvar.'));
+          }
+        } catch (err) {
+          console.error(err);
+          alert('⚠️ Erro de conexão com o servidor.');
+        }
       });
 
       $('#qtdContas')?.addEventListener('input', () => {
@@ -1564,5 +1457,4 @@
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
-
 </html>
