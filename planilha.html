@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="pt-BR">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -13,7 +12,7 @@
             <ul>
                 <a href="index.html">
                     <li>
-                        &lt; Voltar
+                        < Voltar
                     </li>
                 </a>
             </ul>
@@ -31,24 +30,21 @@
             --panel-radius: 12px;
             --gap: 20px;
         }
-
         * {
             box-sizing: border-box
         }
-
         body {
             font-family: Inter, system-ui, Arial;
             background: var(--bg);
             margin: 0;
-            color: #111
+            color: #111;
+            overflow-x: hidden;
         }
-
         .container {
             max-width: 1240px;
             margin: 28px auto;
             padding: 18px
         }
-
         .card {
             background: var(--card);
             border-radius: var(--panel-radius);
@@ -56,7 +52,6 @@
             box-shadow: 0 2px 8px rgba(14, 20, 30, 0.05);
             margin-bottom: var(--gap)
         }
-
         header {
             display: flex;
             justify-content: space-between;
@@ -64,17 +59,14 @@
             gap: 10px;
             margin-bottom: 16px
         }
-
         h1 {
             font-size: 28px;
             margin: 0;
             font-weight: 700
         }
-
         .filters-wrap {
             position: relative
         }
-
         .filters-header {
             display: flex;
             align-items: center;
@@ -85,20 +77,17 @@
             background: linear-gradient(0deg, #fff, #fff);
             border: 1px solid rgba(0, 0, 0, 0.03)
         }
-
         .filters-header h2 {
             margin: 0;
             font-size: 22px;
             font-weight: 700
         }
-
         .filters-toggle {
             font-size: 22px;
             color: #111;
             transform: rotate(0deg);
             transition: transform .2s
         }
-
         .filters-panel {
             display: none;
             padding: 20px;
@@ -107,24 +96,20 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 16px
         }
-
         .filters-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 16px
         }
-
         .filter-group {
             display: flex;
             flex-direction: column;
             gap: 8px
         }
-
         .filter-label {
             font-size: 14px;
             color: var(--muted)
         }
-
         .filter-select,
         .filter-input {
             padding: 12px;
@@ -134,7 +119,6 @@
             background: transparent;
             font-size: 15px
         }
-
         .filter-select {
             appearance: none;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3e%3cpath d='M7 10l5 5 5-5z' fill='%23333'/%3e%3c/svg%3e");
@@ -142,37 +126,31 @@
             background-position: right 12px center;
             background-size: 14px
         }
-
         .filters-panel.open {
             display: grid;
             grid-template-columns: 1fr;
             animation: slideDown .18s ease-out
         }
-
         @media(min-width:900px) {
             .filters-panel.open {
                 grid-template-columns: repeat(3, 1fr)
             }
         }
-
         @keyframes slideDown {
             from {
                 opacity: 0;
                 transform: translateY(-6px)
             }
-
             to {
                 opacity: 1;
                 transform: none
             }
         }
-
         .filters-actions {
             display: flex;
             gap: 10px;
             align-items: center
         }
-
         .btn {
             padding: 10px 14px;
             border-radius: 8px;
@@ -180,29 +158,24 @@
             cursor: pointer;
             font-weight: 700
         }
-
         .btn-primary {
             background: #3b82f6;
             color: #fff
         }
-
         .btn-export {
             background: #ec4899;
             color: #fff
         }
-
         .btn-import {
             background: #16a34a;
             color: #fff
         }
-
         .stats-row {
             display: flex;
             gap: 16px;
             flex-wrap: wrap;
             margin-top: 12px
         }
-
         .stat {
             flex: 1;
             min-width: 180px;
@@ -211,63 +184,53 @@
             padding: 18px;
             border: 1px solid rgba(0, 0, 0, 0.03)
         }
-
         .stat .label {
             color: var(--muted);
             font-size: 14px
         }
-
         .stat .value {
             font-weight: 800;
             font-size: 20px;
             margin-top: 6px
         }
-
         .main-grid {
             display: grid;
             grid-template-columns: 1fr 380px;
             gap: 16px;
             margin-top: 18px
         }
-
         @media(max-width:960px) {
             .main-grid {
                 grid-template-columns: 1fr
             }
         }
-
         .chart-card {
             padding: 20px;
             border-radius: 12px;
             background: #fff
         }
-
         .chart-title {
             text-align: center;
             font-weight: 700;
             margin-bottom: 6px
         }
-
         .chart-date {
             margin-top: 10px;
             text-align: center;
             color: var(--muted);
             font-weight: 600
         }
-
         .notes {
             background: #fff;
             padding: 18px;
             border-radius: 12px
         }
-
         .notes-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 12px
         }
-
         .add-note-btn {
             width: 48px;
             height: 48px;
@@ -280,7 +243,6 @@
             font-size: 26px;
             cursor: pointer
         }
-
         .note-item {
             border-radius: 8px;
             border: 2px solid var(--accent);
@@ -292,34 +254,28 @@
             justify-content: space-between;
             background: transparent
         }
-
         .note-text {
             flex: 1;
             color: #111
         }
-
         .note-actions {
             display: flex;
             gap: 12px;
             align-items: center
         }
-
         .note-delete {
             color: var(--danger);
             cursor: pointer
         }
-
         .table-wrap {
             margin-top: 12px;
             border-radius: 12px;
             overflow: hidden
         }
-
         table {
             width: 100%;
             border-collapse: collapse
         }
-
         thead th {
             background: #0f1724;
             color: #fff;
@@ -327,17 +283,14 @@
             text-align: left;
             font-weight: 700
         }
-
         tbody td {
             padding: 18px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             vertical-align: middle
         }
-
         tbody tr {
             background: transparent
         }
-
         .market-pill {
             display: inline-block;
             padding: 8px 12px;
@@ -345,7 +298,6 @@
             font-weight: 700;
             font-size: 13px
         }
-
         .status-pill {
             display: inline-block;
             padding: 8px 12px;
@@ -353,80 +305,70 @@
             font-weight: 700;
             font-size: 13px
         }
-
         .market-direto {
             background: var(--accent);
             color: #000
         }
-
         .market-giros {
             background: #fbb6b6;
             color: #000
         }
-
         .market-adquirirfb {
             background: #f59e0b;
             color: #fff
         }
-
         .market-fbbonus {
             background: #a855f7;
             color: #fff
         }
-
         .market-sure {
             background: #ec4899;
             color: #fff
         }
-
         .market-superodd {
             background: #14b8a6;
             color: #fff
         }
-
         .market-duplo {
             background: #f59e0b;
             color: #fff
         }
-
         .market-cashback {
             background: #6b7280;
             color: #fff
         }
-
         .status-aguardando-fb {
             background: var(--accent);
             color: #000
         }
-
         .status-aguardando {
             background: #fbbf24;
             color: #000
         }
-
         .status-concluido {
             background: #10b981;
             color: #fff
         }
-
         .actions-menu {
             cursor: pointer;
             font-size: 22px;
             padding: 6px 8px;
-            border-radius: 8px
+            border-radius: 8px;
+            position: relative;
         }
-
         .dropdown-menu {
             position: absolute;
+            top: 100%;
+            right: 0;
+            transform: translateY(5px);
             background: #fff;
             border: 1px solid rgba(0, 0, 0, 0.06);
             box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
             border-radius: 10px;
             padding: 6px;
             z-index: 2000;
-            min-width: 180px
+            min-width: 180px;
         }
-
         .dropdown-item {
             display: flex;
             gap: 10px;
@@ -435,27 +377,21 @@
             border-radius: 8px;
             cursor: pointer
         }
-
         .dropdown-item:hover {
             background: #f3f4f6
         }
-
         .icon-edit {
             color: #2563eb
         }
-
         .icon-duplicate {
             color: #059669
         }
-
         .icon-delete {
             color: #ef4444
         }
-
         .icon-calc {
             color: #6b7280
         }
-
         .modal-backdrop {
             position: fixed;
             inset: 0;
@@ -465,7 +401,6 @@
             justify-content: center;
             z-index: 3000
         }
-
         .modal {
             background: #fff;
             padding: 18px;
@@ -473,191 +408,155 @@
             min-width: 320px;
             max-width: 720px
         }
-
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px
         }
-
         .form-grid .full {
             grid-column: 1/-1
         }
-
         .form-control {
             display: flex;
             flex-direction: column;
             gap: 6px
         }
-
         .input,
         .select {
             padding: 10px;
             border-radius: 8px;
             border: 1px solid #e6e6e6
         }
-
         .modal-actions {
             display: flex;
             justify-content: flex-end;
             gap: 8px;
             margin-top: 12px
         }
-
         .sem-registros {
             padding: 40px;
             text-align: center;
             color: var(--muted)
         }
-
         .muted {
             color: var(--muted);
             font-weight: 600
         }
-
         .profit {
             color: var(--success);
             font-weight: 800
         }
-
         .hidden {
             display: none
         }
-
         header ul {
             list-style-type: none;
         }
-
         header li {
             color: #ef4444;
         }
-
         header a {
             text-decoration: none;
         }
-
         /* ======== AJUSTES DE RESPONSIVIDADE GERAL ======== */
         @media (max-width: 900px) {
-
             /* Header: empilha botões */
             header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
             }
-
             header h1 {
                 font-size: 22px;
             }
-
             header button {
                 flex: 1;
                 width: 100%;
             }
-
             /* Filtros: um por linha */
             .filters-grid {
                 grid-template-columns: 1fr !important;
             }
-
             .filter-group {
                 width: 100%;
             }
-
             .filter-input,
             .filter-select {
                 width: 100%;
             }
-
             /* Painel principal: empilha gráfico e anotações */
             .main-grid {
                 grid-template-columns: 1fr !important;
                 gap: 20px;
             }
-
             /* Cards estatísticos empilhados */
             .stats-row {
                 flex-direction: column;
             }
-
             .stat {
                 width: 100%;
             }
-
             /* Modal: ocupa 90% da largura */
             .modal {
                 width: 90% !important;
                 min-width: unset;
                 max-width: unset;
             }
-
             .form-grid {
                 grid-template-columns: 1fr !important;
             }
-
             /* Tabelas rolam horizontalmente sem estourar */
             .table-wrap {
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
-
             table {
                 width: 100%;
                 min-width: 700px;
                 /* garante que as colunas fiquem legíveis */
             }
-
             thead th,
             tbody td {
                 padding: 12px !important;
                 font-size: 14px;
                 white-space: nowrap;
             }
-
             /* Corrige botões */
             .btn {
                 width: 100%;
                 max-width: 100%;
                 text-align: center;
             }
-
             /* Corrige textos e títulos */
             .filters-header h2 {
                 font-size: 18px;
             }
-
             .chart-title {
                 font-size: 16px;
             }
-
             .note-item {
                 flex-direction: column;
                 align-items: flex-start;
             }
-
             .note-actions {
                 width: 100%;
                 justify-content: flex-end;
             }
-
             /* Container com padding menor */
             .container {
                 padding: 12px;
             }
-
             /* Evita overflow geral */
             body,
             html {
                 overflow-x: hidden;
             }
         }
-
         /* ====== Ajustes para bloco de Anotações (comportamento igual Compartilhar/Adicionar) ====== */
         .notes {
             overflow: hidden;
             box-sizing: border-box;
         }
-
         /* Header: manter botão pequeno no desktop, virar botão full-width no mobile */
         .notes-header {
             display: flex;
@@ -665,7 +564,6 @@
             justify-content: space-between;
             gap: 12px;
         }
-
         /* botão de adicionar nota (desktop) */
         .add-note-btn {
             width: 48px;
@@ -681,7 +579,6 @@
             flex-shrink: 0;
             box-sizing: border-box;
         }
-
         /* lista de notas: garantir quebra de texto e evitar overflow */
         #notesList {
             margin-top: 12px;
@@ -692,7 +589,6 @@
             box-sizing: border-box;
             overflow: visible;
         }
-
         .note-item {
             display: flex;
             align-items: center;
@@ -706,7 +602,6 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-
         /* texto da nota ocupa o máximo e quebra linhas */
         .note-text {
             flex: 1 1 auto;
@@ -715,14 +610,12 @@
             word-break: break-word;
             overflow-wrap: anywhere;
         }
-
         .note-actions {
             display: flex;
             gap: 8px;
             align-items: center;
             flex-shrink: 0;
         }
-
         .note-actions button,
         .note-actions .note-delete {
             padding: 8px 10px;
@@ -730,13 +623,11 @@
             cursor: pointer;
             white-space: nowrap;
         }
-
         @media (max-width: 900px) {
             .notes-header {
                 flex-direction: column;
                 align-items: stretch;
             }
-
             .add-note-btn {
                 width: 100%;
                 height: auto;
@@ -746,19 +637,16 @@
                 display: inline-flex;
                 justify-content: center;
             }
-
             .note-item {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
                 padding: 12px;
             }
-
             .note-actions {
                 width: 100%;
                 justify-content: flex-end;
             }
-
             .note-actions button,
             .note-actions .note-delete {
                 width: auto;
@@ -768,7 +656,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <header>
@@ -779,7 +666,6 @@
                 <button class="btn" id="btn-add-record" style="background:#2b2bf5;color:#fff">+ Adicionar</button>
             </div>
         </header>
-
         <div class="card filters-wrap" id="filtersCard">
             <div class="filters-header" id="filtersHeader">
                 <h2>Filtros</h2>
@@ -788,7 +674,6 @@
                     <div class="filters-toggle" id="filtersToggle">▾</div>
                 </div>
             </div>
-
             <div class="filters-panel" id="filtersPanel" aria-hidden="true">
                 <div class="filters-grid">
                     <div class="filter-group">
@@ -797,7 +682,6 @@
                             <option>Todos</option>
                         </select>
                     </div>
-
                     <div class="filter-group">
                         <label class="filter-label">Mês:</label>
                         <select class="filter-select" id="filterMonth">
@@ -816,7 +700,6 @@
                             <option>Dezembro</option>
                         </select>
                     </div>
-
                     <div class="filter-group">
                         <label class="filter-label">Ano:</label>
                         <select class="filter-select" id="filterYear">
@@ -827,12 +710,10 @@
                             <option>2022</option>
                         </select>
                     </div>
-
                     <div class="filter-group">
                         <label class="filter-label">Casa:</label>
                         <input class="filter-input" id="filterCasa" placeholder="Casa" value="">
                     </div>
-
                     <div class="filter-group">
                         <label class="filter-label">Mercado:</label>
                         <select class="filter-select" id="filterMercado">
@@ -847,7 +728,6 @@
                             <option>CASHBACK</option>
                         </select>
                     </div>
-
                     <div class="filter-group">
                         <label class="filter-label">Situação:</label>
                         <select class="filter-select" id="filterSituacao">
@@ -857,7 +737,6 @@
                             <option>AGUARDANDO FB</option>
                         </select>
                     </div>
-
                     <div class="filter-group">
                         <label class="filter-label">Freebets:</label>
                         <select class="filter-select" id="filterFreebets">
@@ -869,7 +748,6 @@
                 </div>
             </div>
         </div>
-
         <div class="stats-row">
             <div class="stat card">
                 <div class="label">Lucro Total</div>
@@ -892,7 +770,6 @@
                 <div class="value" id="lastUpdate">--</div>
             </div>
         </div>
-
         <div class="main-grid">
             <div class="chart-card card">
                 <div class="chart-title">Lucros Diários</div>
@@ -905,7 +782,6 @@
                 <canvas id="profitChart" style="max-height:320px"></canvas>
                 <div class="chart-date" id="chartDate">—</div>
             </div>
-
             <div class="notes card">
                 <div class="notes-header">
                     <h3 style="margin:0">Anotações</h3>
@@ -915,7 +791,6 @@
                 </div>
             </div>
         </div>
-
         <div class="card table-section">
             <h2 style="margin-top:0">Registros</h2>
             <div class="table-wrap">
@@ -940,7 +815,6 @@
             <div id="noRecords" class="sem-registros hidden">Sem registros</div>
         </div>
     </div>
-
     <div id="modalBackdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true">
         <div class="modal">
             <h3 id="modalTitle">Adicionar Registro</h3>
@@ -995,29 +869,26 @@
                     <input class="input" id="formLucroPorConta" readonly>
                 </div>
             </div>
-
             <div class="modal-actions">
                 <button class="btn" id="cancelModal">Cancelar</button>
                 <button class="btn btn-primary" id="saveModal">Salvar</button>
             </div>
         </div>
     </div>
-
     <script>
+        const API_BASE = "https://backendfabricasuperodds.onrender.com";
+
         async function carregarPlanilha() {
             const email = localStorage.getItem('superodd_user_email');
-
             // Se o usuário não estiver logado, redireciona
             if (!email) {
                 alert('⚠️ Faça login para acessar sua planilha.');
                 window.location.href = 'login.html';
                 return;
             }
-
             try {
-                const res = await fetch(`/api/records?email=${encodeURIComponent(email)}`);
+                const res = await fetch(`${API_BASE}/api/records?email=${encodeURIComponent(email)}`);
                 const data = await res.json();
-
                 if (data.success && Array.isArray(data.records)) {
                     preencherTabela(data.records);
                 } else {
@@ -1031,14 +902,11 @@
         function preencherTabela(registros) {
             const tbody = document.querySelector('#tabela-registros tbody');
             if (!tbody) return;
-
             tbody.innerHTML = '';
-
             if (registros.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum registro encontrado</td></tr>`;
                 return;
             }
-
             registros.forEach(reg => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -1054,8 +922,6 @@
                 tbody.appendChild(tr);
             });
         }
-
-
         document.addEventListener('DOMContentLoaded', function () {
             const daySelect = document.getElementById('filterDay');
             for (let i = 1; i <= 31; i++) {
@@ -1064,12 +930,10 @@
                 option.textContent = i;
                 daySelect.appendChild(option);
             }
-
             let records = JSON.parse(localStorage.getItem('records')) || [];
             let notes = JSON.parse(localStorage.getItem('notes')) || [];
             let currentEditId = null;
             let chart = null;
-
             const filtersPanel = document.getElementById('filtersPanel');
             const filtersToggle = document.getElementById('filtersToggle');
             const filtersHeader = document.getElementById('filtersHeader');
@@ -1084,7 +948,6 @@
             const saveModal = document.getElementById('saveModal');
             const btnExport = document.getElementById('btn-export');
             const btnImport = document.getElementById('btn-import');
-
             const formData = document.getElementById('formData');
             const formCasa = document.getElementById('formCasa');
             const formDescricao = document.getElementById('formDescricao');
@@ -1094,16 +957,13 @@
             const formLucro = document.getElementById('formLucro');
             const formQtdContas = document.getElementById('formQtdContas');
             const formLucroPorConta = document.getElementById('formLucroPorConta');
-
             const totalProfitEl = document.getElementById('totalProfit');
             const avgProfitEl = document.getElementById('avgProfit');
             const proceduresEl = document.getElementById('procedures');
             const freebetsOpenEl = document.getElementById('freebetsOpen');
             const lastUpdateEl = document.getElementById('lastUpdate');
-
             const today = new Date().toISOString().split('T')[0];
             formData.value = today;
-
             function formatCurrency(value) {
                 if (value === '' || value === null || isNaN(value)) return 'R$ 0,00';
                 return new Intl.NumberFormat('pt-BR', {
@@ -1111,23 +971,19 @@
                     currency: 'BRL'
                 }).format(parseFloat(value));
             }
-
             function formatDate(dateString) {
                 if (!dateString) return '';
                 const date = new Date(dateString);
                 return date.toLocaleDateString('pt-BR');
             }
-
             function updateLucroPorConta() {
                 const lucro = parseFloat(formLucro.value.replace(',', '.')) || 0;
                 const qtd = parseInt(formQtdContas.value) || 1;
                 const lucroPorConta = lucro / qtd;
                 formLucroPorConta.value = lucroPorConta.toFixed(2).replace('.', ',');
             }
-
             formLucro.addEventListener('input', updateLucroPorConta);
             formQtdContas.addEventListener('input', updateLucroPorConta);
-
             filtersHeader.addEventListener('click', function () {
                 const isOpen = filtersPanel.classList.contains('open');
                 if (isOpen) {
@@ -1138,7 +994,6 @@
                     filtersToggle.style.transform = 'rotate(180deg)';
                 }
             });
-
             addNoteBtn.addEventListener('click', function () {
                 const noteText = prompt('Digite sua anotação:');
                 if (noteText && noteText.trim() !== '') {
@@ -1151,17 +1006,14 @@
                     renderNotes();
                 }
             });
-
             function saveNotes() {
                 localStorage.setItem('notes', JSON.stringify(notes));
             }
-
             function renderNotes() {
                 if (notes.length === 0) {
                     notesList.innerHTML = '<div class="note-item"><div class="note-text">Clique para adicionar uma anotação</div><div class="note-actions"><span class="note-delete" title="Excluir">🗑️</span></div></div>';
                     return;
                 }
-
                 notesList.innerHTML = '';
                 notes.forEach(note => {
                     const noteItem = document.createElement('div');
@@ -1174,7 +1026,6 @@
                     `;
                     notesList.appendChild(noteItem);
                 });
-
                 document.querySelectorAll('.note-delete').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const id = parseInt(this.getAttribute('data-id'));
@@ -1184,11 +1035,9 @@
                     });
                 });
             }
-
             btnAddRecord.addEventListener('click', function () {
                 currentEditId = null;
                 modalTitle.textContent = 'Adicionar Registro';
-
                 formData.value = today;
                 formCasa.value = '';
                 formDescricao.value = '';
@@ -1198,23 +1047,18 @@
                 formLucro.value = '';
                 formQtdContas.value = '1';
                 formLucroPorConta.value = '';
-
                 modalBackdrop.classList.remove('hidden');
             });
-
             cancelModal.addEventListener('click', function () {
                 modalBackdrop.classList.add('hidden');
             });
-
             modalBackdrop.addEventListener('click', function (e) {
                 if (e.target === modalBackdrop) {
                     modalBackdrop.classList.add('hidden');
                 }
             });
-
             saveModal.addEventListener('click', function () {
                 const lucro = parseFloat(formLucro.value.replace(',', '.')) || 0;
-
                 const record = {
                     id: currentEditId || Date.now(),
                     data: formData.value,
@@ -1226,7 +1070,6 @@
                     lucro: lucro,
                     qtdContas: parseInt(formQtdContas.value) || 1
                 };
-
                 if (currentEditId) {
                     const index = records.findIndex(r => r.id === currentEditId);
                     if (index !== -1) {
@@ -1235,18 +1078,15 @@
                 } else {
                     records.push(record);
                 }
-
                 saveRecords();
                 renderRecords();
                 modalBackdrop.classList.add('hidden');
             });
-
             function saveRecords() {
                 localStorage.setItem('records', JSON.stringify(records));
                 updateStats();
                 renderChart();
             }
-
             function updateStats() {
                 const totalProfit = records.reduce((sum, record) => sum + record.lucro, 0);
                 const avgProfit = records.length > 0 ? totalProfit / records.length : 0;
@@ -1258,29 +1098,23 @@
                 const lastUpdate = records.length > 0 ?
                     new Date(Math.max(...records.map(r => new Date(r.data)))).toLocaleDateString('pt-BR') :
                     '--';
-
                 totalProfitEl.textContent = formatCurrency(totalProfit);
                 avgProfitEl.textContent = formatCurrency(avgProfit);
                 proceduresEl.textContent = procedures;
                 freebetsOpenEl.textContent = freebetsOpen;
                 lastUpdateEl.textContent = lastUpdate;
             }
-
             function renderRecords() {
                 const filteredRecords = applyFilters(records);
-
                 if (filteredRecords.length === 0) {
                     recordsTableBody.innerHTML = '';
                     noRecords.classList.remove('hidden');
                     return;
                 }
-
                 noRecords.classList.add('hidden');
                 recordsTableBody.innerHTML = '';
-
                 filteredRecords.forEach(record => {
                     const row = document.createElement('tr');
-
                     let mercadoClass = '';
                     switch (record.mercado) {
                         case 'DIRETO': mercadoClass = 'market-direto'; break;
@@ -1293,7 +1127,6 @@
                         case 'CASHBACK': mercadoClass = 'market-cashback'; break;
                         default: mercadoClass = '';
                     }
-
                     let situacaoClass = '';
                     switch (record.situacao) {
                         case 'CONCLUÍDO': situacaoClass = 'status-concluido'; break;
@@ -1301,9 +1134,7 @@
                         case 'AGUARDANDO FB': situacaoClass = 'status-aguardando-fb'; break;
                         default: situacaoClass = '';
                     }
-
                     const freebetStatus = record.lucro > 0 ? 'UTILIZADA' : 'EM ABERTO';
-
                     row.innerHTML = `
                         <td>${formatDate(record.data)}</td>
                         <td>${record.descricao}</td>
@@ -1328,25 +1159,24 @@
                     `;
                     recordsTableBody.appendChild(row);
                 });
-
                 document.querySelectorAll('.actions-menu').forEach(menu => {
-                    menu.addEventListener('click', function (e) {
-                        e.stopPropagation();
-                        document.querySelectorAll('.dropdown-menu').forEach(m => {
-                            m.classList.add('hidden');
-                        });
+                  menu.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
+                    const dropdown = this.nextElementSibling;
+                    dropdown.classList.toggle('hidden');
 
-                        const dropdown = this.nextElementSibling;
-                        dropdown.classList.toggle('hidden');
-                    });
+                    const rect = dropdown.getBoundingClientRect();
+                    if (rect.right > window.innerWidth) {
+                      dropdown.style.right = 'auto';
+                      dropdown.style.left = '0';
+                    }
+                  });
                 });
 
-                document.addEventListener('click', function () {
-                    document.querySelectorAll('.dropdown-menu').forEach(m => {
-                        m.classList.add('hidden');
-                    });
+                document.addEventListener('click', () => {
+                  document.querySelectorAll('.dropdown-menu').forEach(m => m.classList.add('hidden'));
                 });
-
                 document.querySelectorAll('.icon-edit').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const id = parseInt(this.getAttribute('data-id'));
@@ -1367,7 +1197,6 @@
                         }
                     });
                 });
-
                 document.querySelectorAll('.icon-delete').forEach(btn => {
                     btn.addEventListener('click', function () {
                         const id = parseInt(this.getAttribute('data-id'));
@@ -1379,7 +1208,6 @@
                     });
                 });
             }
-
             function applyFilters(records) {
                 const day = document.getElementById('filterDay').value;
                 const month = document.getElementById('filterMonth').value;
@@ -1388,38 +1216,29 @@
                 const mercado = document.getElementById('filterMercado').value;
                 const situacao = document.getElementById('filterSituacao').value;
                 const freebets = document.getElementById('filterFreebets').value;
-
                 return records.filter(record => {
                     if (day !== 'Todos' || month !== 'Todos' || year !== 'Todos') {
                         const recordDate = new Date(record.data);
                         const recordDay = recordDate.getDate().toString();
                         const recordMonth = recordDate.toLocaleString('pt-BR', { month: 'long' });
                         const recordYear = recordDate.getFullYear().toString();
-
                         if (day !== 'Todos' && day !== recordDay) return false;
                         if (month !== 'Todos' && month !== recordMonth) return false;
                         if (year !== 'Todos' && year !== recordYear) return false;
                     }
-
                     if (casa && !record.casa.toLowerCase().includes(casa)) return false;
-
                     if (mercado !== 'Todos' && mercado !== record.mercado) return false;
-
                     if (situacao !== 'Todas' && situacao !== record.situacao) return false;
-
                     if (freebets !== 'Todos') {
                         const freebetStatus = record.lucro > 0 ? 'UTILIZADA' : 'EM ABERTO';
                         if (freebets !== freebetStatus) return false;
                     }
-
                     return true;
                 });
             }
-
             document.querySelectorAll('.filter-select, .filter-input').forEach(filter => {
                 filter.addEventListener('change', renderRecords);
             });
-
             btnExport.addEventListener('click', function () {
                 const dataStr = JSON.stringify({ records, notes }, null, 2);
                 const dataBlob = new Blob([dataStr], { type: 'application/json' });
@@ -1430,7 +1249,6 @@
                 link.click();
                 URL.revokeObjectURL(url);
             });
-
             btnImport.addEventListener('click', function () {
                 const input = document.createElement('input');
                 input.type = 'file';
@@ -1438,7 +1256,6 @@
                 input.onchange = e => {
                     const file = e.target.files[0];
                     if (!file) return;
-
                     const reader = new FileReader();
                     reader.onload = e => {
                         try {
@@ -1464,10 +1281,8 @@
                 };
                 input.click();
             });
-
             function renderChart() {
                 const ctx = document.getElementById('profitChart').getContext('2d');
-
                 const profitsByDate = {};
                 records.forEach(record => {
                     const date = formatDate(record.data);
@@ -1476,18 +1291,15 @@
                     }
                     profitsByDate[date] += record.lucro;
                 });
-
                 const dates = Object.keys(profitsByDate).sort((a, b) => {
                     const dateA = new Date(a.split('/').reverse().join('-'));
                     const dateB = new Date(b.split('/').reverse().join('-'));
                     return dateA - dateB;
                 });
                 const profits = dates.map(date => profitsByDate[date]);
-
                 if (chart) {
                     chart.destroy();
                 }
-
                 chart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -1527,7 +1339,6 @@
                         }
                     }
                 });
-
                 const chartDateEl = document.getElementById('chartDate');
                 if (dates.length > 0) {
                     const firstDate = dates[0];
@@ -1539,15 +1350,12 @@
                     chartDateEl.textContent = '—';
                 }
             }
-
             renderNotes();
             renderRecords();
             updateStats();
             renderChart();
         });
         document.addEventListener('DOMContentLoaded', carregarPlanilha);
-
     </script>
 </body>
-
 </html>
