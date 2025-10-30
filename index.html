@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -18,14 +17,12 @@
       --shadow: 0 6px 20px rgba(18, 24, 36, 0.06);
       --watermark-opacity: 0.04;
     }
-
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
     }
-
     html,
     body {
       height: 100%;
@@ -34,30 +31,24 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
-      /* 🔒 BLOQUEIA ROLAGEM HORIZONTAL */
     }
-
     a {
       color: inherit;
       text-decoration: none;
     }
-
     * {
       scrollbar-width: none;
       -ms-overflow-style: none;
     }
-
     *::-webkit-scrollbar {
       display: none;
     }
-
     .wrap {
       width: 100%;
       max-width: 1150px;
       margin: 16px auto;
       padding: 0 12px;
     }
-
     .navbar {
       display: flex;
       align-items: center;
@@ -69,14 +60,12 @@
       gap: 10px;
       flex-wrap: wrap;
     }
-
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
       min-width: 0;
     }
-
     .logo {
       width: 40px;
       height: 40px;
@@ -84,7 +73,6 @@
       background: url('image/logo.png') center/contain no-repeat;
       flex-shrink: 0;
     }
-
     .brand h1 {
       font-size: 15px;
       font-weight: 700;
@@ -93,19 +81,16 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .small {
       font-size: 12px;
       color: var(--muted);
     }
-
     .nav-actions {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-shrink: 0;
     }
-
     .nav-actions button,
     .nav-actions a {
       background: var(--primary);
@@ -118,7 +103,6 @@
       cursor: pointer;
       white-space: nowrap;
     }
-
     .section {
       background: var(--card);
       border-radius: 12px;
@@ -128,7 +112,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .section::before,
     .table-wrap::before,
     .results-left::before,
@@ -148,14 +131,12 @@
       filter: grayscale(1);
       mix-blend-mode: lighten;
     }
-
     .table-wrap::before,
     .results-left::before {
       inset: 0;
       background-size: 200px;
       background-repeat: repeat;
     }
-
     h2 {
       font-size: 18px;
       margin-bottom: 12px;
@@ -166,32 +147,27 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
       margin: -16px -16px 12px;
     }
-
     .sub {
       color: var(--muted);
       font-size: 13px;
       margin-bottom: 8px;
     }
-
     .grid2 {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
       margin-top: 12px;
     }
-
     .field {
       display: flex;
       flex-direction: column;
       gap: 6px;
     }
-
     label {
       font-size: 14px;
       color: #24303a;
       font-weight: 600;
     }
-
     select,
     input[type="number"],
     input[type="text"] {
@@ -203,7 +179,6 @@
       font-size: 14px;
       width: 100%;
     }
-
     .toggles {
       display: flex;
       flex-wrap: wrap;
@@ -211,18 +186,15 @@
       align-items: center;
       margin-top: 14px;
     }
-
     .toggle {
       display: flex;
       align-items: center;
       gap: 6px;
       flex-wrap: wrap;
     }
-
     .toggle .small {
       white-space: nowrap;
     }
-
     .switch {
       position: relative;
       width: 40px;
@@ -231,11 +203,9 @@
       background: #eee;
       cursor: pointer;
     }
-
     .switch input {
       display: none;
     }
-
     .knob {
       position: absolute;
       top: 2px;
@@ -247,22 +217,18 @@
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
       transition: all .22s;
     }
-
     .switch.on {
       background: var(--accent-strong);
     }
-
     .switch.on .knob {
       transform: translateX(16px);
     }
-
     .toggle-note {
       font-size: 12px;
       color: var(--muted);
       margin-top: 8px;
       line-height: 1.4;
     }
-
     .table-wrap {
       margin-top: 6px;
       border-radius: 10px;
@@ -270,7 +236,6 @@
       position: relative;
       width: 100%;
     }
-
     table {
       width: 100%;
       border-collapse: separate;
@@ -278,7 +243,6 @@
       table-layout: fixed;
       min-width: 600px;
     }
-
     thead th {
       background: var(--primary);
       color: #fff;
@@ -290,15 +254,12 @@
       font-size: 12px;
       white-space: nowrap;
     }
-
     tbody tr {
       background: #f6f7f9;
     }
-
     tbody tr+tr {
       margin-top: 6px;
     }
-
     tbody td {
       padding: 8px 6px;
       border-bottom: 1px solid rgba(16, 24, 32, 0.04);
@@ -308,66 +269,43 @@
       text-overflow: ellipsis;
     }
 
-    .col-casa {
-      width: 16%;
-    }
-
-    .col-tipo {
-      width: 8%;
-    }
-
-    .col-odd {
-      width: 7%;
-    }
-
-    .col-comissao {
-      width: 9%;
-    }
-
+    /* === CORREÇÕES PRINCIPAIS === */
     .col-oddfinal {
       width: 9%;
-    }
-
-    .col-aumento {
-      width: 8%;
-    }
-
-    .col-aposta {
-      width: 14%;
-    }
-
-    .col-freebet {
-      width: 10%;
-    }
-
-    .col-cashback {
-      width: 10%;
+      min-width: 85px; /* Garante espaço para números longos */
+      overflow: visible; /* Evita corte com ... */
+      white-space: nowrap; /* Mantém número em uma linha */
     }
 
     .col-c {
-      width: 7%;
+      width: 4%; /* Reduzido de 7% para ~4% */
+      text-align: center; /* Centraliza checkbox */
     }
 
-    .col-lucro {
-      width: 12%;
-    }
+    /* Demais colunas */
+    .col-casa { width: 16%; }
+    .col-tipo { width: 8%; }
+    .col-odd { width: 7%; }
+    .col-comissao { width: 9%; }
+    .col-aumento { width: 8%; }
+    .col-aposta { width: 14%; }
+    .col-freebet { width: 10%; }
+    .col-cashback { width: 10%; }
+    .col-lucro { width: 12%; }
 
     tbody td input[type="text"],
     tbody td input[type="number"] {
       border: 1px solid #dfe7d0;
       padding: 6px 8px;
-      /* ↑ aumentado */
       border-radius: 6px;
       background: #fff;
       font-size: 13px;
       width: 100%;
       box-sizing: border-box;
     }
-
     .type-btn {
       display: inline-block;
       padding: 6px 10px;
-      /* ↑ aumentado */
       border-radius: 6px;
       font-weight: 700;
       font-size: 13px;
@@ -376,28 +314,23 @@
       width: 100%;
       text-align: center;
     }
-
     .type-btn.back {
       background: rgba(0, 0, 0, 0.05);
       color: #0f1724;
     }
-
     .type-btn.lay {
       background: rgba(255, 0, 0, 0.08);
       color: #8b1f1f;
     }
-
     .chk {
       display: flex;
       align-items: center;
       justify-content: center;
       height: 100%;
     }
-
     .chk input {
       display: none;
     }
-
     .chk .chkbox {
       width: 20px;
       height: 16px;
@@ -408,7 +341,6 @@
       transition: all .18s;
       background: #fff;
     }
-
     .chk .chkbox::after {
       content: '';
       position: absolute;
@@ -422,36 +354,30 @@
       opacity: 0;
       transition: opacity .14s;
     }
-
     .chk input:checked+.chkbox {
       background: var(--accent);
       border-color: var(--accent-strong);
     }
-
     .chk input:checked+.chkbox::after {
       opacity: 1;
     }
-
     .col-freebet.hidden,
     .col-cashback.hidden,
     .col-comissao.hidden,
     .col-aumento.hidden {
       display: none !important;
     }
-
     .results-wrap {
       margin-top: 12px;
       display: flex;
       gap: 16px;
       flex-direction: column;
     }
-
     @media (min-width: 769px) {
       .results-wrap {
         flex-direction: row;
       }
     }
-
     .results-left {
       flex: 1 1 600px;
       min-width: 300px;
@@ -461,13 +387,11 @@
       border: 1px solid #e9eef0;
       position: relative;
     }
-
     .results-table {
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
     }
-
     .results-table thead th {
       background: var(--primary);
       color: #fff;
@@ -476,14 +400,12 @@
       text-align: left;
       font-size: 13px;
     }
-
     .results-table td {
       padding: 10px;
       border-bottom: 1px solid rgba(16, 24, 32, 0.04);
       background: #fff;
       font-size: 14px;
     }
-
     .results-right {
       width: 100%;
       max-width: 300px;
@@ -491,26 +413,22 @@
       flex-direction: column;
       gap: 8px;
     }
-
     .results-actions {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
-
     .results-actions .btn {
       width: 100%;
       display: block;
       text-align: center;
     }
-
     .summary-cards {
       display: grid;
       grid-template-columns: 1fr;
       gap: 10px;
       margin-top: 12px;
     }
-
     .summary-card {
       background: var(--card);
       border-radius: 10px;
@@ -520,29 +438,24 @@
       overflow: hidden;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
-
     .summary-card:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
     }
-
     .summary-card .label {
       color: var(--muted);
       font-size: 12px;
       font-weight: 600;
     }
-
     .summary-card .value {
       font-weight: 800;
       margin-top: 6px;
       font-size: 16px;
       color: var(--primary);
     }
-
     .summary-card .value.highlight {
       color: var(--accent);
     }
-
     .btn {
       padding: 10px;
       border-radius: 8px;
@@ -552,39 +465,23 @@
       font-weight: 700;
       cursor: pointer;
     }
-
     .btn.ghost {
       background: transparent;
       border: 1px solid #e6e9ee;
       color: var(--muted);
     }
 
-    /* ===== ✅ MOBILE: LAYOUT VERTICAL (SEM FLEX ENTRE LABEL E INPUT) ===== */
+    /* ===== MOBILE ===== */
     @media (max-width: 768px) {
-
-      /* Garantir que nada extrapole */
-      body,
-      .wrap,
-      .section,
-      .table-wrap {
+      body, .wrap, .section, .table-wrap {
         overflow-x: hidden;
       }
-
-      /* Tabela vira lista de cards */
       #apostasTable {
         display: block;
         width: 100%;
       }
-
-      #apostasTable thead {
-        display: none;
-      }
-
-      #apostasTable tbody {
-        display: block;
-        width: 100%;
-      }
-
+      #apostasTable thead { display: none; }
+      #apostasTable tbody { display: block; width: 100%; }
       #apostasTable tr {
         display: block;
         background: #f8fafc;
@@ -594,7 +491,6 @@
         margin-bottom: 14px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
       }
-
       #apostasTable td {
         display: block;
         padding: 8px 0;
@@ -602,7 +498,6 @@
         font-size: 14px;
         width: 100%;
       }
-
       #apostasTable td::before {
         content: attr(data-label);
         display: block;
@@ -610,23 +505,17 @@
         color: #1f2937;
         font-size: 13px;
         margin-bottom: 6px;
-        /* ↑ espaço maior */
       }
-
-      /* Inputs maiores */
       #apostasTable input[type="text"],
       #apostasTable input[type="number"] {
         width: 100%;
         padding: 10px;
-        /* ↑ aumentado */
         border-radius: 8px;
         border: 1px solid #d1d5db;
         font-size: 14px;
         background: #fff;
         box-sizing: border-box;
       }
-
-      /* Botões BACK/LAY */
       #apostasTable .type-btn {
         width: 100%;
         padding: 10px;
@@ -634,80 +523,22 @@
         text-align: center;
         border-radius: 8px;
       }
-
-      /* Checkboxes */
       #apostasTable .chk {
         display: flex;
         align-items: center;
         gap: 10px;
         justify-content: flex-start;
       }
-
-      /* Rodapé */
-      #apostasTable tfoot {
-        display: block;
-        margin-top: 14px;
-      }
-
-      #apostasTable tfoot tr {
-        display: block;
-        background: #f8fafc;
-        border: 1px solid #e5e7eb;
-        border-radius: 10px;
-        padding: 14px;
-      }
-
-      #apostasTable tfoot td {
-        display: block;
-        padding: 8px 0;
-      }
-
-      .aposta-total {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .aposta-total input {
-        width: 100%;
-        padding: 10px;
-        font-size: 14px;
-        border-radius: 8px;
-      }
-
-      #btnCopyAposta {
-        width: 100%;
-        padding: 10px;
-        font-size: 14px;
-        border-radius: 8px;
-      }
-
-      /* Resultados empilhados */
-      .results-wrap {
-        flex-direction: column;
-      }
-
-      .results-right {
-        max-width: none;
-      }
-
-      .summary-cards {
-        grid-template-columns: 1fr;
+      .results-wrap { flex-direction: column; }
+      .results-right { max-width: none; }
+      .summary-cards { grid-template-columns: 1fr; }
+      .table-wrap::before,
+      .results-left::before {
+        display: none !important;
       }
     }
 
-    .results-wrap {
-      display: flex;
-      gap: 16px;
-      flex-direction: column;
-    }
-
-    @media (min-width: 769px) {
-      .results-wrap {
-        flex-direction: row;
-      }
-    }
-
+    /* Estilos duplicados removidos ou mantidos apenas uma vez */
     .results-left {
       flex: 1;
       background: var(--card);
@@ -717,7 +548,6 @@
       position: relative;
       overflow: hidden;
     }
-
     .results-table {
       width: 100%;
       border-collapse: separate;
@@ -725,14 +555,12 @@
       table-layout: fixed;
       min-width: 100%;
     }
-
     .results-table thead {
       background: var(--primary);
       color: #fff;
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
     }
-
     .results-table th {
       padding: 10px 6px;
       font-weight: 700;
@@ -741,16 +569,13 @@
       white-space: nowrap;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
-
     .results-table tbody tr {
       background: #f6f7f9;
       transition: background 0.2s ease;
     }
-
     .results-table tbody tr:hover {
       background: #e9ecef;
     }
-
     .results-table tbody td {
       padding: 8px 6px;
       border-bottom: 1px solid rgba(16, 24, 32, 0.04);
@@ -759,29 +584,19 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .results-table tbody td:last-child {
       text-align: right;
       font-weight: 600;
     }
-
     .results-table tbody td:nth-child(5) {
       color: #22bb33;
     }
-
     .results-right {
       display: flex;
       flex-direction: column;
       gap: 16px;
       min-width: 280px;
     }
-
-    .results-actions {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
     .btn {
       display: inline-block;
       background: var(--primary);
@@ -796,29 +611,24 @@
       text-align: center;
       transition: all 0.2s ease;
     }
-
     .btn:hover {
       background: #1a2330;
       transform: translateY(-1px);
     }
-
     .btn.ghost {
       background: transparent;
       color: var(--primary);
       border: 1px solid var(--primary);
     }
-
     .btn.ghost:hover {
       background: var(--primary);
       color: #fff;
     }
-
     .summary-cards {
       display: flex;
       flex-direction: column;
       gap: 12px;
     }
-
     .summary-card {
       background: var(--soft);
       border-radius: 10px;
@@ -827,25 +637,21 @@
       position: relative;
       overflow: hidden;
     }
-
     .summary-card .label {
       font-size: 13px;
       color: var(--muted);
       margin-bottom: 6px;
       font-weight: 500;
     }
-
     .summary-card .value {
       font-size: 16px;
       font-weight: 700;
       color: #0b1720;
     }
-
     .summary-card .value.highlight {
       color: var(--accent-strong);
       font-size: 18px;
     }
-
     .aposta-total {
       display: flex;
       flex-direction: column;
@@ -854,41 +660,34 @@
       width: 100%;
       box-sizing: border-box;
     }
-
     @media (max-width: 600px) {
       .aposta-total {
         flex-direction: column;
         gap: 6px;
         padding: 0 8px;
       }
-
       .aposta-total input,
       .aposta-total button {
         width: 100%;
         max-width: 100%;
         box-sizing: border-box;
       }
-
       .aposta-foot {
         overflow-x: hidden;
       }
     }
-
     #apostasTable {
       min-width: 0 !important;
       table-layout: auto !important;
     }
-
     #apostasTable td {
       padding: 10px 12px !important;
       word-break: break-word;
       white-space: normal;
     }
-
     #apostasTable td::before {
       white-space: normal;
     }
-
     #apostasTable input[type="text"],
     #apostasTable input[type="number"],
     #apostasTable .type-btn,
@@ -900,13 +699,11 @@
       max-width: 100% !important;
       box-sizing: border-box !important;
     }
-
     .aposta-total,
     .aposta-foot {
       overflow: hidden;
       padding: 8px 12px;
     }
-
     #btnCopyAposta {
       display: inline-block;
       padding: 10px 12px !important;
@@ -916,13 +713,11 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
     .results-actions .btn,
     .results-right .btn {
       display: block;
       width: 100%;
     }
-
     .brand,
     .nav-actions,
     .grid2,
@@ -931,17 +726,8 @@
     .summary-cards {
       min-width: 0;
     }
-
-    @media (max-width:768px) {
-
-      .table-wrap::before,
-      .results-left::before {
-        display: none !important;
-      }
-    }
   </style>
 </head>
-
 <body>
   <div class="wrap">
     <div class="navbar">
@@ -1119,10 +905,9 @@
           location.reload();
         };
       } else {
-        // ✅ Apenas redireciona — sem onclick customizado
         btn.textContent = 'Entrar';
-        btn.href = 'login.html'; // Garante o link
-        btn.onclick = null; // Remove qualquer manipulação anterior
+        btn.href = 'login.html';
+        btn.onclick = null;
       }
     }
     function updateInputsState() {
@@ -1180,8 +965,6 @@
         btn.textContent = btn.classList.contains('lay') ? 'LAY' : 'BACK';
         updateCalculations();
       });
-
-      // 🔧 Correção: remoção de formatação forçada da coluna Aposta
       const apostaInput = tr.querySelector('.aposta-input');
       apostaInput.addEventListener('input', () => {
         if (!isLoggedIn()) return;
@@ -1195,18 +978,16 @@
         if (!isLoggedIn()) return;
         let val = parseFloat(apostaInput.value.replace(',', '.')) || 0;
         apostaInput.value = val.toFixed(2);
-        state.manualMode = false; // ← sair do modo manual após blur
+        state.manualMode = false;
         updateCalculations();
       });
-
       tr.querySelectorAll('input').forEach(inp => {
-        if (inp === apostaInput) return; // já tratado acima
+        if (inp === apostaInput) return;
         inp.addEventListener('input', () => {
           if (!isLoggedIn()) return;
           updateCalculations();
         });
       });
-
       tr.querySelector('.comissao-checkbox').addEventListener('change', e => {
         if (!isLoggedIn()) return;
         const cb = e.target;
@@ -1351,13 +1132,10 @@
         });
         $('#apostaTotalDisplay').value = totalStakeNoFree.toFixed(2);
       }
-
-      // 🔧 Correção: não sobrescrever inputs durante digitação manual
       rows.forEach((r, i) => {
         const stakeValue = stakes[i] || 0;
         const apostaInput = r.querySelector('.aposta-input');
         const apostaCell = r.querySelector('.col-aposta');
-
         if (state.manualMode && state.controlIndex === null) {
           if (isLayBet[i]) {
             const currentLiability = parseFloat(apostaInput.value) || 0;
@@ -1376,7 +1154,6 @@
           }
           return;
         }
-
         if (isLayBet[i]) {
           const liability = stakeValue * (oddsOriginal[i] - 1);
           apostaInput.value = liability.toFixed(2);
@@ -1394,7 +1171,6 @@
           if (responsInfo) responsInfo.remove();
         }
       });
-
       const stakesReal = stakes.map(s => (s || 0) * (qtdContas || 1));
       const lucros = [];
       for (let w = 0; w < n; w++) {
@@ -1560,5 +1336,4 @@
     document.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
-
 </html>
