@@ -528,7 +528,7 @@
             list-style-type: none;
         }
 
-        header li{
+        header li {
             color: #ef4444;
         }
 
@@ -537,233 +537,235 @@
         }
 
         /* ======== AJUSTES DE RESPONSIVIDADE GERAL ======== */
-@media (max-width: 900px) {
+        @media (max-width: 900px) {
 
-  /* Header: empilha botões */
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
+            /* Header: empilha botões */
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
 
-  header h1 {
-    font-size: 22px;
-  }
+            header h1 {
+                font-size: 22px;
+            }
 
-  header button {
-    flex: 1;
-    width: 100%;
-  }
+            header button {
+                flex: 1;
+                width: 100%;
+            }
 
-  /* Filtros: um por linha */
-  .filters-grid {
-    grid-template-columns: 1fr !important;
-  }
+            /* Filtros: um por linha */
+            .filters-grid {
+                grid-template-columns: 1fr !important;
+            }
 
-  .filter-group {
-    width: 100%;
-  }
+            .filter-group {
+                width: 100%;
+            }
 
-  .filter-input,
-  .filter-select {
-    width: 100%;
-  }
+            .filter-input,
+            .filter-select {
+                width: 100%;
+            }
 
-  /* Painel principal: empilha gráfico e anotações */
-  .main-grid {
-    grid-template-columns: 1fr !important;
-    gap: 20px;
-  }
+            /* Painel principal: empilha gráfico e anotações */
+            .main-grid {
+                grid-template-columns: 1fr !important;
+                gap: 20px;
+            }
 
-  /* Cards estatísticos empilhados */
-  .stats-row {
-    flex-direction: column;
-  }
+            /* Cards estatísticos empilhados */
+            .stats-row {
+                flex-direction: column;
+            }
 
-  .stat {
-    width: 100%;
-  }
+            .stat {
+                width: 100%;
+            }
 
-  /* Modal: ocupa 90% da largura */
-  .modal {
-    width: 90% !important;
-    min-width: unset;
-    max-width: unset;
-  }
+            /* Modal: ocupa 90% da largura */
+            .modal {
+                width: 90% !important;
+                min-width: unset;
+                max-width: unset;
+            }
 
-  .form-grid {
-    grid-template-columns: 1fr !important;
-  }
+            .form-grid {
+                grid-template-columns: 1fr !important;
+            }
 
-  /* Tabelas rolam horizontalmente sem estourar */
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
+            /* Tabelas rolam horizontalmente sem estourar */
+            .table-wrap {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
 
-  table {
-    width: 100%;
-    min-width: 700px; /* garante que as colunas fiquem legíveis */
-  }
+            table {
+                width: 100%;
+                min-width: 700px;
+                /* garante que as colunas fiquem legíveis */
+            }
 
-  thead th,
-  tbody td {
-    padding: 12px !important;
-    font-size: 14px;
-    white-space: nowrap;
-  }
+            thead th,
+            tbody td {
+                padding: 12px !important;
+                font-size: 14px;
+                white-space: nowrap;
+            }
 
-  /* Corrige botões */
-  .btn {
-    width: 100%;
-    max-width: 100%;
-    text-align: center;
-  }
+            /* Corrige botões */
+            .btn {
+                width: 100%;
+                max-width: 100%;
+                text-align: center;
+            }
 
-  /* Corrige textos e títulos */
-  .filters-header h2 {
-    font-size: 18px;
-  }
+            /* Corrige textos e títulos */
+            .filters-header h2 {
+                font-size: 18px;
+            }
 
-  .chart-title {
-    font-size: 16px;
-  }
+            .chart-title {
+                font-size: 16px;
+            }
 
-  .note-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
+            .note-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
 
-  .note-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
+            .note-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
 
-  /* Container com padding menor */
-  .container {
-    padding: 12px;
-  }
+            /* Container com padding menor */
+            .container {
+                padding: 12px;
+            }
 
-  /* Evita overflow geral */
-  body, html {
-    overflow-x: hidden;
-  }
-}
+            /* Evita overflow geral */
+            body,
+            html {
+                overflow-x: hidden;
+            }
+        }
 
-/* ====== Ajustes para bloco de Anotações (comportamento igual Compartilhar/Adicionar) ====== */
-.notes {
-  overflow: hidden;
-  box-sizing: border-box;
-}
+        /* ====== Ajustes para bloco de Anotações (comportamento igual Compartilhar/Adicionar) ====== */
+        .notes {
+            overflow: hidden;
+            box-sizing: border-box;
+        }
 
-/* Header: manter botão pequeno no desktop, virar botão full-width no mobile */
-.notes-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
+        /* Header: manter botão pequeno no desktop, virar botão full-width no mobile */
+        .notes-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
 
-/* botão de adicionar nota (desktop) */
-.add-note-btn {
-  width: 48px;
-  height: 48px;
-  border-radius: 8px;
-  background: #2b2bf5;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 26px;
-  cursor: pointer;
-  flex-shrink: 0;
-  box-sizing: border-box;
-}
+        /* botão de adicionar nota (desktop) */
+        .add-note-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: #2b2bf5;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
 
-/* lista de notas: garantir quebra de texto e evitar overflow */
-#notesList {
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  box-sizing: border-box;
-  overflow: visible;
-}
+        /* lista de notas: garantir quebra de texto e evitar overflow */
+        #notesList {
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+            overflow: visible;
+        }
 
-.note-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  justify-content: space-between;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid var(--accent);
-  background: transparent;
-  box-sizing: border-box;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
+        .note-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            justify-content: space-between;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            background: transparent;
+            box-sizing: border-box;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
 
-/* texto da nota ocupa o máximo e quebra linhas */
-.note-text {
-  flex: 1 1 auto;
-  min-width: 0; 
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
-}
+        /* texto da nota ocupa o máximo e quebra linhas */
+        .note-text {
+            flex: 1 1 auto;
+            min-width: 0;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: anywhere;
+        }
 
-.note-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-shrink: 0;
-}
+        .note-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-shrink: 0;
+        }
 
-.note-actions button,
-.note-actions .note-delete {
-  padding: 8px 10px;
-  border-radius: 8px;
-  cursor: pointer;
-  white-space: nowrap;
-}
+        .note-actions button,
+        .note-actions .note-delete {
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
 
-@media (max-width: 900px) {
-  .notes-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
+        @media (max-width: 900px) {
+            .notes-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
 
-  .add-note-btn {
-    width: 100%;
-    height: auto;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 16px;
-    display: inline-flex;
-    justify-content: center;
-  }
+            .add-note-btn {
+                width: 100%;
+                height: auto;
+                padding: 10px 14px;
+                border-radius: 8px;
+                font-size: 16px;
+                display: inline-flex;
+                justify-content: center;
+            }
 
-  .note-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px;
-  }
+            .note-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 12px;
+            }
 
-  .note-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
+            .note-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
 
-  .note-actions button,
-  .note-actions .note-delete {
-    width: auto;
-    padding: 10px 12px;
-    font-size: 14px;
-  }
-}
+            .note-actions button,
+            .note-actions .note-delete {
+                width: auto;
+                padding: 10px 12px;
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 
@@ -1002,7 +1004,59 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        async function carregarPlanilha() {
+            const email = localStorage.getItem('superodd_user_email');
+
+            // Se o usuário não estiver logado, redireciona
+            if (!email) {
+                alert('⚠️ Faça login para acessar sua planilha.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/records?email=${encodeURIComponent(email)}`);
+                const data = await res.json();
+
+                if (data.success && Array.isArray(data.records)) {
+                    preencherTabela(data.records);
+                } else {
+                    console.warn('Nenhum registro encontrado.');
+                    preencherTabela([]); // limpa tabela
+                }
+            } catch (err) {
+                console.error('Erro ao carregar planilha:', err);
+            }
+        }
+        function preencherTabela(registros) {
+            const tbody = document.querySelector('#tabela-registros tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            if (registros.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">Nenhum registro encontrado</td></tr>`;
+                return;
+            }
+
+            registros.forEach(reg => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+      <td>${new Date(reg.data).toLocaleDateString('pt-BR')}</td>
+      <td>${reg.casa || '-'}</td>
+      <td>${reg.descricao || '-'}</td>
+      <td>${reg.observacoes || '-'}</td>
+      <td>${reg.mercado || '-'}</td>
+      <td>${reg.situacao || '-'}</td>
+      <td>${reg.qtd_contas || '-'}</td>
+      <td>${reg.lucro !== null ? 'R$ ' + Number(reg.lucro).toFixed(2) : '-'}</td>
+    `;
+                tbody.appendChild(tr);
+            });
+        }
+
+
+        document.addEventListener('DOMContentLoaded', function () {
             const daySelect = document.getElementById('filterDay');
             for (let i = 1; i <= 31; i++) {
                 const option = document.createElement('option');
@@ -1074,7 +1128,7 @@
             formLucro.addEventListener('input', updateLucroPorConta);
             formQtdContas.addEventListener('input', updateLucroPorConta);
 
-            filtersHeader.addEventListener('click', function() {
+            filtersHeader.addEventListener('click', function () {
                 const isOpen = filtersPanel.classList.contains('open');
                 if (isOpen) {
                     filtersPanel.classList.remove('open');
@@ -1085,7 +1139,7 @@
                 }
             });
 
-            addNoteBtn.addEventListener('click', function() {
+            addNoteBtn.addEventListener('click', function () {
                 const noteText = prompt('Digite sua anotação:');
                 if (noteText && noteText.trim() !== '') {
                     const newNote = {
@@ -1122,7 +1176,7 @@
                 });
 
                 document.querySelectorAll('.note-delete').forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', function () {
                         const id = parseInt(this.getAttribute('data-id'));
                         notes = notes.filter(note => note.id !== id);
                         saveNotes();
@@ -1131,10 +1185,10 @@
                 });
             }
 
-            btnAddRecord.addEventListener('click', function() {
+            btnAddRecord.addEventListener('click', function () {
                 currentEditId = null;
                 modalTitle.textContent = 'Adicionar Registro';
-                
+
                 formData.value = today;
                 formCasa.value = '';
                 formDescricao.value = '';
@@ -1144,23 +1198,23 @@
                 formLucro.value = '';
                 formQtdContas.value = '1';
                 formLucroPorConta.value = '';
-                
+
                 modalBackdrop.classList.remove('hidden');
             });
 
-            cancelModal.addEventListener('click', function() {
+            cancelModal.addEventListener('click', function () {
                 modalBackdrop.classList.add('hidden');
             });
 
-            modalBackdrop.addEventListener('click', function(e) {
+            modalBackdrop.addEventListener('click', function (e) {
                 if (e.target === modalBackdrop) {
                     modalBackdrop.classList.add('hidden');
                 }
             });
 
-            saveModal.addEventListener('click', function() {
+            saveModal.addEventListener('click', function () {
                 const lucro = parseFloat(formLucro.value.replace(',', '.')) || 0;
-                
+
                 const record = {
                     id: currentEditId || Date.now(),
                     data: formData.value,
@@ -1197,12 +1251,12 @@
                 const totalProfit = records.reduce((sum, record) => sum + record.lucro, 0);
                 const avgProfit = records.length > 0 ? totalProfit / records.length : 0;
                 const procedures = records.length;
-                const freebetsOpen = records.filter(r => 
-                    r.situacao === 'AGUARDANDO FB' || 
+                const freebetsOpen = records.filter(r =>
+                    r.situacao === 'AGUARDANDO FB' ||
                     (r.situacao === 'CONCLUÍDO' && r.lucro > 0)
                 ).length;
-                const lastUpdate = records.length > 0 ? 
-                    new Date(Math.max(...records.map(r => new Date(r.data)))).toLocaleDateString('pt-BR') : 
+                const lastUpdate = records.length > 0 ?
+                    new Date(Math.max(...records.map(r => new Date(r.data)))).toLocaleDateString('pt-BR') :
                     '--';
 
                 totalProfitEl.textContent = formatCurrency(totalProfit);
@@ -1214,21 +1268,21 @@
 
             function renderRecords() {
                 const filteredRecords = applyFilters(records);
-                
+
                 if (filteredRecords.length === 0) {
                     recordsTableBody.innerHTML = '';
                     noRecords.classList.remove('hidden');
                     return;
                 }
-                
+
                 noRecords.classList.add('hidden');
                 recordsTableBody.innerHTML = '';
-                
+
                 filteredRecords.forEach(record => {
                     const row = document.createElement('tr');
-                    
+
                     let mercadoClass = '';
-                    switch(record.mercado) {
+                    switch (record.mercado) {
                         case 'DIRETO': mercadoClass = 'market-direto'; break;
                         case 'GIROS': mercadoClass = 'market-giros'; break;
                         case 'ADQUIRIR/FB': mercadoClass = 'market-adquirirfb'; break;
@@ -1239,17 +1293,17 @@
                         case 'CASHBACK': mercadoClass = 'market-cashback'; break;
                         default: mercadoClass = '';
                     }
-                    
+
                     let situacaoClass = '';
-                    switch(record.situacao) {
+                    switch (record.situacao) {
                         case 'CONCLUÍDO': situacaoClass = 'status-concluido'; break;
                         case 'AGUARDANDO': situacaoClass = 'status-aguardando'; break;
                         case 'AGUARDANDO FB': situacaoClass = 'status-aguardando-fb'; break;
                         default: situacaoClass = '';
                     }
-                    
+
                     const freebetStatus = record.lucro > 0 ? 'UTILIZADA' : 'EM ABERTO';
-                    
+
                     row.innerHTML = `
                         <td>${formatDate(record.data)}</td>
                         <td>${record.descricao}</td>
@@ -1274,27 +1328,27 @@
                     `;
                     recordsTableBody.appendChild(row);
                 });
-                
+
                 document.querySelectorAll('.actions-menu').forEach(menu => {
-                    menu.addEventListener('click', function(e) {
+                    menu.addEventListener('click', function (e) {
                         e.stopPropagation();
                         document.querySelectorAll('.dropdown-menu').forEach(m => {
                             m.classList.add('hidden');
                         });
-                        
+
                         const dropdown = this.nextElementSibling;
                         dropdown.classList.toggle('hidden');
                     });
                 });
-                
-                document.addEventListener('click', function() {
+
+                document.addEventListener('click', function () {
                     document.querySelectorAll('.dropdown-menu').forEach(m => {
                         m.classList.add('hidden');
                     });
                 });
-                
+
                 document.querySelectorAll('.icon-edit').forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', function () {
                         const id = parseInt(this.getAttribute('data-id'));
                         const record = records.find(r => r.id === id);
                         if (record) {
@@ -1313,9 +1367,9 @@
                         }
                     });
                 });
-                
+
                 document.querySelectorAll('.icon-delete').forEach(btn => {
-                    btn.addEventListener('click', function() {
+                    btn.addEventListener('click', function () {
                         const id = parseInt(this.getAttribute('data-id'));
                         if (confirm('Tem certeza que deseja excluir este registro?')) {
                             records = records.filter(r => r.id !== id);
@@ -1334,30 +1388,30 @@
                 const mercado = document.getElementById('filterMercado').value;
                 const situacao = document.getElementById('filterSituacao').value;
                 const freebets = document.getElementById('filterFreebets').value;
-                
+
                 return records.filter(record => {
                     if (day !== 'Todos' || month !== 'Todos' || year !== 'Todos') {
                         const recordDate = new Date(record.data);
                         const recordDay = recordDate.getDate().toString();
                         const recordMonth = recordDate.toLocaleString('pt-BR', { month: 'long' });
                         const recordYear = recordDate.getFullYear().toString();
-                        
+
                         if (day !== 'Todos' && day !== recordDay) return false;
                         if (month !== 'Todos' && month !== recordMonth) return false;
                         if (year !== 'Todos' && year !== recordYear) return false;
                     }
-                    
+
                     if (casa && !record.casa.toLowerCase().includes(casa)) return false;
-                    
+
                     if (mercado !== 'Todos' && mercado !== record.mercado) return false;
-                    
+
                     if (situacao !== 'Todas' && situacao !== record.situacao) return false;
-                    
+
                     if (freebets !== 'Todos') {
                         const freebetStatus = record.lucro > 0 ? 'UTILIZADA' : 'EM ABERTO';
                         if (freebets !== freebetStatus) return false;
                     }
-                    
+
                     return true;
                 });
             }
@@ -1366,7 +1420,7 @@
                 filter.addEventListener('change', renderRecords);
             });
 
-            btnExport.addEventListener('click', function() {
+            btnExport.addEventListener('click', function () {
                 const dataStr = JSON.stringify({ records, notes }, null, 2);
                 const dataBlob = new Blob([dataStr], { type: 'application/json' });
                 const url = URL.createObjectURL(dataBlob);
@@ -1377,14 +1431,14 @@
                 URL.revokeObjectURL(url);
             });
 
-            btnImport.addEventListener('click', function() {
+            btnImport.addEventListener('click', function () {
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = '.json';
                 input.onchange = e => {
                     const file = e.target.files[0];
                     if (!file) return;
-                    
+
                     const reader = new FileReader();
                     reader.onload = e => {
                         try {
@@ -1413,7 +1467,7 @@
 
             function renderChart() {
                 const ctx = document.getElementById('profitChart').getContext('2d');
-            
+
                 const profitsByDate = {};
                 records.forEach(record => {
                     const date = formatDate(record.data);
@@ -1422,18 +1476,18 @@
                     }
                     profitsByDate[date] += record.lucro;
                 });
-                
+
                 const dates = Object.keys(profitsByDate).sort((a, b) => {
                     const dateA = new Date(a.split('/').reverse().join('-'));
                     const dateB = new Date(b.split('/').reverse().join('-'));
                     return dateA - dateB;
                 });
                 const profits = dates.map(date => profitsByDate[date]);
-                
+
                 if (chart) {
                     chart.destroy();
                 }
-                
+
                 chart = new Chart(ctx, {
                     type: 'bar',
                     data: {
@@ -1453,7 +1507,7 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function(value) {
+                                    callback: function (value) {
                                         return 'R$ ' + value.toLocaleString('pt-BR');
                                     }
                                 }
@@ -1465,7 +1519,7 @@
                             },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
+                                    label: function (context) {
                                         return 'Lucro: R$ ' + context.parsed.y.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                                     }
                                 }
@@ -1473,13 +1527,13 @@
                         }
                     }
                 });
-                
+
                 const chartDateEl = document.getElementById('chartDate');
                 if (dates.length > 0) {
                     const firstDate = dates[0];
                     const lastDate = dates[dates.length - 1];
-                    chartDateEl.textContent = firstDate === lastDate ? 
-                        `Período: ${firstDate}` : 
+                    chartDateEl.textContent = firstDate === lastDate ?
+                        `Período: ${firstDate}` :
                         `Período: ${firstDate} - ${lastDate}`;
                 } else {
                     chartDateEl.textContent = '—';
@@ -1491,6 +1545,8 @@
             updateStats();
             renderChart();
         });
+        document.addEventListener('DOMContentLoaded', carregarPlanilha);
+
     </script>
 </body>
 
