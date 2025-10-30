@@ -31,6 +31,7 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       overflow-x: hidden;
+      /* 🔒 BLOQUEIA ROLAGEM HORIZONTAL */
     }
     a {
       color: inherit;
@@ -268,35 +269,22 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    /* === CORREÇÕES PRINCIPAIS === */
-    .col-oddfinal {
-      width: 9%;
-      min-width: 85px; /* Garante espaço para números longos */
-      overflow: visible; /* Evita corte com ... */
-      white-space: nowrap; /* Mantém número em uma linha */
-    }
-
-    .col-c {
-      width: 4%; /* Reduzido de 7% para ~4% */
-      text-align: center; /* Centraliza checkbox */
-    }
-
-    /* Demais colunas */
     .col-casa { width: 16%; }
     .col-tipo { width: 8%; }
     .col-odd { width: 7%; }
     .col-comissao { width: 9%; }
+    .col-oddfinal { width: 9%; }
     .col-aumento { width: 8%; }
     .col-aposta { width: 14%; }
     .col-freebet { width: 10%; }
     .col-cashback { width: 10%; }
+    .col-c { width: 7%; }
     .col-lucro { width: 12%; }
-
     tbody td input[type="text"],
     tbody td input[type="number"] {
       border: 1px solid #dfe7d0;
       padding: 6px 8px;
+      /* ↑ aumentado */
       border-radius: 6px;
       background: #fff;
       font-size: 13px;
@@ -306,6 +294,7 @@
     .type-btn {
       display: inline-block;
       padding: 6px 10px;
+      /* ↑ aumentado */
       border-radius: 6px;
       font-weight: 700;
       font-size: 13px;
@@ -470,18 +459,27 @@
       border: 1px solid #e6e9ee;
       color: var(--muted);
     }
-
-    /* ===== MOBILE ===== */
+    /* ===== ✅ MOBILE: LAYOUT VERTICAL (SEM FLEX ENTRE LABEL E INPUT) ===== */
     @media (max-width: 768px) {
-      body, .wrap, .section, .table-wrap {
+      /* Garantir que nada extrapole */
+      body,
+      .wrap,
+      .section,
+      .table-wrap {
         overflow-x: hidden;
       }
+      /* Tabela vira lista de cards */
       #apostasTable {
         display: block;
         width: 100%;
       }
-      #apostasTable thead { display: none; }
-      #apostasTable tbody { display: block; width: 100%; }
+      #apostasTable thead {
+        display: none;
+      }
+      #apostasTable tbody {
+        display: block;
+        width: 100%;
+      }
       #apostasTable tr {
         display: block;
         background: #f8fafc;
@@ -505,17 +503,21 @@
         color: #1f2937;
         font-size: 13px;
         margin-bottom: 6px;
+        /* ↑ espaço maior */
       }
+      /* Inputs maiores */
       #apostasTable input[type="text"],
       #apostasTable input[type="number"] {
         width: 100%;
         padding: 10px;
+        /* ↑ aumentado */
         border-radius: 8px;
         border: 1px solid #d1d5db;
         font-size: 14px;
         background: #fff;
         box-sizing: border-box;
       }
+      /* Botões BACK/LAY */
       #apostasTable .type-btn {
         width: 100%;
         padding: 10px;
@@ -523,22 +525,67 @@
         text-align: center;
         border-radius: 8px;
       }
+      /* Checkboxes */
       #apostasTable .chk {
         display: flex;
         align-items: center;
         gap: 10px;
         justify-content: flex-start;
       }
-      .results-wrap { flex-direction: column; }
-      .results-right { max-width: none; }
-      .summary-cards { grid-template-columns: 1fr; }
-      .table-wrap::before,
-      .results-left::before {
-        display: none !important;
+      /* Rodapé */
+      #apostasTable tfoot {
+        display: block;
+        margin-top: 14px;
+      }
+      #apostasTable tfoot tr {
+        display: block;
+        background: #f8fafc;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px;
+      }
+      #apostasTable tfoot td {
+        display: block;
+        padding: 8px 0;
+      }
+      .aposta-total {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .aposta-total input {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 8px;
+      }
+      #btnCopyAposta {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        border-radius: 8px;
+      }
+      /* Resultados empilhados */
+      .results-wrap {
+        flex-direction: column;
+      }
+      .results-right {
+        max-width: none;
+      }
+      .summary-cards {
+        grid-template-columns: 1fr;
       }
     }
-
-    /* Estilos duplicados removidos ou mantidos apenas uma vez */
+    .results-wrap {
+      display: flex;
+      gap: 16px;
+      flex-direction: column;
+    }
+    @media (min-width: 769px) {
+      .results-wrap {
+        flex-direction: row;
+      }
+    }
     .results-left {
       flex: 1;
       background: var(--card);
@@ -596,6 +643,11 @@
       flex-direction: column;
       gap: 16px;
       min-width: 280px;
+    }
+    .results-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
     .btn {
       display: inline-block;
@@ -726,6 +778,87 @@
     .summary-cards {
       min-width: 0;
     }
+    @media (max-width:768px) {
+      .table-wrap::before,
+      .results-left::before {
+        display: none !important;
+      }
+    }
+    /* === Modal de Adicionar Registro === */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-backdrop.hidden {
+      display: none;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      width: 100%;
+      max-width: 500px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 16px 0;
+    }
+    .form-control.full {
+      grid-column: 1 / -1;
+    }
+    .form-control label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: #333;
+      font-weight: 600;
+    }
+    .input,
+    .select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      background: #fff;
+    }
+    .input:focus,
+    .select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-size: 14px;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -854,6 +987,66 @@
             <tbody id="resultsBody"></tbody>
           </table>
         </div>
+        <div id="modalBackdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true">
+          <div class="modal">
+            <h3 id="modalTitle">Adicionar Registro</h3>
+            <div class="form-grid">
+              <div class="form-control full">
+                <label>Data</label>
+                <input type="date" class="input" id="formData">
+              </div>
+              <div class="form-control full">
+                <label>Casa</label>
+                <input class="input" id="formCasa">
+              </div>
+              <div class="form-control full">
+                <label>Descrição</label>
+                <input class="input" id="formDescricao">
+              </div>
+              <div class="form-control full">
+                <label>Observações</label>
+                <textarea class="input" id="formObservacoes" rows="3"></textarea>
+              </div>
+              <div class="form-control">
+                <label>Mercado</label>
+                <select class="select" id="formMercado">
+                  <option>DIRETO</option>
+                  <option>GIROS</option>
+                  <option>ADQUIRIR/FB</option>
+                  <option>FB/BÔNUS</option>
+                  <option>SURE</option>
+                  <option>SUPERODD</option>
+                  <option>DUPLO</option>
+                  <option>CASHBACK</option>
+                </select>
+              </div>
+              <div class="form-control">
+                <label>Situação</label>
+                <select class="select" id="formSituacao">
+                  <option>CONCLUÍDO</option>
+                  <option>AGUARDANDO</option>
+                  <option>AGUARDANDO FB</option>
+                </select>
+              </div>
+              <div class="form-control">
+                <label>Lucro</label>
+                <input class="input" id="formLucro" placeholder="0,00">
+              </div>
+              <div class="form-control">
+                <label>Quantidade de contas</label>
+                <input type="number" class="input" id="formQtdContas" min="1" value="1">
+              </div>
+              <div class="form-control">
+                <label>Lucro por conta</label>
+                <input class="input" id="formLucroPorConta" readonly>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn" id="cancelModal">Cancelar</button>
+              <button class="btn btn-primary" id="saveModal">Salvar</button>
+            </div>
+          </div>
+        </div>
         <div class="results-right">
           <div class="results-actions">
             <button class="btn" id="btnShare" disabled>📤 Compartilhar</button>
@@ -966,6 +1159,7 @@
         updateCalculations();
       });
       const apostaInput = tr.querySelector('.aposta-input');
+      // ✅ REMOVIDO O EVENTO 'blur' que forçava saída do modo manual
       apostaInput.addEventListener('input', () => {
         if (!isLoggedIn()) return;
         state.manualMode = true;
@@ -974,13 +1168,8 @@
         recalcApostaTotal();
         updateCalculations();
       });
-      apostaInput.addEventListener('blur', () => {
-        if (!isLoggedIn()) return;
-        let val = parseFloat(apostaInput.value.replace(',', '.')) || 0;
-        apostaInput.value = val.toFixed(2);
-        state.manualMode = false;
-        updateCalculations();
-      });
+      // ❌ REMOVIDO:
+      // apostaInput.addEventListener('blur', () => { ... });
       tr.querySelectorAll('input').forEach(inp => {
         if (inp === apostaInput) return;
         inp.addEventListener('input', () => {
@@ -1237,6 +1426,7 @@
         renderRows();
         updateCalculations();
       });
+      // ✅ CORREÇÃO PRINCIPAL: botão "Adicionar à planilha"
       $('#btnAddPlanilha')?.addEventListener('click', () => {
         if (!isLoggedIn()) return;
         const today = new Date().toISOString().split('T')[0];
@@ -1254,17 +1444,28 @@
         $('#formSituacao').value = 'CONCLUÍDO';
         $('#formLucro').value = lucro.toFixed(2).replace('.', ',');
         $('#formQtdContas').value = qtdContas;
-        $('#modalAddPlanilha').classList.remove('hidden');
+        $('#formLucroPorConta').value = (lucro / qtdContas).toFixed(2).replace('.', ',');
+        $('#modalBackdrop').classList.remove('hidden');
       });
+      // Fechar modal
       $('#cancelModal')?.addEventListener('click', () => {
-        $('#modalAddPlanilha').classList.add('hidden');
+        $('#modalBackdrop').classList.add('hidden');
       });
-      $('#modalAddPlanilha')?.addEventListener('click', (e) => {
-        if (e.target === $('#modalAddPlanilha')) {
-          $('#modalAddPlanilha').classList.add('hidden');
+      $('#modalBackdrop')?.addEventListener('click', (e) => {
+        if (e.target === $('#modalBackdrop')) {
+          $('#modalBackdrop').classList.add('hidden');
         }
       });
-      $('#saveToPlanilha')?.addEventListener('click', async () => {
+      // Atualizar "Lucro por conta"
+      ['#formLucro', '#formQtdContas'].forEach(sel => {
+        $(sel)?.addEventListener('input', () => {
+          const lucro = parseFloat($('#formLucro').value.replace(',', '.')) || 0;
+          const qtd = parseInt($('#formQtdContas').value) || 1;
+          $('#formLucroPorConta').value = (lucro / qtd).toFixed(2).replace('.', ',');
+        });
+      });
+      // Salvar (opcional – mantido como estava)
+      $('#saveModal')?.addEventListener('click', async () => {
         const email = localStorage.getItem('superodd_user_email');
         if (!email) {
           alert('⚠️ Faça login novamente.');
@@ -1290,7 +1491,7 @@
           const result = await res.json();
           if (result.success) {
             alert('✅ Registro salvo na planilha!');
-            $('#modalAddPlanilha').classList.add('hidden');
+            $('#modalBackdrop').classList.add('hidden');
           } else {
             alert('❌ Erro: ' + (result.message || 'Falha ao salvar.'));
           }
