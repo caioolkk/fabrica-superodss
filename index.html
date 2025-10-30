@@ -1483,7 +1483,7 @@
           qtdContas: parseInt($('#formQtdContas').value) || 1
         };
         try {
-          const res = await fetch('/api/records', {
+          const res = await fetch('https://backendfabricasuperodds.onrender.com/api/records', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
