@@ -771,6 +771,130 @@
                 font-size: 14px;
             }
         }
+
+        /* 🔧 Garante que o menu não fique escondido dentro da tabela */
+        td {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 28px;
+            /* distância abaixo do ⋮ */
+            right: 0;
+            z-index: 9999;
+        }
+
+        /* ====== AJUSTES RESPONSIVOS PARA O BLOCO DE ANOTAÇÕES ====== */
+        .notes {
+            background: #fff;
+            padding: 18px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Cabeçalho das anotações — título e botão lado a lado no desktop */
+        .notes-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        /* Botão azul de adicionar */
+        .add-note-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: #2b2bf5;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            transition: background 0.2s ease;
+        }
+
+        .add-note-btn:hover {
+            background: #1d1df0;
+        }
+
+        /* Lista de notas */
+        #notesList {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .note-item {
+            border-radius: 8px;
+            border: 1px solid var(--accent);
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: #fff;
+            flex-wrap: wrap;
+        }
+
+        /* Texto da nota: quebra de linha */
+        .note-text {
+            flex: 1;
+            color: #111;
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+
+        /* Botões de ação dentro da nota */
+        .note-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Ícone de excluir */
+        .note-delete {
+            color: var(--danger);
+            cursor: pointer;
+        }
+
+        /* ====== MODO MOBILE ====== */
+        @media (max-width: 900px) {
+            .notes-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .add-note-btn {
+                width: 100%;
+                height: 44px;
+                font-size: 18px;
+                border-radius: 8px;
+            }
+
+            .note-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .note-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
     </style>
 </head>
 
@@ -1165,9 +1289,127 @@
         <td><span class="market-pill ${mercadoClass}">${record.mercado || ''}</span></td>
         <td><span class="status-pill ${situacaoClass}">${record.situacao || ''}</span></td>
         <td class="profit">${formatCurrency(record.lucro)}</td>
-        <td>—</td>
+        <td>
+  <div class="actions-menu">⋮</div>
+  <div class="dropdown-menu hidden">
+    <div class="dropdown-item edit-item" data-id="${record.id}">✏️ Editar aposta</div>
+    <div class="dropdown-item delete-item" data-id="${record.id}">🗑️ Excluir aposta</div>
+  </div>
+</td>
+
       `;
                 tbody.appendChild(tr);
+                // 🎛️ Configura menu de ações por linha
+                const actionsMenu = tr.querySelector('.actions-menu');
+                const dropdown = tr.querySelector('.dropdown-menu');
+
+                actionsMenu.addEventListener('click', e => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.add('hidden'));
+                    dropdown.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', () => dropdown.classList.add('hidden'));
+
+                // ✏️ Editar aposta
+                dropdown.querySelector('.edit-item').addEventListener('click', async () => {
+                    dropdown.classList.add('hidden');
+                    const modalBackdrop = document.getElementById('modalBackdrop');
+                    const modalTitle = document.getElementById('modalTitle');
+                    modalTitle.textContent = 'Editar Aposta';
+
+                    // preencher campos
+                    document.getElementById('formData').value = record.data.split('T')[0];
+                    document.getElementById('formCasa').value = record.casa || '';
+                    document.getElementById('formDescricao').value = record.descricao || '';
+                    document.getElementById('formObservacoes').value = record.observacoes || '';
+                    document.getElementById('formMercado').value = record.mercado || 'DIRETO';
+                    document.getElementById('formSituacao').value = record.situacao || 'CONCLUÍDO';
+                    document.getElementById('formLucro').value = record.lucro || 0;
+                    document.getElementById('formQtdContas').value = record.qtd_contas || 1;
+                    document.getElementById('formLucroPorConta').value =
+                        ((record.lucro || 0) / (record.qtd_contas || 1)).toFixed(2).replace('.', ',');
+
+                    modalBackdrop.classList.remove('hidden');
+
+                    const saveModal = document.getElementById('saveModal');
+                    const oldHandler = saveModal.onclick;
+                    saveModal.onclick = async () => {
+                        const email = localStorage.getItem('superodd_user_email');
+                        const updated = {
+                            email,
+                            data: document.getElementById('formData').value,
+                            casa: document.getElementById('formCasa').value,
+                            descricao: document.getElementById('formDescricao').value,
+                            observacoes: document.getElementById('formObservacoes').value,
+                            mercado: document.getElementById('formMercado').value,
+                            situacao: document.getElementById('formSituacao').value,
+                            lucro: parseFloat(document.getElementById('formLucro').value.replace(',', '.')) || 0,
+                            qtdContas: parseInt(document.getElementById('formQtdContas').value) || 1
+                        };
+
+                        try {
+                            const res = await fetch(`${API_BASE}/api/records/${record.id}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(updated)
+                            });
+                            const data = await res.json();
+                            if (!data.success) throw new Error(data.message);
+                            modalBackdrop.classList.add('hidden');
+                            await carregarPlanilha();
+                        } catch (err) {
+                            alert('Erro ao atualizar registro:\n' + err.message);
+                        } finally {
+                            saveModal.onclick = oldHandler; // restaura handler original
+                        }
+                    };
+                });
+                // Função para excluir registro no banco
+                async function excluirRegistro(id) {
+                    const confirmar = confirm("Tem certeza que deseja excluir este registro?");
+                    if (!confirmar) return;
+
+                    try {
+                        const res = await fetch(`${API_BASE}/api/records/${id}`, {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json" }
+                        });
+
+                        const data = await res.json();
+                        if (data.success) {
+                            alert("Registro excluído com sucesso!");
+                            // Atualiza os dados da tabela
+                            if (typeof carregarRegistros === "function") {
+                                carregarRegistros();
+                            } else {
+                                location.reload();
+                            }
+                        } else {
+                            alert(data.message || "Erro ao excluir registro.");
+                        }
+                    } catch (err) {
+                        console.error("Erro ao excluir:", err);
+                        alert("Erro ao excluir registro.");
+                    }
+                }
+                // 🗑️ Excluir aposta
+                dropdown.querySelector('.delete-item').addEventListener('click', async () => {
+                    dropdown.classList.add('hidden');
+                    if (!confirm('Tem certeza que deseja excluir esta aposta?')) return;
+                    const email = localStorage.getItem('superodd_user_email');
+                    try {
+                        const res = await fetch(`${API_BASE}/api/records/${record.id}?email=${encodeURIComponent(email)}`, {
+                            method: 'DELETE'
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message);
+                        await carregarPlanilha();
+                    } catch (err) {
+                        alert('Erro ao excluir registro:\n' + err.message);
+                    }
+                });
+
             });
         }
 
@@ -1184,9 +1426,10 @@
                 noteItem.className = 'note-item';
                 noteItem.innerHTML = `
         <div class="note-text">${note.content}</div>
-        <div class="note-actions">
-          <span class="note-delete" data-id="${note.id}" title="Excluir">🗑️</span>
-        </div>
+        <div class="dropdown-item" onclick="excluirRegistro(${registro.id})">
+            i class="icon-delete">🗑️</i> Excluir
+        /div>
+
       `;
                 notesList.appendChild(noteItem);
             });
