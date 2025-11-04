@@ -13,8 +13,7 @@
             <ul>
                 <a href="index.html">
                     <li>
-                        &lt; Voltar
-                    </li>
+                        < Voltar </li>
                 </a>
             </ul>
         </nav>
@@ -309,20 +308,22 @@
             color: var(--danger);
             cursor: pointer
         }
+
         .table-wrap {
             margin-top: 12px;
             border-radius: 12px;
-            overflow-x: auto; /* Permite scroll horizontal em todos os dispositivos */
+            overflow-x: auto;
+            /* Permite scroll horizontal em todos os dispositivos */
             -webkit-overflow-scrolling: touch;
         }
 
-
-
         table {
             width: 100%;
-            min-width: 700px; /* Mantém a largura mínima, mas permite scroll se necessário */
+            min-width: 700px;
+            /* Mantém a largura mínima, mas permite scroll se necessário */
             border-collapse: collapse;
-            table-layout: fixed; /* Força as colunas a terem largura fixa, evitando quebras indesejadas */
+            table-layout: fixed;
+            /* Força as colunas a terem largura fixa, evitando quebras indesejadas */
         }
 
         thead th {
@@ -336,7 +337,9 @@
         tbody td {
             padding: 18px;
             border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            vertical-align: middle
+            vertical-align: middle;
+            white-space: nowrap;
+            /* Evita quebras de linha */
         }
 
         tbody tr {
@@ -1123,7 +1126,6 @@
     </div>
     <script>
         const API_BASE = "https://backendfabricasuperodds.onrender.com";
-
         let records = [];
         let notes = [];
         let chart = null;
@@ -1149,34 +1151,32 @@
                 window.location.href = 'login.html';
                 return;
             }
-
             try {
                 const resRecords = await fetch(`${API_BASE}/api/records?email=${encodeURIComponent(email)}`);
                 if (!resRecords.ok) throw new Error(`HTTP ${resRecords.status}: ${resRecords.statusText}`);
                 const dataRecords = await resRecords.json();
                 if (!dataRecords.success) throw new Error(dataRecords.message || 'Falha ao carregar registros');
                 records = dataRecords.records || [];
-
                 const resNotes = await fetch(`${API_BASE}/api/notes?email=${encodeURIComponent(email)}`);
                 if (!resNotes.ok) throw new Error(`HTTP ${resNotes.status}: ${resNotes.statusText}`);
                 const dataNotes = await resNotes.json();
                 if (!dataNotes.success) throw new Error(dataNotes.message || 'Falha ao carregar anotações');
                 notes = dataNotes.notes || [];
-
                 renderRecords();
                 renderNotes();
                 updateStats();
                 renderChart();
             } catch (err) {
                 console.error('Erro ao carregar planilha:', err);
-                alert(`❌ Erro ao carregar dados do servidor:\n${err.message}\n\nVerifique se o backend está online.`);
+                alert(`❌ Erro ao carregar dados do servidor:
+${err.message}
+Verifique se o backend está online.`);
             }
         }
 
         async function fetchRecordsWithFilters() {
             const email = localStorage.getItem('superodd_user_email');
             if (!email) return;
-
             const params = new URLSearchParams({ email });
             const day = document.getElementById('filterDay').value;
             const month = document.getElementById('filterMonth').value;
@@ -1185,7 +1185,6 @@
             const mercado = document.getElementById('filterMercado').value;
             const situacao = document.getElementById('filterSituacao').value;
             const freebets = document.getElementById('filterFreebets').value;
-
             if (day !== 'Todos') params.append('day', day);
             if (month !== 'Todos') params.append('month', month);
             if (year !== 'Todos') params.append('year', year);
@@ -1193,7 +1192,6 @@
             if (mercado !== 'Todos') params.append('mercado', mercado);
             if (situacao !== 'Todas') params.append('situacao', situacao);
             if (freebets !== 'Todos') params.append('freebets', freebets);
-
             try {
                 const res = await fetch(`${API_BASE}/api/records?${params}`);
                 if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
@@ -1205,14 +1203,14 @@
                 renderChart();
             } catch (err) {
                 console.error('Erro ao aplicar filtros:', err);
-                alert(`Erro ao aplicar filtros:\n${err.message}`);
+                alert(`Erro ao aplicar filtros:
+${err.message}`);
             }
         }
 
         async function saveRecordToBackend(record) {
             const email = localStorage.getItem('superodd_user_email');
             if (!email) throw new Error('Usuário não autenticado');
-
             const response = await fetch(`${API_BASE}/api/records`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1223,10 +1221,43 @@
             if (!data.success) throw new Error(data.message || 'Erro ao salvar registro');
         }
 
-        async function saveNoteToBackend(content) {
+        async function updateRecordInBackend(id, updatedRecord) {
             const email = localStorage.getItem('superodd_user_email');
             if (!email) throw new Error('Usuário não autenticado');
 
+            const response = await fetch(`${API_BASE}/api/records/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...updatedRecord, email })
+            });
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            const data = await response.json();
+            if (!data.success) throw new Error(data.message || 'Erro ao atualizar registro');
+        }
+
+        async function deleteRecordFromBackend(id) {
+            const email = localStorage.getItem('superodd_user_email');
+            if (!email) throw new Error('Usuário não autenticado');
+
+            const response = await fetch(`${API_BASE}/api/records/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erro ao excluir registro');
+            }
+
+            const data = await response.json();
+            if (!data.success) throw new Error(data.message || 'Erro ao excluir registro');
+        }
+
+        async function saveNoteToBackend(content) {
+            const email = localStorage.getItem('superodd_user_email');
+            if (!email) throw new Error('Usuário não autenticado');
             const res = await fetch(`${API_BASE}/api/notes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1240,9 +1271,10 @@
         async function deleteNoteFromBackend(id) {
             const email = localStorage.getItem('superodd_user_email');
             if (!email) return;
-
-            const res = await fetch(`${API_BASE}/api/notes/${id}?email=${encodeURIComponent(email)}`, {
-                method: 'DELETE'
+            const res = await fetch(`${API_BASE}/api/notes/${id}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
             });
             if (!res.ok) {
                 const data = await res.json();
@@ -1254,12 +1286,10 @@
             const tbody = document.getElementById('recordsTableBody');
             const noRecords = document.getElementById('noRecords');
             tbody.innerHTML = '';
-
             if (records.length === 0) {
                 noRecords.classList.remove('hidden');
                 return;
             }
-
             noRecords.classList.add('hidden');
             records.forEach(record => {
                 let mercadoClass = '';
@@ -1273,14 +1303,12 @@
                     case 'DUPLO': mercadoClass = 'market-duplo'; break;
                     case 'CASHBACK': mercadoClass = 'market-cashback'; break;
                 }
-
                 let situacaoClass = '';
                 switch (record.situacao) {
                     case 'CONCLUÍDO': situacaoClass = 'status-concluido'; break;
                     case 'AGUARDANDO': situacaoClass = 'status-aguardando'; break;
                     case 'AGUARDANDO FB': situacaoClass = 'status-aguardando-fb'; break;
                 }
-
                 const freebetStatus = record.lucro > 0 ? 'UTILIZADA' : 'EM ABERTO';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -1294,34 +1322,29 @@
         <td><span class="status-pill ${situacaoClass}">${record.situacao || ''}</span></td>
         <td class="profit">${formatCurrency(record.lucro)}</td>
         <td>
-  <div class="actions-menu">⋮</div>
-  <div class="dropdown-menu hidden">
-    <div class="dropdown-item edit-item" data-id="${record.id}">✏️ Editar aposta</div>
-    <div class="dropdown-item delete-item" data-id="${record.id}">🗑️ Excluir aposta</div>
-  </div>
-</td>
-
+          <div class="actions-menu">⋮</div>
+          <div class="dropdown-menu hidden">
+            <div class="dropdown-item edit-item" data-id="${record.id}">✏️ Editar aposta</div>
+            <div class="dropdown-item delete-item" data-id="${record.id}">🗑️ Excluir aposta</div>
+          </div>
+        </td>
       `;
                 tbody.appendChild(tr);
                 // 🎛️ Configura menu de ações por linha
                 const actionsMenu = tr.querySelector('.actions-menu');
                 const dropdown = tr.querySelector('.dropdown-menu');
-
                 actionsMenu.addEventListener('click', e => {
                     e.stopPropagation();
                     document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.add('hidden'));
                     dropdown.classList.toggle('hidden');
                 });
-
                 document.addEventListener('click', () => dropdown.classList.add('hidden'));
-
                 // ✏️ Editar aposta
                 dropdown.querySelector('.edit-item').addEventListener('click', async () => {
                     dropdown.classList.add('hidden');
                     const modalBackdrop = document.getElementById('modalBackdrop');
                     const modalTitle = document.getElementById('modalTitle');
                     modalTitle.textContent = 'Editar Aposta';
-
                     // preencher campos
                     document.getElementById('formData').value = record.data.split('T')[0];
                     document.getElementById('formCasa').value = record.casa || '';
@@ -1329,13 +1352,11 @@
                     document.getElementById('formObservacoes').value = record.observacoes || '';
                     document.getElementById('formMercado').value = record.mercado || 'DIRETO';
                     document.getElementById('formSituacao').value = record.situacao || 'CONCLUÍDO';
-                    document.getElementById('formLucro').value = record.lucro || 0;
+                    document.getElementById('formLucro').value = (record.lucro || 0).toString().replace('.', ',');
                     document.getElementById('formQtdContas').value = record.qtd_contas || 1;
                     document.getElementById('formLucroPorConta').value =
                         ((record.lucro || 0) / (record.qtd_contas || 1)).toFixed(2).replace('.', ',');
-
                     modalBackdrop.classList.remove('hidden');
-
                     const saveModal = document.getElementById('saveModal');
                     const oldHandler = saveModal.onclick;
                     saveModal.onclick = async () => {
@@ -1351,15 +1372,8 @@
                             lucro: parseFloat(document.getElementById('formLucro').value.replace(',', '.')) || 0,
                             qtdContas: parseInt(document.getElementById('formQtdContas').value) || 1
                         };
-
                         try {
-                            const res = await fetch(`${API_BASE}/api/records/${record.id}`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify(updated)
-                            });
-                            const data = await res.json();
-                            if (!data.success) throw new Error(data.message);
+                            await updateRecordInBackend(record.id, updated);
                             modalBackdrop.classList.add('hidden');
                             await carregarPlanilha();
                         } catch (err) {
@@ -1369,51 +1383,17 @@
                         }
                     };
                 });
-                // Função para excluir registro no banco
-                async function excluirRegistro(id) {
-                    const confirmar = confirm("Tem certeza que deseja excluir este registro?");
-                    if (!confirmar) return;
-
-                    try {
-                        const res = await fetch(`${API_BASE}/api/records/${id}`, {
-                            method: "DELETE",
-                            headers: { "Content-Type": "application/json" }
-                        });
-
-                        const data = await res.json();
-                        if (data.success) {
-                            alert("Registro excluído com sucesso!");
-                            // Atualiza os dados da tabela
-                            if (typeof carregarRegistros === "function") {
-                                carregarRegistros();
-                            } else {
-                                location.reload();
-                            }
-                        } else {
-                            alert(data.message || "Erro ao excluir registro.");
-                        }
-                    } catch (err) {
-                        console.error("Erro ao excluir:", err);
-                        alert("Erro ao excluir registro.");
-                    }
-                }
                 // 🗑️ Excluir aposta
                 dropdown.querySelector('.delete-item').addEventListener('click', async () => {
                     dropdown.classList.add('hidden');
                     if (!confirm('Tem certeza que deseja excluir esta aposta?')) return;
-                    const email = localStorage.getItem('superodd_user_email');
                     try {
-                        const res = await fetch(`${API_BASE}/api/records/${record.id}`, {
-                            method: 'DELETE'
-                        });
-                        const data = await res.json();
-                        if (!data.success) throw new Error(data.message);
+                        await deleteRecordFromBackend(record.id);
                         await carregarPlanilha();
                     } catch (err) {
                         alert('Erro ao excluir registro:\n' + err.message);
                     }
                 });
-
             });
         }
 
@@ -1423,23 +1403,22 @@
                 notesList.innerHTML = '<div class="note-item"><div class="note-text">Nenhuma anotação</div></div>';
                 return;
             }
-
             notesList.innerHTML = '';
             notes.forEach(note => {
                 const noteItem = document.createElement('div');
                 noteItem.className = 'note-item';
                 noteItem.innerHTML = `
-        <div class="note-text">${note.content}</div>
-        <div class="dropdown-item" onclick="excluirRegistro(${registro.id})">
-            i class="icon-delete">🗑️</i> Excluir
-        /div>
-
-      `;
+                    <div class="note-text">${note.content}</div>
+                    <div class="note-actions">
+                        <span class="note-delete" data-id="${note.id}">🗑️</span>
+                    </div>
+                `;
                 notesList.appendChild(noteItem);
             });
 
             document.querySelectorAll('.note-delete').forEach(btn => {
-                btn.addEventListener('click', async function () {
+                btn.addEventListener('click', async function (e) {
+                    e.stopPropagation();
                     const id = parseInt(this.getAttribute('data-id'));
                     if (confirm('Excluir esta anotação?')) {
                         try {
@@ -1461,7 +1440,6 @@
             const lastUpdate = records.length > 0
                 ? new Date(Math.max(...records.map(r => new Date(r.data)))).toLocaleDateString('pt-BR')
                 : '--';
-
             document.getElementById('totalProfit').textContent = formatCurrency(totalProfit);
             document.getElementById('avgProfit').textContent = formatCurrency(avgProfit);
             document.getElementById('procedures').textContent = procedures;
@@ -1472,21 +1450,18 @@
         function renderChart() {
             const ctx = document.getElementById('profitChart').getContext('2d');
             if (chart) chart.destroy();
-
             const profitsByDate = {};
             records.forEach(record => {
                 const date = formatDate(record.data);
                 if (!profitsByDate[date]) profitsByDate[date] = 0;
                 profitsByDate[date] += record.lucro;
             });
-
             const dates = Object.keys(profitsByDate).sort((a, b) => {
                 const da = new Date(a.split('/').reverse().join('-'));
                 const db = new Date(b.split('/').reverse().join('-'));
                 return da - db;
             });
             const profits = dates.map(d => profitsByDate[d]);
-
             chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -1520,7 +1495,6 @@
                     }
                 }
             });
-
             const chartDateEl = document.getElementById('chartDate');
             if (dates.length > 0) {
                 const first = dates[0], last = dates[dates.length - 1];
@@ -1538,7 +1512,6 @@
                 opt.textContent = i;
                 daySelect.appendChild(opt);
             }
-
             const filtersHeader = document.getElementById('filtersHeader');
             const filtersPanel = document.getElementById('filtersPanel');
             const filtersToggle = document.getElementById('filtersToggle');
@@ -1556,7 +1529,6 @@
             const formLucro = document.getElementById('formLucro');
             const formQtdContas = document.getElementById('formQtdContas');
             const formLucroPorConta = document.getElementById('formLucroPorConta');
-
             const today = new Date().toISOString().split('T')[0];
             formData.value = today;
 
@@ -1583,6 +1555,7 @@
             });
 
             cancelModal.addEventListener('click', () => modalBackdrop.classList.add('hidden'));
+
             modalBackdrop.addEventListener('click', e => {
                 if (e.target === modalBackdrop) modalBackdrop.classList.add('hidden');
             });
@@ -1592,6 +1565,7 @@
                 const qtd = parseInt(formQtdContas.value) || 1;
                 formLucroPorConta.value = (lucro / qtd).toFixed(2).replace('.', ',');
             };
+
             formLucro.addEventListener('input', updateLucroPorConta);
             formQtdContas.addEventListener('input', updateLucroPorConta);
 
@@ -1607,7 +1581,6 @@
                     lucro: lucro,
                     qtdContas: parseInt(formQtdContas.value) || 1
                 };
-
                 try {
                     await saveRecordToBackend(record);
                     await carregarPlanilha();
@@ -1624,13 +1597,13 @@
             document.getElementById('btn-export').addEventListener('click', () => {
                 alert('Exportação local desativada. Todos os dados estão no servidor.');
             });
+
             document.getElementById('btn-import').addEventListener('click', () => {
                 alert('Importação local desativada. Use o backend.');
             });
 
             await carregarPlanilha();
         });
-
     </script>
 </body>
 
