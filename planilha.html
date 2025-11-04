@@ -309,16 +309,20 @@
             color: var(--danger);
             cursor: pointer
         }
-
         .table-wrap {
             margin-top: 12px;
             border-radius: 12px;
-            overflow: hidden
+            overflow-x: auto; /* Permite scroll horizontal em todos os dispositivos */
+            -webkit-overflow-scrolling: touch;
         }
+
+
 
         table {
             width: 100%;
-            border-collapse: collapse
+            min-width: 700px; /* Mantém a largura mínima, mas permite scroll se necessário */
+            border-collapse: collapse;
+            table-layout: fixed; /* Força as colunas a terem largura fixa, evitando quebras indesejadas */
         }
 
         thead th {
@@ -1399,7 +1403,7 @@
                     if (!confirm('Tem certeza que deseja excluir esta aposta?')) return;
                     const email = localStorage.getItem('superodd_user_email');
                     try {
-                        const res = await fetch(`${API_BASE}/api/records/${record.id}?email=${encodeURIComponent(email)}`, {
+                        const res = await fetch(`${API_BASE}/api/records/${record.id}`, {
                             method: 'DELETE'
                         });
                         const data = await res.json();
