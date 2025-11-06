@@ -287,15 +287,33 @@
         const data = await res.json();
 
         if (data.success) {
-          showMessage(data.message, 'success');
-          if (!isRegisterMode) {
-            // ✅ SALVA LOGIN E EMAIL
-            localStorage.setItem('superodd_logged_in', 'true');
-            localStorage.setItem('superodd_user_email', email);
-            setTimeout(() => {
-              window.location.href = 'index.html';
-            }, 1500);
-          }
+          if (data.success) {
+            console.log('--- after login: storage snapshot ---');
+console.log('just_logged:', sessionStorage.getItem('superodd_just_logged_in'));
+console.log('active:', sessionStorage.getItem('superodd_session_active'));
+console.log('email:', sessionStorage.getItem('superodd_user_email'));
+console.log('expiry:', sessionStorage.getItem('superodd_session_expiry'));
+console.log('-------------------------------');
+
+  // gravação clara e única da sessão
+  sessionStorage.setItem('superodd_session_active', 'true');
+  sessionStorage.setItem('superodd_user_email', email);
+  sessionStorage.setItem('superodd_session_expiry', Date.now() + 10 * 60 * 1000); // 10 minutos
+
+  // marca que a próxima navegação veio do login (impede tratá-la como reload)
+  sessionStorage.setItem('superodd_just_logged_in', 'true');
+
+  showMessage('Login bem-sucedido! Redirecionando...', 'success');
+
+  // redireciona uma única vez (mantém mesma origem)
+  setTimeout(() => {
+    window.location.assign('index.html'); // ou 'planilha.html' se preferir
+  }, 350);
+
+  // encerra aqui — sem duplicar gravações nem timeouts
+  return;
+}
+
         } else {
           showMessage(data.message || 'Erro desconhecido.', 'error');
         }
@@ -313,6 +331,9 @@
       messageEl.className = `message ${type}`;
       messageEl.style.display = 'block';
     }
+
+    // Se a página for recarregada, limpa a sessão
+
   </script>
 </body>
 </html>

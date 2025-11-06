@@ -1072,6 +1072,76 @@
     <div id="adminPanel" class="section" style="display:none"></div>
   </div>
   <script>
+    // ======================= DEBUG: quem limpa sessionStorage? =======================
+(function() {
+  const origRemove = sessionStorage.removeItem.bind(sessionStorage);
+  const origClear = sessionStorage.clear?.bind(sessionStorage);
+
+  sessionStorage.removeItem = function(key) {
+    console.groupCollapsed('%csessionStorage.removeItem', 'color:orange');
+    console.trace('removeItem called for key:', key);
+    console.groupEnd();
+    return origRemove(key);
+  };
+
+  if (origClear) {
+    sessionStorage.clear = function() {
+      console.groupCollapsed('%csessionStorage.clear', 'color:red');
+      console.trace('clear called');
+      console.groupEnd();
+      return origClear();
+    };
+  }
+
+  // também logamos quando alguém seta a flag crucial
+  const origSet = sessionStorage.setItem.bind(sessionStorage);
+  sessionStorage.setItem = function(k, v) {
+    if (k && k.includes('superodd')) {
+      console.log('%cSET sessionStorage', 'color:green', k, v);
+    }
+    return origSet(k, v);
+  };
+})();
+
+    // --- INÍCIO: detecção segura de reload (colocar bem no topo do script) ---
+(function() {
+  const justLoggedIn = sessionStorage.getItem('superodd_just_logged_in') === 'true';
+  if (justLoggedIn) {
+    sessionStorage.removeItem('superodd_just_logged_in');
+    return;
+  }
+  let isReload = false;
+  try {
+    const nav = performance.getEntriesByType && performance.getEntriesByType('navigation');
+    if (nav && nav.length) isReload = nav[0].type === 'reload';
+    else if (performance && performance.navigation && performance.navigation.type === 1) isReload = true;
+  } catch (e) { /* ignore */ }
+  if (isReload) {
+    clearSession();
+    window.location.href = 'login.html';
+    return;
+  }
+})();
+console.log('index top IIFE — justLoggedIn:', sessionStorage.getItem('superodd_just_logged_in'));
+console.log('index top IIFE — isReload (precalc):', (() => {
+  try {
+    const nav = performance.getEntriesByType && performance.getEntriesByType('navigation');
+    if (nav && nav.length) return nav[0].type;
+    if (performance && performance.navigation) return performance.navigation.type;
+  } catch (e) { return 'err'; }
+})());
+
+
+ // --- FIM: detecção segura de reload ---
+
+function clearSession() {
+  sessionStorage.removeItem('superodd_session_active');
+  sessionStorage.removeItem('superodd_user_email');
+  sessionStorage.removeItem('superodd_session_expiry');
+  // não removemos superodd_just_logged_in aqui porque ela é usada apenas pelo fluxo de login imediato
+}
+
+
     const state = {
       qtdCasas: 2,
       showComissao: true,
@@ -1085,18 +1155,37 @@
     const $$ = s => Array.from(document.querySelectorAll(s));
     const money = v => "R$ " + (Number(v || 0).toFixed(2));
     function isLoggedIn() {
-      return localStorage.getItem('superodd_logged_in') === 'true';
-    }
+  // Verifica se há uma sessão válida no sessionStorage
+  if (!sessionStorage.getItem('superodd_session_active')) return false;
+  
+  // Verifica se a sessão expirou
+  const expiry = parseInt(sessionStorage.getItem('superodd_session_expiry') || '0');
+  if (Date.now() > expiry) {
+    clearSession();
+    return false;
+  }
+  
+  // Renova a sessão com mais 10 minutos a cada verificação
+  sessionStorage.setItem('superodd_session_expiry', Date.now() + 600000);
+  return true;
+}
+
+function clearSession() {
+  sessionStorage.removeItem('superodd_session_active');
+  sessionStorage.removeItem('superodd_user_email');
+  sessionStorage.removeItem('superodd_session_expiry');
+}
+
     function updateNavbar() {
       const btn = $('#btnOpenLogin');
       if (!btn) return;
       if (isLoggedIn()) {
         btn.textContent = 'Sair';
         btn.onclick = e => {
-          e.preventDefault();
-          localStorage.removeItem('superodd_logged_in');
-          location.reload();
-        };
+  e.preventDefault();
+  clearSession(); // Usa a função completa de limpeza
+  location.reload();
+};
       } else {
         btn.textContent = 'Entrar';
         btn.href = 'login.html';
@@ -1418,6 +1507,68 @@
       });
     }
     function init() {
+      // detectar reload (compatível com navegadores modernos e fallback)
+function navigationIsReload() {
+  try {
+    const navEntries = performance.getEntriesByType && performance.getEntriesByType('navigation');
+    if (navEntries && navEntries.length) {
+      return navEntries[0].type === 'reload';
+    }
+    // fallback antigo
+    if (performance && performance.navigation && performance.navigation.type === 1) return true;
+  } catch (e) {}
+  return false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  // --- DETECTAR RELOAD (protege redirecionamento do login com flag) ---
+let isReload = false;
+try {
+  const navEntries = performance.getEntriesByType && performance.getEntriesByType('navigation');
+  if (navEntries && navEntries.length) {
+    isReload = navEntries[0].type === 'reload';
+  } else if (performance && performance.navigation && performance.navigation.type === 1) {
+    // fallback antigo
+    isReload = true;
+  }
+} catch (e) {
+  // não faz nada se API não suportada
+}
+
+// se a navegação veio do login, haverá essa flag
+const justLoggedIn = sessionStorage.getItem('superodd_just_logged_in') === 'true';
+if (justLoggedIn) {
+  // remove a flag para não atrapalhar futuros reloads
+  sessionStorage.removeItem('superodd_just_logged_in');
+}
+
+// se foi um reload manual e NÃO veio do login, força logout
+if (isReload && !justLoggedIn) {
+  sessionStorage.removeItem('superodd_session_active');
+  sessionStorage.removeItem('superodd_user_email');
+  sessionStorage.removeItem('superodd_session_expiry');
+  // redireciona ao login — interrompe a execução do restante do DOMContentLoaded
+  window.location.href = 'login.html';
+  return;
+}
+// --- fim detect reload ---
+
+  if (navigationIsReload()) {
+    // se foi um reload da página, limpar sessão e forçar login
+    clearSession();
+    window.location.href = 'login.html';
+    return;
+  }
+
+  // ... prosseguir com init normal (updateNavbar(), renderRows(), etc.)
+});
+
+      // Função para limpar o login
+function clearSession() {
+  sessionStorage.removeItem('superodd_session_active');
+  sessionStorage.removeItem('superodd_user_email');
+  sessionStorage.removeItem('superodd_session_expiry');
+}
       updateNavbar();
       updateInputsState();
       $('#qtdCasas')?.addEventListener('change', () => {
@@ -1533,8 +1684,68 @@
       renderRows();
       if (isLoggedIn()) updateCalculations();
       setInterval(updateInputsState, 800);
+      function clearSession() {
+  sessionStorage.removeItem('superodd_session_active');
+  sessionStorage.removeItem('superodd_user_email');
+  sessionStorage.removeItem('superodd_session_expiry');
+}
+
+function isLoggedIn() {
+  const active = sessionStorage.getItem('superodd_session_active') === 'true';
+  const expiry = parseInt(sessionStorage.getItem('superodd_session_expiry') || '0', 10);
+  if (!active) return false;
+  if (Date.now() > expiry) {
+    clearSession();
+    return false;
+  }
+  return true;
+}
+
+// Chame updateNavbar() e registradores APÓS isLoggedIn checado
+document.addEventListener('DOMContentLoaded', () => {
+  updateNavbar();
+  updateInputsState();
+  // registre TODOS os event listeners aqui (ex: addRow, btnCopy, switches, etc.)
+  attachAllEventListeners(); // se você tem uma função, se não, mantenha os addEventListener que já existem
+  renderRows();
+  if (isLoggedIn()) updateCalculations();
+});
+
+      // Limpa login quando a página for recarregada
+
+
+// Verifica se precisa limpar o login ao carregar a página
+// if (sessionStorage.getItem('superodd_session_should_clear') === 'true') {
+//   clearSession();
+//   sessionStorage.removeItem('superodd_session_should_clear');
+// }
+
+// Limpa login quando o usuário mudar de aba
+
     }
     document.addEventListener('DOMContentLoaded', init);
+    // Se a página for recarregada, limpa a sessão
+// window.addEventListener('load', () => {
+//   sessionStorage.clear();
+// });
+document.addEventListener('DOMContentLoaded', () => {
+    const loginBtn = document.getElementById('login-btn');
+    const isLogged = sessionStorage.getItem('superodd_session_active') === 'true';
+    const userEmail = sessionStorage.getItem('superodd_user_email');
+
+    if (isLogged && loginBtn) {
+      // Mostra o email ou muda o texto para "Sair"
+      loginBtn.textContent = 'Sair';
+      loginBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        clearSession();
+        window.location.href = 'login.html';
+      });
+    } else if (loginBtn) {
+      loginBtn.textContent = 'Entrar';
+      loginBtn.href = 'login.html';
+    }
+  });
   </script>
 </body>
 </html>
