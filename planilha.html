@@ -35,9 +35,20 @@
     }
 
     .container {
-      max-width: 1240px;
+      max-width: 100%;
+      width: 100%;
       margin: 28px auto;
-      padding: 18px
+      padding: 18px;
+
+      /* Para desktops grandes, limite a largura máxima */
+      @media (min-width: 1400px) {
+        max-width: 1400px;
+      }
+    }
+
+    .profit-negativo {
+      color: var(--danger);
+      font-weight: 800;
     }
 
     .card {
@@ -295,13 +306,32 @@
       align-items: center
     }
 
+    .actions-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .dropdown-menu {
+      position: absolute;
+      top: 0; /* ▶️ Ajusta para o topo da célula */
+      right: 0; /* ▶️ Mantém alinhado à direita do contêiner pai */
+      transform: translateY(-100%); /* ▶️ Empurra para cima, fazendo o menu ficar acima do ícone */
+      background: #fff;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
+      border-radius: 10px;
+      padding: 6px;
+      z-index: 2000;
+      min-width: 180px;
+    }
+
     .note-delete {
       color: var(--danger);
       cursor: pointer
     }
 
     .table-wrap {
-      margin-top: 12px;
+      margin-top: 12px 25px;
       border-radius: 12px;
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
@@ -311,7 +341,7 @@
       width: 100%;
       min-width: 700px;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
     }
 
     thead th {
@@ -322,11 +352,22 @@
       font-weight: 700
     }
 
+    /* Força quebra de linha nos cabeçalhos longos */
+    thead th {
+      white-space: normal;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+
     tbody td {
       padding: 18px;
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
       vertical-align: middle;
-      white-space: nowrap;
+      /* --- REMOVA white-space: nowrap; --- */
+      /* --- Adicione estas linhas para permitir quebrar linhas e evitar overflow --- */
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      /* --- FIM DA ALTERAÇÃO --- */
     }
 
     tbody tr {
@@ -412,19 +453,6 @@
       position: relative;
     }
 
-    .dropdown-menu {
-      position: absolute;
-      top: 100%;
-      right: 0;
-      transform: translateY(5px);
-      background: #fff;
-      border: 1px solid rgba(0, 0, 0, 0.06);
-      box-shadow: 0 8px 24px rgba(16, 24, 40, 0.08);
-      border-radius: 10px;
-      padding: 6px;
-      z-index: 2000;
-      min-width: 180px;
-    }
 
     .dropdown-item {
       display: flex;
@@ -638,200 +666,250 @@
         justify-content: center;
       }
     }
+
     .voltar {
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    color: #ef4444;
-    list-style: none;
-}
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      color: #ef4444;
+      list-style: none;
+    }
 
     /* === 📱 Ajustes responsivos para celular e tablet (até 900px) === */
-@media (max-width: 900px) {
+    @media (max-width: 900px) {
 
-  body {
-    font-size: 15px;
-    padding: 0;
-    margin: 0;
-  }
+      body {
+        font-size: 15px;
+        padding: 0;
+        margin: 0;
+      }
 
-  header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
 
-  header h1 {
-    font-size: 22px;
-  }
+      header h1 {
+        font-size: 22px;
+      }
 
-  header .btn {
-    width: 100%;
-    max-width: 100%;
-    text-align: center;
-    font-size: 15px;
-  }
+      header .btn {
+        width: 100%;
+        max-width: 100%;
+        text-align: center;
+        font-size: 15px;
+      }
 
-  /* Botões alinhados verticalmente */
-  header > div {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    gap: 10px;
-  }
+      /* Botões alinhados verticalmente */
+      header>div {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+      }
 
-  /* Cards e estatísticas empilhados */
-  .stats-row {
-    flex-direction: column;
-  }
+      /* Cards e estatísticas empilhados */
+      .stats-row {
+        flex-direction: column;
+      }
 
-  .stat {
-    width: 100%;
-    margin-bottom: 10px;
-  }
+      .stat {
+        width: 100%;
+        margin-bottom: 10px;
+      }
 
-  /* Painéis e filtros */
-  .filters-panel {
-    grid-template-columns: 1fr !important;
-  }
+      /* Painéis e filtros */
+      .filters-panel {
+        grid-template-columns: 1fr !important;
+      }
 
-  .filters-header h2 {
-    font-size: 18px;
-  }
+      .filters-header h2 {
+        font-size: 18px;
+      }
 
-  .filters-grid {
-    grid-template-columns: 1fr !important;
-    gap: 10px;
-  }
+      .filters-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px;
+      }
 
-  .filter-group {
-    width: 100%;
-  }
+      .filter-group {
+        width: 100%;
+      }
 
-  .filter-select,
-  .filter-input {
-    width: 100%;
-    font-size: 15px;
-    padding: 10px;
-  }
+      .filter-select,
+      .filter-input {
+        width: 100%;
+        font-size: 15px;
+        padding: 10px;
+      }
 
-  /* Modal */
-  .modal {
-    width: 90% !important;
-    max-width: none !important;
-    height: auto;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
+      /* Modal */
+      .modal {
+        width: 90% !important;
+        max-width: none !important;
+        height: auto;
+        max-height: 90vh;
+        overflow-y: auto;
+      }
 
-  .form-grid {
-    grid-template-columns: 1fr !important;
-  }
+      .form-grid {
+        grid-template-columns: 1fr !important;
+      }
 
-  .form-control label {
-    font-size: 14px;
-  }
+      .form-control label {
+        font-size: 14px;
+      }
 
-  .input,
-  .select {
-    font-size: 15px;
-  }
+      .input,
+      .select {
+        font-size: 15px;
+      }
 
-  /* Botões do modal */
-  .modal-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
+      /* Botões do modal */
+      .modal-actions {
+        flex-direction: column;
+        align-items: stretch;
+      }
 
-  .modal-actions .btn {
-    width: 100%;
-  }
+      .modal-actions .btn {
+        width: 100%;
+      }
 
-  /* Notas */
-  .notes {
-    width: 100%;
-  }
+      /* Notas */
+      .notes {
+        width: 100%;
+      }
 
-  .note-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-  }
+      .note-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+      }
 
-  .note-actions {
-    width: 100%;
-    justify-content: flex-end;
-  }
+      .note-actions {
+        width: 100%;
+        justify-content: flex-end;
+      }
 
-  .add-note-btn {
-    width: 100%;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 16px;
-    justify-content: center;
-  }
+      .add-note-btn {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 16px;
+        justify-content: center;
+      }
 
-  /* Tabela */
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 10px;
-  }
+      /* Tabela */
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 10px;
+      }
 
-  table {
-    width: 100%;
-    min-width: 800px;
-  }
+      table {
+        width: 100%;
+        min-width: 800px;
+      }
 
-  thead th,
-  tbody td {
-    padding: 10px 12px;
-    font-size: 14px;
-    white-space: nowrap;
-  }
+      thead th,
+      tbody td {
+        padding: 10px 12px;
+        font-size: 14px;
+        white-space: nowrap;
+      }
 
-  /* Grid principal */
-  .main-grid {
-    grid-template-columns: 1fr !important;
-    gap: 20px;
-  }
+      /* Grid principal */
+      .main-grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px;
+      }
 
-  .chart-card,
-  .notes {
-    width: 100%;
-  }
+      .chart-card,
+      .notes {
+        width: 100%;
+      }
 
-  .chart-title {
-    font-size: 16px;
-  }
+      .chart-title {
+        font-size: 16px;
+      }
 
-  .chart-date {
-    font-size: 13px;
-  }
+      .chart-date {
+        font-size: 13px;
+      }
 
-  /* Modal backdrop scroll fix */
-  .modal-backdrop {
-    align-items: flex-start;
-    padding-top: 40px;
-  }
+      /* Modal backdrop scroll fix */
+      .modal-backdrop {
+        align-items: flex-start;
+        padding-top: 40px;
+      }
 
-  /* Ajuste do container geral */
-  .container {
-    padding: 10px;
-  }
-}
-.voltar {
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    color: #ef4444;
-    list-style: none;
-}
+      /* Ajuste do container geral */
+      .container {
+        padding: 10px;
+      }
+    }
+
+    .voltar {
+      text-decoration: none;
+      font-size: 16px;
+      font-weight: 600;
+      color: #ef4444;
+      list-style: none;
+    }
+    @media (max-width: 768px) {
+      .container {
+        padding: 12px;
+        max-width: 100% !important;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      table {
+        min-width: 900px; /* Garante espaço mínimo para a tabela sem quebrar */
+        width: auto;
+      }
+
+      thead th,
+      tbody td {
+        padding: 12px 10px;
+        font-size: 13px;
+        white-space: nowrap; /* ← Reativa nowrap só em mobile para evitar quebra caótica */
+      }
+
+      /* Garante que o menu de ações funcione corretamente mesmo com scroll */
+      .actions-container {
+        position: relative;
+        display: inline-block;
+        min-width: 24px;
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: auto;
+        transform: translateY(-100%);
+        z-index: 3000;
+        min-width: 160px;
+        font-size: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      }
+    }
   </style>
 </head>
 
 <body>
-<header><nav><ul><a class="Voltar" href="index.html"><li>Início</li></a></ul></nav></header>
+  <header>
+    <nav>
+      <ul><a class="Voltar" href="index.html">
+          <li>Início</li>
+        </a></ul>
+    </nav>
+  </header>
   <div class="container">
     <header>
       <h1>Planilha</h1>
@@ -895,12 +973,8 @@
             <select class="filter-select" id="filterMercado">
               <option>Todos</option>
               <option>DIRETO</option>
-              <option>GIROS</option>
               <option>ADQUIRIR/FB</option>
               <option>FB/BÔNUS</option>
-              <option>SURE</option>
-              <option>SUPERODD</option>
-              <option>DUPLO</option>
               <option>CASHBACK</option>
             </select>
           </div>
@@ -976,16 +1050,14 @@
         <table>
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Descrição</th>
-              <th>Casa</th>
-              <th>Qtd. Contas</th>
-              <th>Observações</th>
-              <th>FB</th>
-              <th>Mercado</th>
-              <th>Situação</th>
-              <th>Lucro</th>
-              <th>Ações</th>
+              <th style="width: 10%;">Data</th>
+              <th style="width: 28%;">Descrição</th>
+              <th style="width: 12%;">Casa</th>
+              <th style="width: 18%;">Observações</th>
+              <th style="width: 12%;">Mercado</th>
+              <th style="width: 12%;">Situação</th>
+              <th style="width: 10%;">Lucro</th>
+              <th style="width: 4%;">Ações</th>
             </tr>
           </thead>
           <tbody id="recordsTableBody"></tbody>
@@ -1099,6 +1171,26 @@
     let editingId = null; // null = novo registro; number = edit
     const csvHeaders = ['data', 'descricao', 'casa', 'qtd_contas', 'observacoes', 'mercado', 'situacao', 'lucro'];
 
+    // Função para alternar a visibilidade dos filtros
+    function toggleFilters() {
+      const filtersPanel = document.getElementById('filtersPanel');
+      const filtersToggle = document.getElementById('filtersToggle');
+      filtersPanel.classList.toggle('open');
+      if (filtersPanel.classList.contains('open')) {
+        filtersToggle.textContent = '▴';
+      } else {
+        filtersToggle.textContent = '▾';
+      }
+    }
+
+    // Adiciona o listener ao cabeçalho dos filtros
+    document.addEventListener('DOMContentLoaded', () => {
+      const filtersHeader = document.getElementById('filtersHeader');
+      if (filtersHeader) {
+        filtersHeader.addEventListener('click', toggleFilters);
+      }
+    });
+
     /* ----------------- utilitários ----------------- */
     function formatCurrency(value) {
       if (value === '' || value === null || isNaN(value)) return 'R$ 0,00';
@@ -1183,7 +1275,7 @@
         body: JSON.stringify({ ...record, email })
       });
       if (!response.ok) {
-        const err = await response.json().catch(()=>null);
+        const err = await response.json().catch(() => null);
         throw new Error(err?.message || `HTTP ${response.status}`);
       }
       const data = await response.json();
@@ -1200,7 +1292,7 @@
         body: JSON.stringify({ ...updatedRecord, email })
       });
       if (!response.ok) {
-        const err = await response.json().catch(()=>null);
+        const err = await response.json().catch(() => null);
         throw new Error(err?.message || `HTTP ${response.status}`);
       }
       const data = await response.json();
@@ -1217,7 +1309,7 @@
         body: JSON.stringify({ email })
       });
       if (!response.ok) {
-        const err = await response.json().catch(()=>null);
+        const err = await response.json().catch(() => null);
         throw new Error(err?.message || `HTTP ${response.status}`);
       }
       const data = await response.json();
@@ -1248,7 +1340,7 @@
         body: JSON.stringify({ email })
       });
       if (!res.ok) {
-        const data = await res.json().catch(()=>null);
+        const data = await res.json().catch(() => null);
         throw new Error(data?.message || `HTTP ${res.status}`);
       }
       return;
@@ -1291,17 +1383,17 @@
           <td>${formatDate(record.data)}</td>
           <td>${escapeHtml(record.descricao || '')}</td>
           <td>${escapeHtml(record.casa || '')}</td>
-          <td>${record.qtd_contas || 1}</td>
           <td>${escapeHtml(record.observacoes || '')}</td>
-          <td>${freebetStatus}</td>
           <td><span class="market-pill ${mercadoClass}">${escapeHtml(record.mercado || '')}</span></td>
           <td><span class="status-pill ${situacaoClass}">${escapeHtml(record.situacao || '')}</span></td>
-          <td class="profit">${formatCurrency(record.lucro)}</td>
+          <td class="${record.lucro < 0 ? 'profit-negativo' : 'profit'}">${formatCurrency(record.lucro)}</td>
           <td>
-            <div class="actions-menu">⋮</div>
-            <div class="dropdown-menu hidden">
-              <div class="dropdown-item edit-item" data-id="${record.id}">✏️ Editar aposta</div>
-              <div class="dropdown-item delete-item" data-id="${record.id}">🗑️ Excluir aposta</div>
+            <div class="actions-container">
+              <div class="actions-menu">⋮</div>
+              <div class="dropdown-menu hidden">
+                <div class="dropdown-item edit-item" data-id="${record.id}">✏️ Editar aposta</div>
+                <div class="dropdown-item delete-item" data-id="${record.id}">🗑️ Excluir aposta</div>
+              </div>
             </div>
           </td>
         `;
